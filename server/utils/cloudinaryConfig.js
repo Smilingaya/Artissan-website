@@ -10,10 +10,12 @@ cloudinary.config({
 });
 //configurarion multer+clodinary storage
 const storage = new CloudinaryStorage({
-  cloudinary: cloudinary,
-  params: {
-    folder: "uplodes",
-    allowd_formats: ["jpg", "jpeg", "png", "gif", "mp4", "mov"],
+  cloudinary,
+  params: async (req, file) => {
+    return {
+      folder: "uplodes",
+      resource_type: file.mimetype.startsWith("video/") ? "video" : "image", //mimetype kaml les type t3 file mp4/jpeg
+    };
   },
 });
 const upload = multer({ storage: storage });

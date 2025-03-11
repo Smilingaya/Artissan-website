@@ -6,6 +6,7 @@ const { checkUser } = require("./midllware/authMidllware");
 const app = express();
 
 // Middleware
+app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
 // Database connection
@@ -15,7 +16,7 @@ const dbUrl =
 mongoose
   .connect(dbUrl)
   .then(() =>
-    app.listen(3000, () => console.log("Server is running on port 3000"))
+    app.listen(4000, () => console.log("Server is running on port 3000"))
   )
   .catch((err) => console.log(err));
 
