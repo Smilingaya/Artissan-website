@@ -1,5 +1,8 @@
+const express = require("express");
 const User = require("../model/user");
 const jwt = require("jsonwebtoken");
+const { upload } = require("../utils/cloudinaryConfig");
+const cloudinary = require("cloudinary").v2;
 //hundle errore
 const hundleErrore = (err) => {
   console.log(err.message, err.code);
@@ -33,13 +36,21 @@ const createToken = (id) => {
 };
 
 signup_Post = async (req, res) => {
-  const { email, password, name, profilePicture, bio } = req.body;
+  const { email, password, name, bio } = req.body;
+  const image = req.file;
   try {
+    let imageUrl = null;
+    if (image) {
+      const resault = await cloudinary.uploader.upload(image.path, {
+        folder: "profile_pictures",
+      });
+      imageUrl = resault.secure_url;
+    }
     const user = await User.create({
       email,
       password,
       name,
-      profilePicture,
+      profilePicture: imageUrl,
       bio,
     });
     const token = createToken(user._id);

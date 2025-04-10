@@ -2,6 +2,9 @@ const express = require("express");
 const mongoose = require("mongoose");
 const authRoutes = require("./router/authRoutes");
 const postRoutes = require("./router/postRoutes");
+const commentRoutes = require("./router/commentRoutes");
+const userRouts = require("./router/userRouts");
+const productRoutes = require("./router/productRoutes");
 const { checkUser } = require("./midllware/authMidllware");
 const app = express();
 
@@ -16,7 +19,7 @@ const dbUrl =
 mongoose
   .connect(dbUrl)
   .then(() =>
-    app.listen(4000, () => console.log("Server is running on port 3000"))
+    app.listen(3000, () => console.log("Server is running on port 3000"))
   )
   .catch((err) => console.log(err));
 
@@ -24,3 +27,6 @@ mongoose
 //app.get("*", checkUser);   **errore**
 app.use("/api/auth", authRoutes);
 app.use("/api/blog", postRoutes);
+app.use("/api/comment", commentRoutes);
+app.use("/api/user", userRouts);
+app.use("/api/product", productRoutes);
