@@ -76,6 +76,5 @@ login_Post = async (req, res) => {
 };
 module.exports = {
   signup_Post,
-
   login_Post,
 };

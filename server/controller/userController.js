@@ -1,6 +1,9 @@
 const express = require("express");
 const User = require("../model/user");
 const Post = require("../model/post");
+const { upload } = require("../utils/cloudinaryConfig");
+const cloudinary = require("cloudinary").v2;
+const { extractPublicId } = require("../helper/helper");
 const Get_User_Controller = async (req, res) => {
   const { userId } = req.params;
   try {
@@ -17,11 +20,10 @@ const Get_User_Controller = async (req, res) => {
     res.status(500).json({ success: false, message: err.message });
   }
 };
-const Update_User_Controller = async (req, res) => {
+const Update_user_profile = async (req, res) => {
   const { userId } = req.params;
-  const { name, password, bio } = req.body;
-  const profilePicture = req.file;
-  console.log(req.body);
+  const profile_pictures = req.file;
+  const { name, bio } = req.body;
   try {
     const user = await User.findById(userId);
     if (!user) {
@@ -29,27 +31,47 @@ const Update_User_Controller = async (req, res) => {
         .status(404)
         .json({ success: false, message: "User not found" });
     }
-    const Updatefields = {};
-    if (name) {
-      Updatefields.name = name;
+    const imagesIds = [];
+    if (user.profilePicture) {
+      const publicId = extractPublicId(user.profilePicture);
+      if (publicId) imagesIds.push(publicId);
     }
-    if (password) {
-      Updatefields.password = password;
+    await cloudinary.uploader.destroy(imagesIds);
+    const uploadres = await cloudinary.uploader.upload(profile_pictures.path, {
+      folder: "profile_pictures",
+    });
+    const imageUrl = uploadres.secure_url;
+    await User.findByIdAndUpdate(
+      userId,
+      { profilePicture: imageUrl, name, bio },
+      { new: true }
+    );
+    res
+      .status(200)
+      .json({ message: "Profile picture updated successfully!", user });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+const Update_User_Controller = async (req, res) => {
+  const { userId } = req.params;
+  const { email, password } = req.body;
+  try {
+    const user = await User.findById(userId);
+    if (!user) {
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found" });
     }
-    // if (profilePicture) {
-    // Updatefields.profilePicture = profilePicture;
-    // }
-    if (bio) {
-      Updatefields.bio = bio;
-    }
+
     const updatedUser = await User.findByIdAndUpdate(
       userId,
-      { Updatefields },
+      { email, password },
       { new: true }
     );
 
-    //console.log(updatedUser);
-    res.status(200).json(updatedUser);
+    res.status(200).json({ success: true, user: updatedUser });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }
@@ -101,7 +123,7 @@ const unfollow_Post_Controller = async (req, res) => {
       },
       { new: true }
     );
-    res.status(200).json({ message: " user Unfollow success !!" });
+    res.status(200).json({ message: " user Unfollow success !!", updatedUser });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }
@@ -111,4 +133,5 @@ module.exports = {
   Update_User_Controller,
   follow_Post_Controller,
   unfollow_Post_Controller,
+  Update_user_profile,
 };

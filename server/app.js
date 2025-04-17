@@ -1,16 +1,17 @@
 const express = require("express");
 const mongoose = require("mongoose");
+const cookieParser = require("cookie-parser");
 const authRoutes = require("./router/authRoutes");
 const postRoutes = require("./router/postRoutes");
 const commentRoutes = require("./router/commentRoutes");
 const userRouts = require("./router/userRouts");
 const productRoutes = require("./router/productRoutes");
-const { checkUser } = require("./midllware/authMidllware");
+const { checkUser, requireMidllware } = require("./midllware/authMidllware");
 const app = express();
 
-// Middleware
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
+app.use(cookieParser());
 
 // Database connection
 const dbUrl =
@@ -24,7 +25,15 @@ mongoose
   .catch((err) => console.log(err));
 
 // Routes
-//app.get("*", checkUser);   **errore**
+app.use(checkUser);
+// TEST ROUTES:
+app.get("/protected", requireMidllware, (req, res) => {
+  res.status(200).json({ message: "You are authorized", userId: req.userId });
+});
+
+app.get("/check", checkUser, (req, res) => {
+  res.status(200).json({ user: res.locals.user });
+});
 app.use("/api/auth", authRoutes);
 app.use("/api/blog", postRoutes);
 app.use("/api/comment", commentRoutes);

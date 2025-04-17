@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 const { isFloat } = require("validator");
 const ProductSchema = new mongoose.Schema({
-  user: { type: mongoose.Schema.Types.ObjectId, ref: "user", required: true },
+  user: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
 
   name: {
     type: String,
@@ -13,20 +13,21 @@ const ProductSchema = new mongoose.Schema({
   },
   price: {
     type: Number,
-    required: Number,
+    required: true,
   },
   stoke: {
     type: Number,
     required: true,
   },
-  image: {
+  mainImage: {
     type: String,
     required: true,
   },
-  images: {
-    type: String,
-    default: [],
-  },
+  multipleFiles: [
+    {
+      type: String,
+    },
+  ],
   category: {
     type: String,
     required: true,

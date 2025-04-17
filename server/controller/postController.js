@@ -3,6 +3,7 @@ const { upload } = require("../utils/cloudinaryConfig");
 const cloudinary = require("cloudinary").v2;
 const User = require("../model/user");
 const Post = require("../model/post");
+const { extractPublicId } = require("../helper/helper");
 const craete_post = async (req, res) => {
   try {
     const mediaUrls = req.files.map((file) => file.path);
@@ -73,7 +74,6 @@ const Update_post = async (req, res) => {
     res.status(500).json({ success: false, message: err.message });
   }
 };
-//errore
 const Deleat_post = async (req, res) => {
   const id = req.params.postId;
   try {
@@ -81,13 +81,18 @@ const Deleat_post = async (req, res) => {
     if (!post) {
       return res.status(404).json({ message: "Post Not Found" });
     }
-    await cloudinary.uploader.destroy(post.publicId, function (error, result) {
-      console.log(result, error);
-    });
+    const publicIds = [];
+    if (post.media && post.media.length > 0) {
+      post.media.forEach((fileUrl) => {
+        const publicId = extractPublicId(fileUrl);
+        if (publicId) publicIds.push(publicId);
+      });
+    }
+    await Promise.all(publicIds.map((id) => cloudinary.uploader.destroy(id)));
     await Post.findByIdAndDelete(id);
     res.status(200).json({ msg: "delet succes" });
   } catch (err) {
-    console.log(err);
+    res.status(500).json({ success: false, message: err.message });
   }
 };
 const like_Post_Controller = async (req, res) => {
