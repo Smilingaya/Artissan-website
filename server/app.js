@@ -6,6 +6,7 @@ const postRoutes = require("./router/postRoutes");
 const commentRoutes = require("./router/commentRoutes");
 const userRouts = require("./router/userRouts");
 const productRoutes = require("./router/productRoutes");
+const orderRoutes = require("./router/orderRoutes");
 const { checkUser, requireMidllware } = require("./midllware/authMidllware");
 const app = express();
 
@@ -39,3 +40,4 @@ app.use("/api/blog", postRoutes);
 app.use("/api/comment", commentRoutes);
 app.use("/api/user", userRouts);
 app.use("/api/product", productRoutes);
+app.use("/api/order", orderRoutes);

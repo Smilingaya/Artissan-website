@@ -4,6 +4,7 @@ const Post = require("../model/post");
 const { upload } = require("../utils/cloudinaryConfig");
 const cloudinary = require("cloudinary").v2;
 const { extractPublicId } = require("../helper/helper");
+const bcrypt = require("bcrypt");
 const Get_User_Controller = async (req, res) => {
   const { userId } = req.params;
   try {

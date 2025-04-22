@@ -51,12 +51,34 @@ const userSchema = new mongoose.Schema({
       ref: "Product",
     },
   ],
+  orders: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Order",
+    },
+  ],
+  commandedProducts: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Order",
+    },
+  ],
   createdAt: { type: Date, default: Date.now },
 });
 //fire funtion befor doc saved in db
 userSchema.pre("save", async function (next) {
   const salt = await bcrypt.genSalt();
   this.password = await bcrypt.hash(this.password, salt);
+  next();
+});
+userSchema.pre("findOneAndUpdate", async function (next) {
+  const update = this.getUpdate();
+  if (update.password) {
+    const salt = await bcrypt.genSalt();
+    update.password = await bcrypt.hash(update.password, salt);
+
+    this.setUpdate(update);
+  }
   next();
 });
 userSchema.statics.login = async function (email, password) {
