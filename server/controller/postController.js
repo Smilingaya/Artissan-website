@@ -161,6 +161,23 @@ const likes_get_controller = async (req, res) => {
     res.status(500).json({ success: false, message: err.message });
   }
 };
+const search_post = async (req, res) => {
+  const { query } = req.query;
+  try {
+    const posts = await Post.find({
+      $or: [
+        { caption: { $regex: query, $options: "i" } },
+        { name: { $regex: query, $options: "i" } },
+      ],
+    });
+    if (!posts) {
+      return res.status(404).json({ message: "Post Not Found" });
+    }
+    res.status(200).json({ success: true, posts });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
 module.exports = {
   craete_post,
   GET_post,
@@ -170,4 +187,5 @@ module.exports = {
   like_Post_Controller,
   dislike_Controller,
   likes_get_controller,
+  search_post,
 };

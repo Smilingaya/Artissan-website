@@ -32,4 +32,5 @@ router.put(
   requireMidllware,
   productController.Update_product
 );
+router.get("/searchproduct", productController.search_product);
 module.exports = router;

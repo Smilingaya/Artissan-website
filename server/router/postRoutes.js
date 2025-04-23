@@ -40,4 +40,5 @@ router.get(
   requireMidllware,
   postController.likes_get_controller
 );
+router.get("/serchPost", postController.search_post);
 module.exports = router;

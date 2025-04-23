@@ -163,6 +163,20 @@ const Update_product = async (req, res) => {
     res.status(500).json({ success: false, message: err.message });
   }
 };
+const search_product = async (req, res) => {
+  const { query } = req.query;
+  try {
+    const products = await Product.find({
+      $or: [
+        { name: { $regex: query, $options: "i" } },
+        { discreption: { $regex: query, $options: "i" } },
+      ],
+    });
+    res.status(200).json({ success: true, products });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
 
 module.exports = {
   create_product,
@@ -170,4 +184,5 @@ module.exports = {
   Get_One_Product,
   delete_product,
   Update_product,
+  search_product,
 };
