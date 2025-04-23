@@ -5,7 +5,8 @@ const Comment = require("../model/comments");
 
 const create_comment_controller = async function (req, res) {
   try {
-    const { postId, user, comment } = req.body;
+    const { postId } = req.params;
+    const { user, comment } = req.body;
     const newComment = new Comment({
       post: postId,
       user,
