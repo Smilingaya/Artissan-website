@@ -193,10 +193,9 @@ const recommendPosts = async (req, res) => {
   const { userId } = req.params;
 
   try {
-    // Step 1: Fetch the current user with their liked posts and followings
     const user = await User.findById(userId)
-      .populate("likedPosts") // Fetch liked posts
-      .populate("followings"); // Fetch followed users
+      .populate("likedPosts")
+      .populate("followings");
 
     if (!user) {
       return res
@@ -204,22 +203,42 @@ const recommendPosts = async (req, res) => {
         .json({ success: false, message: "User not found" });
     }
 
-    // Step 2: Extract useful data
-    const likedCategories = user.likedPosts.map((post) => post.name);
-    const likedCaptions = user.likedPosts.map((post) => post.caption); // Captions of liked posts
-    const followingUserIds = user.followings.map((following) => following._id); // IDs of users the current user follows
+    const likedNames = user.likedPosts.map((post) => post.name);
+    const likedCaptions = user.likedPosts.map((post) => post.caption);
+    const likedPostIds = user.likedPosts.map((post) => post._id);
+    const followingUserIds = user.followings.map((f) => f._id);
 
-    const recommendedPosts = await Post.find({
-      $or: [
-        { category: { $in: likedCategories } },
+    const captionRegex = likedCaptions.length
+      ? new RegExp(likedCaptions.join("|"), "i")
+      : null;
 
-        { caption: { $in: likedCaptions } },
+    const queryConditions = [
+      { user: { $ne: userId } },
+      { _id: { $nin: likedPostIds } },
+    ];
 
-        { user: { $in: followingUserIds } },
-      ],
-    }).sort({ createdAt: -1 }); // Sort by most recent posts first
+    const orConditions = [];
 
-    // Step 4: Send recommended posts as a response
+    if (likedNames.length) {
+      orConditions.push({ category: { $in: likedNames } });
+    }
+
+    if (captionRegex) {
+      orConditions.push({ caption: { $regex: captionRegex } });
+    }
+
+    if (followingUserIds.length) {
+      orConditions.push({ user: { $in: followingUserIds } });
+    }
+
+    if (orConditions.length > 0) {
+      queryConditions.push({ $or: orConditions });
+    }
+
+    const recommendedPosts = await Post.find({ $and: queryConditions }).sort({
+      createdAt: -1,
+    });
+
     res.status(200).json({ success: true, recommendedPosts });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
