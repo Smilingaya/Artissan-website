@@ -27,6 +27,11 @@ const userSchema = new mongoose.Schema({
     type: String,
     default: "",
   },
+  role: {
+    type: String,
+    enum: ["user", "admin"],
+    default: "user",
+  },
   followers: [
     {
       type: mongoose.Schema.Types.ObjectId,
@@ -36,7 +41,7 @@ const userSchema = new mongoose.Schema({
   followings: [
     {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
+      ref: "user",
     },
   ],
   posts: [
@@ -63,6 +68,7 @@ const userSchema = new mongoose.Schema({
       ref: "Order",
     },
   ],
+  likedPosts: [{ type: mongoose.Schema.Types.ObjectId, ref: "post" }],
   createdAt: { type: Date, default: Date.now },
 });
 //fire funtion befor doc saved in db

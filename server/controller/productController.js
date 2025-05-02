@@ -10,7 +10,7 @@ const create_product = async (req, res) => {
     const picture = req.files["mainImage"]?.[0];
     const images = req.files["multipleFiles"] || [];
 
-    const { userId, name, discreption, price, stoke, category } = req.body;
+    const { userId, name, discreption, price, stoke, categoryId } = req.body;
     let imageUrl = "";
     if (picture) {
       const uploadres = await cloudinary.uploader.upload(picture.path, {
@@ -41,7 +41,7 @@ const create_product = async (req, res) => {
       price,
       stoke,
       mainImage: imageUrl,
-      category,
+      category: categoryId,
       multipleFiles: imagesUrls,
     });
 
@@ -169,7 +169,7 @@ const search_product = async (req, res) => {
     const products = await Product.find({
       $or: [
         { name: { $regex: query, $options: "i" } },
-        { discreption: { $regex: query, $options: "i" } },
+        { category: { $regex: query, $options: "i" } },
       ],
     });
     res.status(200).json({ success: true, products });

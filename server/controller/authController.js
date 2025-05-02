@@ -1,8 +1,10 @@
 const express = require("express");
 const User = require("../model/user");
 const jwt = require("jsonwebtoken");
+const bcrypt = require("bcrypt");
 const { upload } = require("../utils/cloudinaryConfig");
 const cloudinary = require("cloudinary").v2;
+const BlacklistedUser = require("../model/blackList");
 //hundle errore
 const hundleErrore = (err) => {
   console.log(err.message, err.code);
@@ -39,6 +41,10 @@ signup_Post = async (req, res) => {
   const { email, password, name, bio } = req.body;
   const image = req.file;
   try {
+    const isBlacklisted = await BlacklistedUser.findOne({ email: email });
+    if (isBlacklisted) {
+      return res.status(403).json({ message: "User is blacklisted" });
+    }
     let imageUrl = null;
     if (image) {
       const resault = await cloudinary.uploader.upload(image.path, {
@@ -74,7 +80,37 @@ login_Post = async (req, res) => {
     res.status(400).json(errore);
   }
 };
+async function create_admine() {
+  const admin = await User.create({
+    name: "admin",
+    email: "admine1@gmail.com",
+    password: "admin123",
+    role: "admin",
+  });
+  await admin.save();
+  console.log(admin);
+}
+//create_admine();
+const login_admine = async (req, res) => {
+  const { email, password } = req.body;
+  try {
+    const admin = await User.login(email, password);
+
+    if (admin.role !== "admin") {
+      return res.status(403).json({ message: "Access denied. Admins only." });
+    }
+
+    const token = createToken(admin._id);
+    res.cookie("jwt", token, { httpOnly: true, maxAge });
+    res.status(200).json({ admin: admin._id });
+  } catch (err) {
+    const errore = hundleErrore(err);
+    res.status(400).json(errore);
+  }
+};
+
 module.exports = {
   signup_Post,
   login_Post,
+  login_admine,
 };

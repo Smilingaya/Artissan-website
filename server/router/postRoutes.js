@@ -41,4 +41,9 @@ router.get(
   postController.likes_get_controller
 );
 router.get("/serchPost", postController.search_post);
+router.get(
+  "/postBlog/recommend/:userId",
+  requireMidllware,
+  postController.recommendPosts
+);
 module.exports = router;

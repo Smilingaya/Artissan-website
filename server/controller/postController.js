@@ -7,12 +7,13 @@ const { extractPublicId } = require("../helper/helper");
 const craete_post = async (req, res) => {
   try {
     const mediaUrls = req.files.map((file) => file.path);
-    const { userId, caption } = req.body;
+    const { userId, caption, name } = req.body;
     const user = await User.findById(userId);
     const newPost = new Post({
       userId,
       caption,
       media: mediaUrls,
+      name,
     });
     await newPost.save();
     user.posts.push(newPost._id);
@@ -109,11 +110,14 @@ const like_Post_Controller = async (req, res) => {
     }
     post.likes.push(userId);
     await post.save();
+    await user.likedPosts.push(postId);
+    await user.save();
     res.status(200).json({ message: "post like successfully ", post });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }
 };
+
 const dislike_Controller = async (req, res) => {
   const { postId } = req.params;
   const { userId } = req.body;
@@ -131,6 +135,13 @@ const dislike_Controller = async (req, res) => {
       postId,
       {
         $pull: { likes: userId }, //remove userId from likes
+      },
+      { new: true }
+    );
+    await User.findByIdAndUpdate(
+      userId,
+      {
+        $pull: { likedPosts: postId }, //remove postId from likedPosts
       },
       { new: true }
     );
@@ -178,6 +189,43 @@ const search_post = async (req, res) => {
     res.status(500).json({ success: false, message: err.message });
   }
 };
+const recommendPosts = async (req, res) => {
+  const { userId } = req.params;
+
+  try {
+    // Step 1: Fetch the current user with their liked posts and followings
+    const user = await User.findById(userId)
+      .populate("likedPosts") // Fetch liked posts
+      .populate("followings"); // Fetch followed users
+
+    if (!user) {
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found" });
+    }
+
+    // Step 2: Extract useful data
+    const likedCategories = user.likedPosts.map((post) => post.name);
+    const likedCaptions = user.likedPosts.map((post) => post.caption); // Captions of liked posts
+    const followingUserIds = user.followings.map((following) => following._id); // IDs of users the current user follows
+
+    const recommendedPosts = await Post.find({
+      $or: [
+        { category: { $in: likedCategories } },
+
+        { caption: { $in: likedCaptions } },
+
+        { user: { $in: followingUserIds } },
+      ],
+    }).sort({ createdAt: -1 }); // Sort by most recent posts first
+
+    // Step 4: Send recommended posts as a response
+    res.status(200).json({ success: true, recommendedPosts });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 module.exports = {
   craete_post,
   GET_post,
@@ -188,4 +236,5 @@ module.exports = {
   dislike_Controller,
   likes_get_controller,
   search_post,
+  recommendPosts,
 };

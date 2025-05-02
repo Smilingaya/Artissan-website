@@ -7,6 +7,7 @@ const commentRoutes = require("./router/commentRoutes");
 const userRouts = require("./router/userRouts");
 const productRoutes = require("./router/productRoutes");
 const orderRoutes = require("./router/orderRoutes");
+const adminRoutes = require("./router/adminRoutes");
 const { checkUser, requireMidllware } = require("./midllware/authMidllware");
 const app = express();
 
@@ -14,7 +15,6 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cookieParser());
 
-// Database connection
 const dbUrl =
   "mongodb+srv://aya:12345@smiling.pgesm.mongodb.net/artissans?retryWrites=true&w=majority";
 
@@ -41,3 +41,4 @@ app.use("/api/comment", commentRoutes);
 app.use("/api/user", userRouts);
 app.use("/api/product", productRoutes);
 app.use("/api/order", orderRoutes);
+app.use("/api/admin", adminRoutes);
