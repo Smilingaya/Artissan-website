@@ -1,6 +1,7 @@
 const express = require("express");
 const User = require("../model/user");
 const Post = require("../model/post");
+const jwt = require("jsonwebtoken");
 const { upload } = require("../utils/cloudinaryConfig");
 const cloudinary = require("cloudinary").v2;
 const { extractPublicId } = require("../helper/helper");
@@ -79,56 +80,63 @@ const Update_User_Controller = async (req, res) => {
 };
 const follow_Post_Controller = async (req, res) => {
   const { userId } = req.params;
-  const { _id } = req.body;
+  const userToken = req.cookies.jwt;
 
-  try {
-    if (userId === _id) {
-      return res.status(500).json({ message: "You can not follow yourself" });
+  if (!userToken) return res.status(401).json({ message: "Unauthorized" });
+
+  jwt.verify(userToken, "artissan web site", async (err, decoded) => {
+    if (err) return res.status(403).json({ message: "Invalid token" });
+
+    const loggedInUserId = decoded.id;
+
+    if (userId === loggedInUserId) {
+      return res.status(400).json({ message: "You can't follow yourself" });
     }
 
     const userToFollow = await User.findById(userId);
-    const loggedInUser = await User.findById(_id);
+    const loggedInUser = await User.findById(loggedInUserId);
 
     if (!userToFollow || !loggedInUser) {
-      return res.status(404).json({ message: "User not found!" });
+      return res.status(404).json({ message: "User not found" });
     }
+
     if (loggedInUser.followings.includes(userId)) {
-      return res.status(400).json({ message: "Already following this user!" });
+      return res.status(400).json({ message: "Already following" });
     }
 
     loggedInUser.followings.push(userId);
-    userToFollow.followers.push(_id);
+    userToFollow.followers.push(loggedInUserId);
     await loggedInUser.save();
     await userToFollow.save();
 
-    res.status(200).json({ message: "Successfully followed user!" });
-  } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
-  }
+    res.status(200).json({ message: "Successfully followed user" });
+  });
 };
+
 const unfollow_Post_Controller = async (req, res) => {
   const { userId } = req.params;
-  const { _id } = req.body;
+  const { currentUserId } = req.body;
   try {
     await User.findByIdAndUpdate(
       userId,
       {
-        $pull: { followers: _id },
+        $pull: { followers: currentUserId },
       },
       { new: true }
     );
     await User.findByIdAndUpdate(
-      _id,
+      currentUserId,
       {
         $pull: { followings: userId },
       },
       { new: true }
     );
-    res.status(200).json({ message: " user Unfollow success !!", updatedUser });
+    res.status(200).json({ message: " user Unfollow success !!" });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }
 };
+
 module.exports = {
   Get_User_Controller,
   Update_User_Controller,

@@ -36,7 +36,16 @@ const checkUser = (req, res, next) => {
     return next();
   });
 };
+const isAdmin = async (req, res, next) => {
+  if (req.user.role !== "admin") {
+    return res
+      .status(403)
+      .json({ message: "you are not allowed to do this action" });
+  }
+  next();
+};
 module.exports = {
   checkUser,
   requireMidllware,
+  isAdmin,
 };

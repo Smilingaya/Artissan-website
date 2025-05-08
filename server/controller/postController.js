@@ -7,12 +7,13 @@ const { extractPublicId } = require("../helper/helper");
 const craete_post = async (req, res) => {
   try {
     const mediaUrls = req.files.map((file) => file.path);
-    const { userId, caption } = req.body;
+    const { userId, caption, name } = req.body;
     const user = await User.findById(userId);
     const newPost = new Post({
       userId,
       caption,
       media: mediaUrls,
+      name,
     });
     await newPost.save();
     user.posts.push(newPost._id);
@@ -109,11 +110,14 @@ const like_Post_Controller = async (req, res) => {
     }
     post.likes.push(userId);
     await post.save();
+    await user.likedPosts.push(postId);
+    await user.save();
     res.status(200).json({ message: "post like successfully ", post });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }
 };
+
 const dislike_Controller = async (req, res) => {
   const { postId } = req.params;
   const { userId } = req.body;
@@ -131,6 +135,13 @@ const dislike_Controller = async (req, res) => {
       postId,
       {
         $pull: { likes: userId }, //remove userId from likes
+      },
+      { new: true }
+    );
+    await User.findByIdAndUpdate(
+      userId,
+      {
+        $pull: { likedPosts: postId }, //remove postId from likedPosts
       },
       { new: true }
     );
@@ -161,6 +172,79 @@ const likes_get_controller = async (req, res) => {
     res.status(500).json({ success: false, message: err.message });
   }
 };
+const search_post = async (req, res) => {
+  const { query } = req.query;
+  try {
+    const posts = await Post.find({
+      $or: [
+        { caption: { $regex: query, $options: "i" } },
+        { name: { $regex: query, $options: "i" } },
+      ],
+    });
+    if (!posts) {
+      return res.status(404).json({ message: "Post Not Found" });
+    }
+    res.status(200).json({ success: true, posts });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+const recommendPosts = async (req, res) => {
+  const { userId } = req.params;
+
+  try {
+    const user = await User.findById(userId)
+      .populate("likedPosts")
+      .populate("followings");
+
+    if (!user) {
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found" });
+    }
+
+    const likedNames = user.likedPosts.map((post) => post.name);
+    const likedCaptions = user.likedPosts.map((post) => post.caption);
+    const likedPostIds = user.likedPosts.map((post) => post._id);
+    const followingUserIds = user.followings.map((f) => f._id);
+
+    const captionRegex = likedCaptions.length
+      ? new RegExp(likedCaptions.join("|"), "i")
+      : null;
+
+    const queryConditions = [
+      { user: { $ne: userId } },
+      { _id: { $nin: likedPostIds } },
+    ];
+
+    const orConditions = [];
+
+    if (likedNames.length) {
+      orConditions.push({ category: { $in: likedNames } });
+    }
+
+    if (captionRegex) {
+      orConditions.push({ caption: { $regex: captionRegex } });
+    }
+
+    if (followingUserIds.length) {
+      orConditions.push({ user: { $in: followingUserIds } });
+    }
+
+    if (orConditions.length > 0) {
+      queryConditions.push({ $or: orConditions });
+    }
+
+    const recommendedPosts = await Post.find({ $and: queryConditions }).sort({
+      createdAt: -1,
+    });
+
+    res.status(200).json({ success: true, recommendedPosts });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 module.exports = {
   craete_post,
   GET_post,
@@ -170,4 +254,6 @@ module.exports = {
   like_Post_Controller,
   dislike_Controller,
   likes_get_controller,
+  search_post,
+  recommendPosts,
 };
