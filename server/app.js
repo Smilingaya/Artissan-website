@@ -1,6 +1,7 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const cookieParser = require("cookie-parser");
+const cors = require('cors');
 const authRoutes = require("./router/authRoutes");
 const postRoutes = require("./router/postRoutes");
 const commentRoutes = require("./router/commentRoutes");
@@ -13,6 +14,12 @@ const app = express();
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cookieParser());
+
+// Enable CORS
+app.use(cors({
+  origin: 'http://localhost:5173', // Frontend URL
+  credentials: true               // Allow credentials (cookies, authorization headers)
+}));
 
 // Database connection
 const dbUrl =
@@ -41,3 +48,4 @@ app.use("/api/comment", commentRoutes);
 app.use("/api/user", userRouts);
 app.use("/api/product", productRoutes);
 app.use("/api/order", orderRoutes);
+app.use("/api/admin", adminRoutes);
