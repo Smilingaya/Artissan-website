@@ -1,0 +1,119 @@
+body {
+  display: grid;
+  place-items: center;
+}
+
+.auth-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr; /* Two equal columns */
+  width: 90%;
+  height: 90%;
+  font-family: 'Poppins', sans-serif;
+  background: #f4f6fc;
+}
+
+.auth-left {
+  display: grid;
+  place-items: center;
+  background-color: #e9d5ff;
+  border-top-left-radius: 20px;
+  border-bottom-left-radius: 20px;
+}
+
+.auth-image {
+  width: 95%;
+  max-height: 95%;
+}
+
+.auth-right {
+  background: white;
+  padding: 60px 40px;
+  border-top-right-radius: 20px;
+  border-bottom-right-radius: 20px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  display: grid;
+  place-items: center;
+}
+
+.auth-right form {
+  max-width: 400px;
+  width: 100%;
+}
+
+.auth-right h2 {
+  font-size: 28px;
+  margin-bottom: 10px;
+}
+
+.auth-right p {
+  color: #555;
+  margin-bottom: 20px;
+}
+
+.auth-right input,
+.auth-right textarea {
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 15px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+}
+
+.auth-right button {
+  background-color: #f87171;
+  color: white;
+  width: 100%;
+  padding: 12px;
+  border: none;
+  border-radius: 10px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.auth-right button:hover {
+  background-color: #ef4444;
+}
+
+.register-link {
+  text-align: right;
+  font-size: 14px;
+  margin-bottom: 10px;
+}
+
+.register-link a {
+  color: #3b82f6;
+  font-weight: bold;
+  text-decoration: none;
+}
+
+.password-link {
+  font-size: 13px;
+  color: #3b82f6;
+  text-align: right;
+  cursor: pointer;
+}
+
+.social-login {
+  margin-top: 20px;
+  text-align: center;
+}
+
+.social-icons img {
+  width: 36px;
+  margin: 0 10px;
+  cursor: pointer;
+}
+
+.error {
+  color: #ef4444;
+  font-size: 14px;
+  margin-bottom: 10px;
+}
+
+.success {
+  color: #10b981;
+  font-size: 14px;
+  margin-bottom: 10px;
+}
