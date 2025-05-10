@@ -13,13 +13,10 @@
   "dependencies": {
     "bcrypt": "^5.1.1",
     "cloudinary": "^1.41.3",
-<<<<<<< HEAD
-    "cors": "^2.8.5",
+    "cookie": "^0.5.0",
     "crypto": "^1.0.1",
-=======
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
->>>>>>> 1f04b533cc2526f3117f40e3a00bf92efffc4bf9
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "jsonwebtoken": "^9.0.2",
