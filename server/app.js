@@ -2,8 +2,12 @@ require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
 const cookieParser = require("cookie-parser");
+<<<<<<< HEAD
 const http = require("http");
 const { Server } = require("socket.io"); // Import socket.io server
+=======
+const cors = require('cors');
+>>>>>>> 1f04b533cc2526f3117f40e3a00bf92efffc4bf9
 const authRoutes = require("./router/authRoutes");
 const postRoutes = require("./router/postRoutes");
 const commentRoutes = require("./router/commentRoutes");
@@ -30,12 +34,21 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cookieParser());
 
+<<<<<<< HEAD
 app.use(
   cors({
     origin: "http://localhost:5173", // Frontend URL
     credentials: true, // Allow credentials (cookies, authorization headers)
   })
 );
+=======
+// Enable CORS
+app.use(cors({
+  origin: 'http://localhost:5173', // Frontend URL
+  credentials: true               // Allow credentials (cookies, authorization headers)
+}));
+
+>>>>>>> 1f04b533cc2526f3117f40e3a00bf92efffc4bf9
 const dbUrl =
   "mongodb+srv://aya:12345@smiling.pgesm.mongodb.net/artissans?retryWrites=true&w=majority";
 
@@ -64,6 +77,7 @@ app.use("/api/comment", commentRoutes);
 app.use("/api/user", userRoutes);
 app.use("/api/product", productRoutes);
 app.use("/api/order", orderRoutes);
+<<<<<<< HEAD
 app.use("/api/admin", adminRoutes);
 
 // Socket.IO Logic
@@ -107,3 +121,6 @@ io.on("connection", (socket) => {
     }
   });
 });
+=======
+app.use("/api/admin", adminRoutes);
+>>>>>>> 1f04b533cc2526f3117f40e3a00bf92efffc4bf9
