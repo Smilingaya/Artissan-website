@@ -5,6 +5,8 @@ const bcrypt = require("bcrypt");
 const { upload } = require("../utils/cloudinaryConfig");
 const cloudinary = require("cloudinary").v2;
 const BlacklistedUser = require("../model/blackList");
+const crypto = require("crypto");
+const sendEmail = require("../utils/sendEmail");
 //hundle errore
 const hundleErrore = (err) => {
   console.log(err.message, err.code);
@@ -108,9 +110,41 @@ const login_admine = async (req, res) => {
     res.status(400).json(errore);
   }
 };
-
+const Forget_Password = async (req, res) => {
+  const { email } = req.body;
+  try {
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    const resetcode = Math.floor(100000 + Math.random() * 900000).toString();
+    const hashedResetCode = crypto
+      .createHash("sha256")
+      .update(resetcode)
+      .digest("hex");
+    //console.log(resetcode, "reset code", hashedResetCode);
+    user.passwordResetcode = hashedResetCode;
+    user.passwordResetExpires = Date.now() + 10 * 60 * 1000;
+    user.passwordResetVerified = false;
+    await user.save();
+    const message = `HI ${user.name},\n We recived a request to rest the password on your Artissan Account.\n ${resetcode} \n Enter this code to complete the reset.\n
+  Thanks for helping us keep your account secure. \n The Artissan Website Team`;
+    await sendEmail({
+      email: user.email,
+      subject: "our password reset code (valide for 10 min)",
+      message,
+    });
+    res.status(200).json({
+      success: true,
+      message: "Password reset code sent to your email",
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
 module.exports = {
   signup_Post,
   login_Post,
   login_admine,
+  Forget_Password,
 };

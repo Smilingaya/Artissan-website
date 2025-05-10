@@ -31,5 +31,15 @@ router.put(
   requireMidllware,
   userController.Update_User_Controller
 );
-
+router.get("/:userId/contacts", requireMidllware, userController.ContactList);
+router.get(
+  "/:userId/followers",
+  requireMidllware,
+  userController.Get_User_Followers
+);
+router.get(
+  "/:userId/followings",
+  requireMidllware,
+  userController.Get_User_followings
+);
 module.exports = router;

@@ -69,6 +69,10 @@ const userSchema = new mongoose.Schema({
     },
   ],
   likedPosts: [{ type: mongoose.Schema.Types.ObjectId, ref: "post" }],
+  passwordResetcode: String,
+  passwordResetExpires: Date,
+  passwrdChangedAt: Date,
+  passwordResetVerified: Boolean,
   createdAt: { type: Date, default: Date.now },
 });
 //fire funtion befor doc saved in db

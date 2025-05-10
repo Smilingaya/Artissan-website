@@ -112,7 +112,29 @@ const follow_Post_Controller = async (req, res) => {
     res.status(200).json({ message: "Successfully followed user" });
   });
 };
+const Get_User_Followers = async (req, res) => {
+  const { userId } = req.params;
+  try {
+    const user = await User.findById(userId);
+    const followers = await User.find({ _id: { $in: user.followers } });
+    res.status(200).json({ success: true, count: followers.length, followers });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
 
+const Get_User_followings = async (req, res) => {
+  const { userId } = req.params;
+  try {
+    const user = await User.findById(userId);
+    const followings = await User.find({ _id: { $in: user.followings } });
+    res
+      .status(200)
+      .json({ success: true, count: followings.length, followings });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
 const unfollow_Post_Controller = async (req, res) => {
   const { userId } = req.params;
   const { currentUserId } = req.body;
@@ -136,6 +158,23 @@ const unfollow_Post_Controller = async (req, res) => {
     res.status(500).json({ success: false, message: err.message });
   }
 };
+const ContactList = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const contacts = await User.find({
+      _id: { $in: [...user.followers, ...user.followings] },
+    });
+
+    res.status(200).json(contacts);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Error fetching contacts" });
+  }
+};
 
 module.exports = {
   Get_User_Controller,
@@ -143,4 +182,7 @@ module.exports = {
   follow_Post_Controller,
   unfollow_Post_Controller,
   Update_user_profile,
+  ContactList,
+  Get_User_Followers,
+  Get_User_followings,
 };
