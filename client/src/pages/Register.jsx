@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { Link } from 'react-router-dom';
 import artisan1 from "../assets/artisan1.jpg";
 import artisan2 from "../assets/artisan2.jpg";
 import googleIcon from "../assets/google.png";
@@ -6,18 +7,24 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 
 const styles = {
-  container: {
-    display: "grid",
-    gridTemplateColumns: "1fr 1fr",
-    height: "100vh",
-    width: "100%",
-    fontFamily: "'Poppins', sans-serif",
-    background: "#f9fafb"
-  },
+container :{
+  display: "grid",
+  gridTemplateColumns: "1fr 1fr",
+  width: "70%",
+  height: "90%",
+  fontFamily: "'Poppins', sans-serif",
+  background: "rgba(255, 255, 255, 0.1)", // ✅ Wrap rgba in quotes
+  borderRadius: "16px",
+  boxShadow: "0 4px 30px rgba(0, 0, 0, 0.1)",
+  backdropFilter: "blur(10px)",
+  WebkitBackdropFilter: "blur(10px)", // ✅ CamelCase and vendor prefix
+  border: "1px solid rgba(255, 255, 255, 0.3)"
+},
+
   leftPanel: {
     position: "relative",
     width: "100%",
-    height: "100%",
+    height: "90%",
     overflow: "hidden"
   },
   image: {
@@ -53,8 +60,9 @@ const styles = {
   rightPanel: {
     display: "grid",
     placeItems: "center",
-    background: "white",
-    padding: "2rem"
+    padding: "2rem",
+    height: "100%",
+    width: "100%",
   },
   formContainer: {
     width: "85%",
@@ -418,6 +426,7 @@ function AuthPage() {
   };
 
   return (
+    <div style={{ display: "grid", overflow:'hidden', placeItems:"center",width:"100vw", height: "100%" , background: "linear-gradient(135deg,rgb(243, 253, 186) 0%,rgb(193, 195, 255) 100%)" }}>
     <div style={styles.container}>
       {/* Left panel - changes based on form type */}
       <motion.div 
@@ -565,7 +574,7 @@ function AuthPage() {
                   transition={{ delay: 0.3, duration: 0.3 }}
                   style={styles.forgotPassword}
                 >
-                  <a href="/forgot-password" style={styles.forgotLink}>Forgot password?</a>
+                 <Link to="/forgot-password" style={styles.forgotLink}>Forgot password?</Link>
                 </motion.div>
 
                 {error && (
@@ -985,6 +994,7 @@ function AuthPage() {
         </motion.div>
       </div>
     </motion.div>
+  </div>
   </div>
 );
 }

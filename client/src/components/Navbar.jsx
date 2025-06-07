@@ -93,7 +93,7 @@ function Navbar() {
           >
             <MenuItem onClick={() => {
               handleCloseAvatarMenu();
-              navigate('/profile');
+              navigate('/profile/1');
             }}>
               Profile
             </MenuItem>

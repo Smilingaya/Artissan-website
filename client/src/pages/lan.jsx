@@ -7,6 +7,7 @@ import {
   useMediaQuery, Drawer, List, ListItem, ListItemIcon, 
 ListItemText, Link, Collapse
 } from '@mui/material';
+import post1 from '../assets/post1.jpg';
 
 // Material UI Icons
 import MenuIcon from '@mui/icons-material/Menu';
@@ -374,28 +375,28 @@ const LandingPage = () => {
       quote: "This platform gave me the visibility I never had before. My small handcrafted jewelry business is growing exponentially since I joined!",
       name: "Fatima Akram",
       title: "Jewelry Designer",
-      avatar: "/api/placeholder/60/60",
+      avatar: post1,
       rating: 5
     },
     {
       quote: "It's more than a selling space—it's a community. I found people who inspire me every day and customers who truly appreciate craftsmanship.",
       name: "Lina Gomez",
       title: "Painter & Illustrator",
-      avatar: "/api/placeholder/60/60",
+      avatar: post1,
       rating: 5
     },
     {
       quote: "The tools provided helped me turn my hobby into a sustainable business. The platform is intuitive and the support team is always helpful.",
       name: "Marco Chen",
       title: "Wood Craftsman",
-      avatar: "/api/placeholder/60/60",
+      avatar: post1,
       rating: 4
     },
     {
       quote: "I've tried many platforms, but this is the one where I feel my work is truly valued. The community feedback has helped me grow as an artist.",
       name: "Sarah Johnson",
       title: "Textile Artist",
-      avatar: "/api/placeholder/60/60",
+      avatar: post1,
       rating: 5
     }
   ];
@@ -666,7 +667,7 @@ const LandingPage = () => {
                     }}
                   >
                     <img 
-                      src="/api/placeholder/600/500" 
+                      src={post1}
                       alt="Handmade crafts collection" 
                       style={{ 
                         width: '100%', 
@@ -732,7 +733,7 @@ const LandingPage = () => {
                     />
                     <Box
                       component="img"
-                      src="/api/placeholder/600/400"
+                      src={post1}
                       alt="About Artisan Platform"
                       sx={{
                         width: '100%',

@@ -1,6 +1,6 @@
 // LoginPage.jsx
 import React, { useState } from "react";
-import "./Login.css";
+
 import artisan2 from '../assets/artisan2.jpg';
 import googleIcon from '../assets/google.png';
 import { useNavigate } from "react-router-dom";
