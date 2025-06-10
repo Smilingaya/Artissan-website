@@ -10,6 +10,11 @@ router.post(
   upload.array("media", 5),
   postController.craete_post
 );
+router.get(
+  "/postBlog/length_post",
+  requireMidllware,
+  postController.length_post
+);
 router.get("/postBlog/:userId", requireMidllware, postController.GET_post);
 router.get(
   //correct

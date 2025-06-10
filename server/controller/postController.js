@@ -244,7 +244,14 @@ const recommendPosts = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
-
+const length_post = async (req, res) => {
+  try {
+    const count = await Post.countDocuments();
+    res.status(200).json({ success: true, count });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
 module.exports = {
   craete_post,
   GET_post,
@@ -256,4 +263,5 @@ module.exports = {
   likes_get_controller,
   search_post,
   recommendPosts,
+  length_post,
 };

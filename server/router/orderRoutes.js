@@ -2,6 +2,7 @@ const { Router } = require("express");
 const router = Router();
 const orderController = require("../controller/orderController");
 const { requireMidllware } = require("../midllware/authMidllware");
+router.get("/length_order", requireMidllware, orderController.length_order);
 router.post("/create/:id", requireMidllware, orderController.create_order);
 router.get("/user/:userId", requireMidllware, orderController.Get_user_orders);
 router.delete(

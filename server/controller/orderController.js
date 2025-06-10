@@ -171,6 +171,14 @@ const Get_One_order = async (req, res) => {
     res.status(500).json({ success: false, message: err.message });
   }
 };
+const length_order = async (req, res) => {
+  try {
+    const count = await Order.countDocuments();
+    res.status(200).json({ success: true, count });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
 module.exports = {
   create_order,
   Get_user_orders,
@@ -178,4 +186,5 @@ module.exports = {
   get_user_commanded_products,
   update_status,
   Get_One_order,
+  length_order,
 };
