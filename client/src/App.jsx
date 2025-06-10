@@ -6,7 +6,6 @@ import { Box, CircularProgress } from '@mui/material';
 
 // Import context providers directly (they're lightweight)
 import { ProductProvider } from './components/ec/contexts/ProductContext';
-import { CartProvider } from './components/ec/contexts/CartContext';
 import { UserProvider } from './contexts/UserContext';
 import { OrderProvider } from './contexts/OrderContext';
 
@@ -18,17 +17,12 @@ import "./index.css";
 
 // Lazy load components to improve initial load time
 const LandingPage = lazy(() => import("./pages/LandingPage"));
-const Login = lazy(() => import("./pages/Login"));
 const AuthPage = lazy(() => import("./pages/Register"));
 const Homepage = lazy(() => import("./pages/HP"));
 const ProfilePage = lazy(() => import("./pages/pf"));
 const MessagePage = lazy(() => import("./pages/MessagePage"));
 
 // E-commerce components (lazy loaded)
-const Header = lazy(() => import('./components/ec/components/Header'));
-const ProductsPage = lazy(() => import('./pages/ProductsPage'));
-const ProductDetailPage = lazy(() => import('./pages/ProductDetailPage'));
-const CartPage = lazy(() => import('./pages/CartPage'));
 const CheckoutPage = lazy(() => import('./pages/CheckoutPage'));
 const MyOrdersPage = lazy(() => import('./pages/MyOrdersPage'));
 const ArtisanOrdersPage = lazy(() => import('./pages/ArtisanOrdersPage'));
@@ -56,12 +50,10 @@ const EcommerceLayout = ({ children }) => (
   <ThemeProvider theme={theme}>
     <CssBaseline />
     <ProductProvider>
-      <CartProvider>
         <Suspense fallback={<LoadingSpinner />}>
           <Header />
           {children}
         </Suspense>
-      </CartProvider>
     </ProductProvider>
   </ThemeProvider>
 );
@@ -82,7 +74,6 @@ function App() {
       <CssBaseline />
       <UserProvider>
         <OrderProvider>
-          <CartProvider>
             <Router>
               <Suspense fallback={<LoadingSpinner />}>
                 <Routes>
@@ -95,8 +86,8 @@ function App() {
                   <Route path="/home" element={<Homepage />} />
                   <Route path="/profile/:userId" element={<ProfilePage />} />
                   <Route path="/message" element={<MessagePage />} />
-                  
                   {/* E-commerce Routes - Only load when accessed */}
+                  {/* 
                   <Route path="/shop" element={
                     <ProductProvider>
                       <ProductsPage />
@@ -111,7 +102,7 @@ function App() {
                     <ProductProvider>
                       <CartPage />
                     </ProductProvider>
-                  } />
+                  } /> */}
                   <Route path="/checkout" element={
                     <ProductProvider>
                       <CheckoutPage />
@@ -132,7 +123,6 @@ function App() {
                 </Routes>
               </Suspense>
             </Router>
-          </CartProvider>
         </OrderProvider>
       </UserProvider>
     </ThemeProvider>
