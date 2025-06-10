@@ -16,6 +16,14 @@ const mockOrders = [
     customer: {
       name: 'John Doe',
       email: 'john@example.com'
+    },
+    address: {
+      name: 'John Doe',
+      street: 'Main Street',
+      city: 'New York',
+      state: 'NY',
+      zipCode: '10001',
+      country: 'USA'
     }
   },
   {
@@ -32,6 +40,14 @@ const mockOrders = [
     customer: {
       name: 'John Doe',
       email: 'john@example.com'
+    },
+    address: {
+      name: 'John Doe',
+      street: 'Main Street',
+      city: 'New York',
+      state: 'NY',
+      zipCode: '10001',
+      country: 'USA'
     }
   },
   {
@@ -48,6 +64,14 @@ const mockOrders = [
     customer: {
       name: 'John Doe',
       email: 'john@example.com'
+    },
+    address: {
+      name: 'John Doe',
+      street: 'Main Street',
+      city: 'New York',
+      state: 'NY',
+      zipCode: '10001',
+      country: 'USA'
     }
   },
   // Adding new orders where user 1 is the seller
@@ -65,6 +89,14 @@ const mockOrders = [
     customer: {
       name: 'Jane Smith',
       email: 'jane@example.com'
+    },
+    address: {
+      name: 'Jane Smith',
+      street: 'Oak Avenue',
+      city: 'Los Angeles',
+      state: 'CA',
+      zipCode: '90001',
+      country: 'USA'
     }
   },
   {
@@ -81,6 +113,14 @@ const mockOrders = [
     customer: {
       name: 'Mike Johnson',
       email: 'mike@example.com'
+    },
+    address: {
+      name: 'Mike Johnson',
+      street: 'Pine Street',
+      city: 'Chicago',
+      state: 'IL',
+      zipCode: '60601',
+      country: 'USA'
     }
   },
   {
@@ -97,6 +137,14 @@ const mockOrders = [
     customer: {
       name: 'Sarah Wilson',
       email: 'sarah@example.com'
+    },
+    address: {
+      name: 'Sarah Wilson',
+      street: 'Maple Drive',
+      city: 'Seattle',
+      state: 'WA',
+      zipCode: '98101',
+      country: 'USA'
     }
   }
 ];

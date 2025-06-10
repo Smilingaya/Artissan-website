@@ -12,7 +12,7 @@ import {
 } from '@mui/material';
 import { OrderContext } from '../contexts/OrderContext';
 import { UserContext } from '../contexts/UserContext';
-import OrderItem from '../components/shared/OrderItem';
+import OrderItem from '../components/ec/components/OrderItem';
 import MainLayout from '../components/shared/layout/MainLayout';
 
 const ArtisanOrdersPage = () => {
