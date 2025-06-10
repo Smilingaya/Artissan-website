@@ -20,7 +20,7 @@ import {
   Logout as LogoutIcon,
   ShoppingCart as CartIcon,
 } from '@mui/icons-material';
-import { CartContext } from '../../../components/ec/contexts/CartContext';
+
 
 const drawerWidthExpanded = 240;
 const drawerWidthCollapsed = 80;
@@ -80,13 +80,11 @@ const SideDrawer = ({ open }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [isHovered, setIsHovered] = useState(false);
-  const { cartItems } = useContext(CartContext);
 
   const menuItems = [
     { text: 'Home', icon: <HomeIcon />, path: '/home' },
     { text: 'Messages', icon: <Badge badgeContent={4} color="error"><MessageIcon /></Badge>, path: '/message' },
     { text: 'Profile', icon: <PersonIcon />, path: '/profile/1' },
-    { text: 'Cart', icon: <Badge badgeContent={cartItems?.length || 0} color="error"><CartIcon /></Badge>, path: '/cart' },
     { text: 'My Orders', icon: <OrdersIcon />, path: '/my-orders' },
     { text: 'My Seller', icon: <SellerIcon />, path: '/artisan-orders' },
   ];
