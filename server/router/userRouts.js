@@ -3,6 +3,8 @@ const { requireMidllware } = require("../midllware/authMidllware");
 const { upload } = require("../utils/cloudinaryConfig");
 const router = Router();
 const userController = require("../controller/userController");
+router.get("/length_user", requireMidllware, userController.length_user);
+
 router.get("/:userId", requireMidllware, userController.Get_User_Controller);
 router.put(
   "/:userId",
@@ -41,5 +43,10 @@ router.get(
   "/:userId/followings",
   requireMidllware,
   userController.Get_User_followings
+);
+router.get(
+  "/:userId/contactList",
+  requireMidllware,
+  userController.ContactList
 );
 module.exports = router;

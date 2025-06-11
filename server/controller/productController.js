@@ -177,7 +177,14 @@ const search_product = async (req, res) => {
     res.status(500).json({ success: false, message: err.message });
   }
 };
-
+const length_product = async (req, res) => {
+  try {
+    const count = await Product.countDocuments();
+    res.status(200).json({ success: true, count });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
 module.exports = {
   create_product,
   Get_product,
@@ -185,4 +192,5 @@ module.exports = {
   delete_product,
   Update_product,
   search_product,
+  length_product,
 };

@@ -12,6 +12,11 @@ router.post(
   requireMidllware,
   productController.create_product
 );
+router.get(
+  "/length_product",
+  requireMidllware,
+  productController.length_product
+);
 router.get("/get/:userId", requireMidllware, productController.Get_product);
 router.get(
   "/getOne/:productId",

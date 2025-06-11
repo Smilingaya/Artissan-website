@@ -175,6 +175,14 @@ const ContactList = async (req, res) => {
     res.status(500).json({ message: "Error fetching contacts" });
   }
 };
+const length_user = async (req, res) => {
+  try {
+    const count = await User.countDocuments();
+    res.status(200).json({ success: true, count });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
 
 module.exports = {
   Get_User_Controller,
@@ -185,4 +193,5 @@ module.exports = {
   ContactList,
   Get_User_Followers,
   Get_User_followings,
+  length_user,
 };
