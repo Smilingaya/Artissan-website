@@ -5,16 +5,10 @@ import CssBaseline from "@mui/material/CssBaseline";
 import { Box, CircularProgress } from "@mui/material";
 
 // Import context providers directly (they're lightweight)
-<<<<<<< HEAD
+
 import { ProductProvider } from "./components/ec/contexts/ProductContext";
-import { CartProvider } from "./components/ec/contexts/CartContext";
 import { UserProvider } from "./contexts/UserContext";
 import { OrderProvider } from "./contexts/OrderContext";
-=======
-import { ProductProvider } from './components/ec/contexts/ProductContext';
-import { UserProvider } from './contexts/UserContext';
-import { OrderProvider } from './contexts/OrderContext';
->>>>>>> a04c385c762696c00e031e60dadc8173977aa612
 
 // Import themes directly to avoid loading issues
 import forgotPasswordTheme from "./components/forgotPassword/theme/theme";
@@ -30,19 +24,10 @@ const ProfilePage = lazy(() => import("./pages/pf"));
 const MessagePage = lazy(() => import("./pages/MessagePage"));
 
 // E-commerce components (lazy loaded)
-<<<<<<< HEAD
-const Header = lazy(() => import("./components/ec/components/Header"));
-const ProductsPage = lazy(() => import("./pages/ProductsPage"));
-const ProductDetailPage = lazy(() => import("./pages/ProductDetailPage"));
-const CartPage = lazy(() => import("./pages/CartPage"));
+
 const CheckoutPage = lazy(() => import("./pages/CheckoutPage"));
 const MyOrdersPage = lazy(() => import("./pages/MyOrdersPage"));
 const ArtisanOrdersPage = lazy(() => import("./pages/ArtisanOrdersPage"));
-=======
-const CheckoutPage = lazy(() => import('./pages/CheckoutPage'));
-const MyOrdersPage = lazy(() => import('./pages/MyOrdersPage'));
-const ArtisanOrdersPage = lazy(() => import('./pages/ArtisanOrdersPage'));
->>>>>>> a04c385c762696c00e031e60dadc8173977aa612
 
 // Other components
 const ForgotPassword = lazy(() => import("./pages/ForgotPassword"));
@@ -67,10 +52,10 @@ const EcommerceLayout = ({ children }) => (
   <ThemeProvider theme={theme}>
     <CssBaseline />
     <ProductProvider>
-        <Suspense fallback={<LoadingSpinner />}>
-          <Header />
-          {children}
-        </Suspense>
+      <Suspense fallback={<LoadingSpinner />}>
+        <Header />
+        {children}
+      </Suspense>
     </ProductProvider>
   </ThemeProvider>
 );
@@ -89,56 +74,21 @@ function App() {
       <CssBaseline />
       <UserProvider>
         <OrderProvider>
-            <Router>
-              <Suspense fallback={<LoadingSpinner />}>
-                <Routes>
-                  {/* Core Routes - Load immediately */}
-                  <Route path="/" element={<LandingPage />} />
-                  <Route path="/login" element={<AuthPage />} />
-                  <Route path="/register" element={<AuthPage />} />
+          <Router>
+            <Suspense fallback={<LoadingSpinner />}>
+              <Routes>
+                {/* Core Routes - Load immediately */}
+                <Route path="/" element={<LandingPage />} />
+                <Route path="/login" element={<AuthPage />} />
+                <Route path="/register" element={<AuthPage />} />
 
-                  {/* Secondary Routes - Lazy loaded */}
-                  <Route path="/home" element={<Homepage />} />
-                  <Route path="/profile/:userId" element={<ProfilePage />} />
-                  <Route path="/message" element={<MessagePage />} />
-<<<<<<< HEAD
+                {/* Secondary Routes - Lazy loaded */}
+                <Route path="/home" element={<Homepage />} />
+                <Route path="/profile/:userId" element={<ProfilePage />} />
+                <Route path="/message" element={<MessagePage />} />
 
-                  {/* E-commerce Routes - Only load when accessed */}
-                  <Route
-                    path="/shop"
-                    element={
-                      <ProductProvider>
-                        <ProductsPage />
-                      </ProductProvider>
-                    }
-                  />
-                  <Route
-                    path="/shop/product/:id"
-                    element={
-                      <ProductProvider>
-                        <ProductDetailPage />
-                      </ProductProvider>
-                    }
-                  />
-                  <Route
-                    path="/cart"
-                    element={
-                      <ProductProvider>
-                        <CartPage />
-                      </ProductProvider>
-                    }
-                  />
-                  <Route
-                    path="/checkout"
-                    element={
-                      <ProductProvider>
-                        <CheckoutPage />
-                      </ProductProvider>
-                    }
-                  />
-=======
-                  {/* E-commerce Routes - Only load when accessed */}
-                  {/* 
+                {/* E-commerce Routes - Only load when accessed */}
+                {/* 
                   <Route path="/shop" element={
                     <ProductProvider>
                       <ProductsPage />
@@ -154,33 +104,33 @@ function App() {
                       <CartPage />
                     </ProductProvider>
                   } /> */}
-                  <Route path="/checkout" element={
+                <Route
+                  path="/checkout"
+                  element={
                     <ProductProvider>
                       <CheckoutPage />
                     </ProductProvider>
-                  } />
->>>>>>> a04c385c762696c00e031e60dadc8173977aa612
-                  <Route path="/my-orders" element={<MyOrdersPage />} />
-                  <Route
-                    path="/artisan-orders"
-                    element={<ArtisanOrdersPage />}
-                  />
+                  }
+                />
 
-                  {/* Utility Routes - Load on demand */}
-                  <Route
-                    path="/forgot-password"
-                    element={
-                      <ForgotPasswordLayout>
-                        <ForgotPassword />
-                      </ForgotPasswordLayout>
-                    }
-                  />
+                <Route path="/my-orders" element={<MyOrdersPage />} />
+                <Route path="/artisan-orders" element={<ArtisanOrdersPage />} />
 
-                  {/* Admin Routes - Using AdminDashboard from layout folder */}
-                  <Route path="/admin" element={<AdminDashboard />} />
-                </Routes>
-              </Suspense>
-            </Router>
+                {/* Utility Routes - Load on demand */}
+                <Route
+                  path="/forgot-password"
+                  element={
+                    <ForgotPasswordLayout>
+                      <ForgotPassword />
+                    </ForgotPasswordLayout>
+                  }
+                />
+
+                {/* Admin Routes - Using AdminDashboard from layout folder */}
+                <Route path="/admin" element={<AdminDashboard />} />
+              </Routes>
+            </Suspense>
+          </Router>
         </OrderProvider>
       </UserProvider>
     </ThemeProvider>
