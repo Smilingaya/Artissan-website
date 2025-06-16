@@ -36,17 +36,25 @@ const MyOrdersPage = () => {
     severity: 'success'
   });
 
-  const loadOrders = () => {
-    if (currentUser && currentUser.id) {
-      console.log('Loading orders for user:', currentUser.id);
-      const userOrders = getUserOrders(currentUser.id);
-      console.log('Found orders:', userOrders);
-      setOrders(userOrders);
-    }
-    setLoading(false);
-  };
-
   useEffect(() => {
+    const loadOrders = () => {
+      try {
+        if (currentUser?.id) {
+          const userOrders = getUserOrders(currentUser.id);
+          setOrders(userOrders || []);
+        }
+      } catch (error) {
+        console.error('Error loading orders:', error);
+        setSnackbar({
+          open: true,
+          message: 'Failed to load orders',
+          severity: 'error'
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
     loadOrders();
   }, [currentUser, getUserOrders]);
 
@@ -87,6 +95,20 @@ const MyOrdersPage = () => {
     if (tabValue === 5) return order.status === 'cancelled'; // Cancelled
     return false;
   });
+
+  if (!currentUser) {
+    return (
+      <MainLayout>
+        <Container maxWidth="md" sx={{ py: 4 }}>
+          <Box sx={{ textAlign: 'center', py: 4 }}>
+            <Typography variant="h6" color="text.secondary">
+              Please log in to view your orders
+            </Typography>
+          </Box>
+        </Container>
+      </MainLayout>
+    );
+  }
 
   return (
     <MainLayout>

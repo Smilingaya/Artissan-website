@@ -5,7 +5,6 @@ import CssBaseline from "@mui/material/CssBaseline";
 import { Box, CircularProgress } from "@mui/material";
 
 // Import context providers directly (they're lightweight)
-
 import { ProductProvider } from "./components/ec/contexts/ProductContext";
 import { UserProvider } from "./contexts/UserContext";
 import { OrderProvider } from "./contexts/OrderContext";
@@ -24,7 +23,6 @@ const ProfilePage = lazy(() => import("./pages/pf"));
 const MessagePage = lazy(() => import("./pages/MessagePage"));
 
 // E-commerce components (lazy loaded)
-
 const CheckoutPage = lazy(() => import("./pages/CheckoutPage"));
 const MyOrdersPage = lazy(() => import("./pages/MyOrdersPage"));
 const ArtisanOrdersPage = lazy(() => import("./pages/ArtisanOrdersPage"));
@@ -86,7 +84,6 @@ function App() {
                 <Route path="/home" element={<Homepage />} />
                 <Route path="/profile/:userId" element={<ProfilePage />} />
                 <Route path="/message" element={<MessagePage />} />
-
                 {/* E-commerce Routes - Only load when accessed */}
                 {/* 
                   <Route path="/shop" element={
@@ -112,7 +109,6 @@ function App() {
                     </ProductProvider>
                   }
                 />
-
                 <Route path="/my-orders" element={<MyOrdersPage />} />
                 <Route path="/artisan-orders" element={<ArtisanOrdersPage />} />
 

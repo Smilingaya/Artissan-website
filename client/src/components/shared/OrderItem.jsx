@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { 
   Box, 
   Typography, 
@@ -8,6 +9,7 @@ import {
   Paper
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
+import PaymentIcon from '@mui/icons-material/Payment';
 import { format } from 'date-fns';
 
 const statusColors = {
@@ -19,21 +21,40 @@ const statusColors = {
 };
 
 const OrderItem = ({ order, onUpdateStatus, onDeleteOrder, isSellerView = false }) => {
+  const navigate = useNavigate();
   const formattedDate = format(new Date(order.date), 'dd MMM yyyy');
   
+  const handlePayNow = () => {
+    navigate('/checkout', { state: { order } });
+  };
+
   const renderActionButtons = () => {
-    if (!isSellerView && order.status === 'pending') {
-      return (
-        <Button 
-          variant="outlined" 
-          color="error" 
-          size="small"
-          startIcon={<DeleteIcon />}
-          onClick={() => onDeleteOrder(order.id)}
-        >
-          Delete Order
-        </Button>
-      );
+    if (!isSellerView) {
+      if (order.status === 'pending') {
+        return (
+          <Button 
+            variant="outlined" 
+            color="error" 
+            size="small"
+            startIcon={<DeleteIcon />}
+            onClick={() => onDeleteOrder(order.id)}
+          >
+            Delete Order
+          </Button>
+        );
+      } else if (order.status === 'accepted' && order.paymentStatus === 'unpaid') {
+        return (
+          <Button
+            variant="contained"
+            color="primary"
+            size="small"
+            startIcon={<PaymentIcon />}
+            onClick={handlePayNow}
+          >
+            Pay Now
+          </Button>
+        );
+      }
     }
     return null;
   };

@@ -1,4 +1,4 @@
-import React, { useState, useContext, useEffect } from 'react';
+import React, { useState, useContext } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
   Container,
@@ -16,11 +16,11 @@ import {
   FormControlLabel,
   FormControl,
   FormLabel,
-  Divider
+  Divider,
+  Alert
 } from '@mui/material';
-import { CartContext } from '../components/ec/contexts/CartContext';
-import { OrderContext } from '../components/ec/contexts/OrderContext';
-import { UserContext } from '../components/ec/contexts/UserContext';
+import { OrderContext } from '../contexts/OrderContext';
+import { UserContext } from '../contexts/UserContext';
 import MainLayout from '../components/shared/layout/MainLayout';
 
 const steps = ['Shipping Address', 'Payment Method', 'Review Order'];
@@ -28,7 +28,6 @@ const steps = ['Shipping Address', 'Payment Method', 'Review Order'];
 const CheckoutPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { cart, cartTotal, clearCart } = useContext(CartContext);
   const { createOrder, updatePaymentStatus } = useContext(OrderContext);
   const { currentUser } = useContext(UserContext);
   const [activeStep, setActiveStep] = useState(0);
@@ -41,11 +40,7 @@ const CheckoutPage = () => {
     country: ''
   });
   const [paymentMethod, setPaymentMethod] = useState('card');
-  
-  // Get the order details from location state if paying for an existing order
-  const existingOrder = location.state?.order;
-  const finalTotal = existingOrder ? existingOrder.total : cartTotal;
-  const items = existingOrder ? existingOrder.items : cart;
+  const order = location.state?.order;
 
   const handleNext = () => {
     setActiveStep((prevActiveStep) => prevActiveStep + 1);
@@ -68,31 +63,19 @@ const CheckoutPage = () => {
   };
 
   const handlePlaceOrder = async () => {
-    if (existingOrder) {
-      // If paying for an existing order, just update its payment status
-      await updatePaymentStatus(existingOrder.id, 'paid');
-    } else {
-      // Create a new order
+    if (!order) {
+      // Create a new order if there isn't one
       const orderData = {
-        items: cart.map(item => ({
-          id: item.id,
-          name: item.name,
-          price: item.price,
-          quantity: item.quantity,
-          size: item.selectedSize,
-          image: item.image
-        })),
-        total: cartTotal,
+        items: [],  // You'll need to populate this with actual items
         payment: paymentMethod,
-        userId: currentUser?.id || 1,
-        sellerId: 2, // Hard-coded for now
+        userId: currentUser?.id,
         address: shippingAddress
       };
-      
       await createOrder(orderData);
-      clearCart();
+    } else {
+      // Update existing order
+      await updatePaymentStatus(order.id, 'paid');
     }
-    
     navigate('/my-orders');
   };
 
@@ -190,40 +173,43 @@ const CheckoutPage = () => {
       <Typography variant="h6" gutterBottom>
         Order Summary
       </Typography>
-      {items.map((item, index) => (
-        <Box key={index} sx={{ mb: 2 }}>
+      {order ? (
+        <>
+          {order.items.map((item, index) => (
+            <Box key={index} sx={{ mb: 2 }}>
+              <Grid container>
+                <Grid item xs={8}>
+                  <Typography>{item.name}</Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Quantity: {item.quantity}
+                  </Typography>
+                </Grid>
+                <Grid item xs={4} textAlign="right">
+                  <Typography>${item.price * item.quantity}</Typography>
+                </Grid>
+              </Grid>
+            </Box>
+          ))}
+          <Divider sx={{ my: 2 }} />
           <Grid container>
             <Grid item xs={8}>
-              <Typography>{item.name}</Typography>
-              <Typography variant="body2" color="text.secondary">
-                Quantity: {item.quantity}
-              </Typography>
-              {item.selectedSize && (
-                <Typography variant="body2" color="text.secondary">
-                  Size: {item.selectedSize}
-                </Typography>
-              )}
+              <Typography variant="subtitle1">Total</Typography>
             </Grid>
-            <Grid item xs={4} sx={{ textAlign: 'right' }}>
-              <Typography>${(item.price * item.quantity).toFixed(2)}</Typography>
+            <Grid item xs={4} textAlign="right">
+              <Typography variant="subtitle1">${order.total}</Typography>
             </Grid>
           </Grid>
-        </Box>
-      ))}
-      <Divider sx={{ my: 2 }} />
-      <Grid container>
-        <Grid item xs={8}>
-          <Typography variant="subtitle1">Total</Typography>
-        </Grid>
-        <Grid item xs={4} sx={{ textAlign: 'right' }}>
-          <Typography variant="subtitle1">${finalTotal.toFixed(2)}</Typography>
-        </Grid>
-      </Grid>
+        </>
+      ) : (
+        <Alert severity="info">
+          No items in order yet. Please add items before proceeding.
+        </Alert>
+      )}
     </Box>
   );
 
-  const renderStepContent = () => {
-    switch (activeStep) {
+  const renderStepContent = (step) => {
+    switch (step) {
       case 0:
         return renderAddressForm();
       case 1:
@@ -237,12 +223,11 @@ const CheckoutPage = () => {
 
   return (
     <MainLayout>
-      <Container maxWidth="md" sx={{ py: 4 }}>
+      <Container maxWidth="md" sx={{ mb: 4 }}>
         <Paper sx={{ p: 4 }}>
-          <Typography variant="h4" gutterBottom align="center">
+          <Typography component="h1" variant="h4" align="center" sx={{ mb: 4 }}>
             Checkout
           </Typography>
-          
           <Stepper activeStep={activeStep} sx={{ mb: 4 }}>
             {steps.map((label) => (
               <Step key={label}>
@@ -250,10 +235,8 @@ const CheckoutPage = () => {
               </Step>
             ))}
           </Stepper>
-
-          {renderStepContent()}
-
-          <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 4 }}>
+          {renderStepContent(activeStep)}
+          <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 3 }}>
             {activeStep !== 0 && (
               <Button onClick={handleBack} sx={{ mr: 1 }}>
                 Back

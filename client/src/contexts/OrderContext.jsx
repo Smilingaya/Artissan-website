@@ -8,7 +8,7 @@ const mockOrders = [
       { id: 1, name: 'Handmade Ceramic Vase', price: 80, quantity: 1, image: 'https://via.placeholder.com/100x100' }
     ],
     total: 80,
-    status: 'pending',
+    status: 'accepted',
     paymentStatus: 'unpaid',
     date: '2024-03-10',
     userId: 1,
@@ -146,6 +146,37 @@ const mockOrders = [
       zipCode: '98101',
       country: 'USA'
     }
+  },
+  {
+    id: 'ORDER_NEEDS_PAYMENT',
+    items: [
+      { 
+        id: 7, 
+        name: 'Handcrafted Wooden Table', 
+        price: 599.99, 
+        quantity: 1, 
+        image: 'https://via.placeholder.com/100x100',
+        description: 'Beautiful handcrafted wooden table with unique design'
+      }
+    ],
+    total: 599.99,
+    status: 'accepted',
+    paymentStatus: 'unpaid',
+    date: '2024-03-15',
+    userId: 1,
+    sellerId: 3,
+    customer: {
+      name: 'John Doe',
+      email: 'john@example.com'
+    },
+    address: {
+      name: 'John Doe',
+      street: 'Main Street',
+      city: 'New York',
+      state: 'NY',
+      zipCode: '10001',
+      country: 'USA'
+    }
   }
 ];
 
@@ -248,4 +279,4 @@ export const OrderProvider = ({ children }) => {
       {children}
     </OrderContext.Provider>
   );
-}; 
+};                      
