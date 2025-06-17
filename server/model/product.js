@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const { isFloat } = require("validator");
+const Category = require("./category");
 const ProductSchema = new mongoose.Schema({
   user: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
 
@@ -30,8 +31,7 @@ const ProductSchema = new mongoose.Schema({
   ],
   category: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "Category",
-    required: true,
+    ref: "category",
   },
   createdAt: { type: Date, default: Date.now },
 });

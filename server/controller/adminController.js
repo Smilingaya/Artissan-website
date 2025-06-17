@@ -67,9 +67,35 @@ const listBlacklistedUsers = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+const blackList = async (req, res) => {
+  try {
+    const blacklistedUsers = await blacklistedUser.find();
+    res.status(200).json(blacklistedUsers);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+const countByCategory = async (req, res) => {
+  try {
+    const stats = await Product.aggregate([
+      {
+        $group: {
+          _id: "$category", // group key
+          total: { $sum: 1 }, // add 1 per document
+        },
+      },
+      { $sort: { total: -1 } }, // optional: biggest → smallest
+    ]);
+    res.json(stats);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
 module.exports = {
   add_category,
   get_category,
   get_product_by_category,
   listBlacklistedUsers,
+  countByCategory,
 };
