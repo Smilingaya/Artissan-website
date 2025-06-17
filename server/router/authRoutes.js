@@ -6,4 +6,5 @@ router.post("/signup", upload.single("image"), authController.signup_Post);
 router.post("/login", authController.login_Post);
 router.post("/loginAdmin", authController.login_admine);
 router.post("/forgetPassword", authController.Forget_Password);
+router.post("/logout", authController.logout_Post);
 module.exports = router;

@@ -10,7 +10,7 @@ const craete_post = async (req, res) => {
     const { userId, caption, name } = req.body;
     const user = await User.findById(userId);
     const newPost = new Post({
-      userId,
+      user: userId,
       caption,
       media: mediaUrls,
       name,
@@ -34,7 +34,7 @@ const GET_post = async (req, res) => {
         .json({ success: false, message: "User not found" });
     }
 
-    const userPosts = await Post.find({ user: userId });
+    const userPosts = await Post.find({ user: userId }).populate('user', 'name avatar profilePicture');
 
     res.status(200).json({ success: true, posts: userPosts });
   } catch (err) {

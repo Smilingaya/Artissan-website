@@ -142,9 +142,28 @@ const Forget_Password = async (req, res) => {
     res.status(500).json({ success: false, message: err.message });
   }
 };
+
+const logout_Post = async (req, res) => {
+  try {
+    // Clear the JWT cookie by setting it to expire immediately
+    res.cookie("jwt", "", { 
+      httpOnly: true, 
+      expires: new Date(0),
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict'
+    });
+    
+    res.status(200).json({ message: "Logged out successfully" });
+  } catch (err) {
+    console.error("Logout error:", err);
+    res.status(500).json({ message: "Error during logout" });
+  }
+};
+
 module.exports = {
   signup_Post,
   login_Post,
   login_admine,
   Forget_Password,
+  logout_Post,
 };

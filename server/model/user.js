@@ -41,7 +41,7 @@ const userSchema = new mongoose.Schema({
   followings: [
     {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "user",
+      ref: "User",
     },
   ],
   posts: [
@@ -68,7 +68,7 @@ const userSchema = new mongoose.Schema({
       ref: "Order",
     },
   ],
-  likedPosts: [{ type: mongoose.Schema.Types.ObjectId, ref: "post" }],
+  likedPosts: [{ type: mongoose.Schema.Types.ObjectId, ref: "Post" }],
   passwordResetcode: String,
   passwordResetExpires: Date,
   passwrdChangedAt: Date,
@@ -105,5 +105,5 @@ userSchema.statics.login = async function (email, password) {
   }
   throw Error("incorrect email ");
 };
-const User = mongoose.model("user", userSchema);
+const User = mongoose.model("User", userSchema);
 module.exports = User;

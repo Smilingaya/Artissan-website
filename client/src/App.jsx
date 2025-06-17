@@ -1,37 +1,38 @@
 import React, { useState, Suspense, lazy } from 'react';
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import { Box, CircularProgress } from '@mui/material';
 
 // Import context providers directly (they're lightweight)
-import { ProductProvider } from './components/ec/contexts/ProductContext';
-import { UserProvider } from './contexts/UserContext';
-import { OrderProvider } from './contexts/OrderContext';
+import { ProductProvider } from './shared/contexts/ProductContext';
+import { UserProvider, useAuth } from './shared/contexts/UserContext';
+import { OrderProvider } from './features/orders/contexts/OrderContext';
+import { ProtectedRoute, PublicRoute, AdminRoute } from './shared/components/auth/ProtectedRoute';
 
 // Import themes directly to avoid loading issues
-import forgotPasswordTheme from './components/forgotPassword/theme/theme';
-import theme from './theme/theme';
+import forgotPasswordTheme from './features/auth/theme/theme';
+import theme from './shared/theme/theme';
 
 import "./index.css";
 
 // Lazy load components to improve initial load time
-const LandingPage = lazy(() => import("./pages/LandingPage"));
-const AuthPage = lazy(() => import("./pages/Register"));
-const Homepage = lazy(() => import("./pages/HP"));
-const ProfilePage = lazy(() => import("./pages/pf"));
-const MessagePage = lazy(() => import("./pages/MessagePage"));
+const LandingPage = lazy(() => import("./features/landingPage/page/LandingPage"));
+const AuthPage = lazy(() => import("./features/auth/pages/Register"));
+const Homepage = lazy(() => import("./features/home/pages/HP"));
+const ProfilePage = lazy(() => import("./features/profile/pages/pf"));
+const MessagePage = lazy(() => import("./features/messaging/pages/MessagePage"));
 
 // E-commerce components (lazy loaded)
-const CheckoutPage = lazy(() => import('./pages/CheckoutPage'));
-const MyOrdersPage = lazy(() => import('./pages/MyOrdersPage'));
-const ArtisanOrdersPage = lazy(() => import('./pages/ArtisanOrdersPage'));
+const CheckoutPage = lazy(() => import('./features/orders/pages/CheckoutPage'));
+const MyOrdersPage = lazy(() => import('./features/orders/pages/MyOrdersPage'));
+const ArtisanOrdersPage = lazy(() => import('./features/orders/pages/ArtisanOrdersPage'));
 
 // Other components
-const ForgotPassword = lazy(() => import('./pages/ForgotPassword'));
+const ForgotPassword = lazy(() => import('./features/auth/pages/ForgotPassword'));
 
-// Admin page (should be moved to pages folder eventually)
-const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
+// Admin page
+const AdminDashboard = lazy(() => import('./features/admin/pages/AdminDashboard'));
 
 // Simple loading component
 const LoadingSpinner = () => (
@@ -68,61 +69,99 @@ const ForgotPasswordLayout = ({ children }) => (
   </ThemeProvider>
 );
 
+// Main App Routes Component
+const AppRoutes = () => {
+  const { isLoading } = useAuth();
+
+  if (isLoading) {
+    return <LoadingSpinner />;
+  }
+
+  return (
+    <Suspense fallback={<LoadingSpinner />}>
+      <Routes>
+        {/* Public Routes - Redirect to home if authenticated */}
+        <Route path="/" element={
+          <PublicRoute>
+            <LandingPage />
+          </PublicRoute>
+        } />
+        <Route path="/login" element={
+          <PublicRoute>
+            <AuthPage />
+          </PublicRoute>
+        } />
+        <Route path="/register" element={
+          <PublicRoute>
+            <AuthPage />
+          </PublicRoute>
+        } />
+        
+        {/* Protected Routes - Require authentication */}
+        <Route path="/home" element={
+          <ProtectedRoute>
+            <Homepage />
+          </ProtectedRoute>
+        } />
+        <Route path="/profile/:userId" element={
+          <ProtectedRoute>
+            <ProfilePage />
+          </ProtectedRoute>
+        } />
+        <Route path="/message" element={
+          <ProtectedRoute>
+            <MessagePage />
+          </ProtectedRoute>
+        } />
+        
+        {/* E-commerce Routes - Protected */}
+        <Route path="/checkout" element={
+          <ProtectedRoute>
+            <EcommerceLayout>
+              <CheckoutPage />
+            </EcommerceLayout>
+          </ProtectedRoute>
+        } />
+        <Route path="/my-orders" element={
+          <ProtectedRoute>
+            <MyOrdersPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/artisan-orders" element={
+          <ProtectedRoute>
+            <ArtisanOrdersPage />
+          </ProtectedRoute>
+        } />
+        
+        {/* Utility Routes */}
+        <Route path="/forgot-password" element={
+          <ForgotPasswordLayout>
+            <ForgotPassword />
+          </ForgotPasswordLayout>
+        } />
+        {/*<AdminRoute><AdminDashboard /></AdminRoute>*/}
+        {/* Admin Routes - Require admin role */}
+        <Route path="/admin" element={
+          
+          <AdminDashboard />
+        } />
+        
+        {/* Catch all route - redirect to home if authenticated, otherwise to landing */}
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </Suspense>
+  );
+};
+
 function App() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <UserProvider>
         <OrderProvider>
-            <Router>
-              <Suspense fallback={<LoadingSpinner />}>
-                <Routes>
-                  {/* Core Routes - Load immediately */}
-                  <Route path="/" element={<LandingPage />} />
-                  <Route path="/login" element={<AuthPage />} />
-                  <Route path="/register" element={<AuthPage />} />
-                  
-                  {/* Secondary Routes - Lazy loaded */}
-                  <Route path="/home" element={<Homepage />} />
-                  <Route path="/profile/:userId" element={<ProfilePage />} />
-                  <Route path="/message" element={<MessagePage />} />
-                  {/* E-commerce Routes - Only load when accessed */}
-                  {/* 
-                  <Route path="/shop" element={
-                    <ProductProvider>
-                      <ProductsPage />
-                    </ProductProvider>
-                  } />
-                  <Route path="/shop/product/:id" element={
-                    <ProductProvider>
-                      <ProductDetailPage />
-                    </ProductProvider>
-                  } />
-                  <Route path="/cart" element={
-                    <ProductProvider>
-                      <CartPage />
-                    </ProductProvider>
-                  } /> */}
-                  <Route path="/checkout" element={
-                    <ProductProvider>
-                      <CheckoutPage />
-                    </ProductProvider>
-                  } />
-                  <Route path="/my-orders" element={<MyOrdersPage />} />
-                  <Route path="/artisan-orders" element={<ArtisanOrdersPage />} />
-                  
-                  {/* Utility Routes - Load on demand */}
-                  <Route path="/forgot-password" element={
-                    <ForgotPasswordLayout>
-                      <ForgotPassword />
-                    </ForgotPasswordLayout>
-                  } />
-                  
-                  {/* Admin Routes - Using AdminDashboard from layout folder */}
-                  <Route path="/admin" element={<AdminDashboard />} />
-                </Routes>
-              </Suspense>
-            </Router>
+          <Router>
+            <AppRoutes />
+          </Router>
         </OrderProvider>
       </UserProvider>
     </ThemeProvider>
