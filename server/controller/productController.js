@@ -4,6 +4,7 @@ const cloudinary = require("cloudinary").v2;
 const User = require("../model/user");
 const Post = require("../model/post");
 const Product = require("../model/product");
+const Category = require("../model/category");
 const { extractPublicId } = require("../helper/helper");
 const create_product = async (req, res) => {
   try {
@@ -11,6 +12,12 @@ const create_product = async (req, res) => {
     const images = req.files["multipleFiles"] || [];
 
     const { userId, name, discreption, price, stoke, categoryId } = req.body;
+    const category = await Category.findById(categoryId);
+    if (!category) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Category not found" });
+    }
     let imageUrl = "";
     if (picture) {
       const uploadres = await cloudinary.uploader.upload(picture.path, {
@@ -46,6 +53,8 @@ const create_product = async (req, res) => {
     });
 
     await newProduct.save();
+    category.products.push(newProduct._id);
+    await category.save();
     user.products.push(newProduct._id);
     await user.save();
 

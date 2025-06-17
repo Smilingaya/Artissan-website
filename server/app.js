@@ -12,6 +12,7 @@ const productRoutes = require("./router/productRoutes");
 const orderRoutes = require("./router/orderRoutes");
 const adminRoutes = require("./router/adminRoutes");
 const User = require("./model/user");
+const { swaggerUi, swaggerSpec } = require("./swagger");
 const { checkUser, requireMidllware } = require("./midllware/authMidllware");
 const { SchemaMessage } = require("./model/message"); // Assuming message model is here
 const cors = require("cors");
@@ -30,6 +31,8 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cookieParser());
 
+// Swagger route
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use(
   cors({
     origin: "http://localhost:5173", // Frontend URL

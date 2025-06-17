@@ -117,11 +117,11 @@ const Forget_Password = async (req, res) => {
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
-    const resetcode = Math.floor(100000 + Math.random() * 900000).toString();
+    const resetcode = Math.floor(1000 + Math.random() * 9000).toString();
     const hashedResetCode = crypto
-      .createHash("sha256")
-      .update(resetcode)
-      .digest("hex");
+      .createHash("sha256") //algorithm li bah nhashi biha
+      .update(resetcode) // update the hash with the reset code lazm tkon string
+      .digest("hex"); // convert the hash to hexadecimal format
     //console.log(resetcode, "reset code", hashedResetCode);
     user.passwordResetcode = hashedResetCode;
     user.passwordResetExpires = Date.now() + 10 * 60 * 1000;
@@ -142,9 +142,59 @@ const Forget_Password = async (req, res) => {
     res.status(500).json({ success: false, message: err.message });
   }
 };
+const verifyResetCode = async (req, res) => {
+  try {
+    const ResetCode = crypto
+      .createHash("sha256")
+      .update(req.body.resetCode)
+      .digest("hex");
+    const user = await User.findOne({
+      passwordResetcode: ResetCode,
+      passwordResetExpires: { $gt: Date.now() }, // check if the code is still valid
+    });
+    if (!user) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid or expired reset code" });
+    }
+    user.passwordResetVerified = true;
+    await user.save();
+    res.status(200).json({
+      success: true,
+      message: "Reset code verified successfully",
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+const Reset_Password = async (req, res) => {
+  const { email, newPassword } = req.body;
+  try {
+    const user = await User.findOne({ email });
+    if (!user) return res.status(404).json({ message: "User not found" });
+    if (user.passwordResetVerified !== true) {
+      return res.status(400).json({ message: "Reset code not verified" });
+    }
+    user.password = newPassword;
+    user.passwordResetcode = undefined; // clear the reset code
+    user.passwordResetExpires = undefined; // clear the expiration time
+    user.passwordResetVerified = false; // reset the verification status
+    await user.save();
+    const token = createToken(user._id);
+    res.cookie("jwt", token, { httpOnly: true, maxAge });
+    res.status(200).json({
+      success: true,
+      message: "Password reset successfully",
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
 module.exports = {
   signup_Post,
   login_Post,
   login_admine,
   Forget_Password,
+  verifyResetCode,
+  Reset_Password,
 };
