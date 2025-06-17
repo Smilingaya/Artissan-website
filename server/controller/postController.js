@@ -56,7 +56,7 @@ const GET_One_post = async (req, res) => {
 const Update_post = async (req, res) => {
   try {
     const id = req.params.postId;
-    const { caption } = req.body;
+    const { caption, name } = req.body;
     const post = await Post.findById(id);
 
     if (!post) {
@@ -64,7 +64,7 @@ const Update_post = async (req, res) => {
     }
     const updatedPost = await Post.findByIdAndUpdate(
       id,
-      { caption },
+      { caption, name },
       {
         new: true,
       }
