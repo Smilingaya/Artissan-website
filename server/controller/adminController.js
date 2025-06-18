@@ -67,6 +67,29 @@ const listBlacklistedUsers = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+const addBlacklistedUser = async (req, res) => {
+  const { email, reason, name } = req.body;
+  const user = await User.findOne({ email });
+  if (!user) {
+    return res.status(400).json({ message: "user Not found" });
+  }
+
+  try {
+    const exists = await blacklistedUser.findOne({ user });
+    if (exists) {
+      return res.status(409).json({ message: "User already blacklisted" });
+    }
+
+    await blacklistedUser.create({ email, name, reason });
+
+    // Optional: remove user from main users if exists
+    await User.deleteOne();
+
+    res.status(201).json({ message: "User blacklisted successfully" });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
 const blackList = async (req, res) => {
   try {
     const blacklistedUsers = await blacklistedUser.find();
@@ -92,10 +115,26 @@ const countByCategory = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+const deleteBlacklistedUser = async (req, res) => {
+  try {
+    const { id } = req.body;
+    const user = await blacklistedUser.findById(id);
+    if (!user) {
+      return res.status(404).json({ message: "Blacklisted user not found" });
+    }
+    await user.deleteOne();
+    res.status(200).json({ message: "Blacklisted user deleted successfully" });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
 module.exports = {
   add_category,
   get_category,
   get_product_by_category,
   listBlacklistedUsers,
   countByCategory,
+  addBlacklistedUser,
+  blackList,
+  deleteBlacklistedUser,
 };

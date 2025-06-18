@@ -6,6 +6,10 @@ const blacklistedUserSchema = new mongoose.Schema({
     required: true,
     unique: true,
   },
+  name: {
+    type: String,
+    required: true,
+  },
   reason: {
     type: String,
     default: "Violated terms",
