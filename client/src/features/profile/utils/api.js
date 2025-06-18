@@ -679,7 +679,7 @@ export const createProduct = async (productData) => {
     if (productData.multipleFiles) {
       if (Array.isArray(productData.multipleFiles)) {
         productData.multipleFiles.forEach(file => {
-          formData.append('multipleFiles', file);
+          formData.append('multipleFiles', file);w
         });
       } else {
         formData.append('multipleFiles', productData.multipleFiles);
@@ -1027,4 +1027,69 @@ export const fetchAllPosts = async () => {
     console.error('Error fetching all posts:', error);
     return [];
   }
+};
+
+//get category by admin page
+export const fetchCategories = async () => {
+  const res = await fetch(`http://localhost:3000/api/admin/get`, {
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+  });
+
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.message || `HTTP ${res.status}`);
+
+  // normalise for UI
+  return data.map((c) => ({
+    id: c._id ?? c.id,
+    name: c.name,
+    count: c.productCount ?? c.count ?? 0,
+    status: c.status ?? "active",
+  }));
+};
+//Add category by admin
+const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+
+export const addCategory = async (name) => {
+  if (!name.trim()) throw new Error("Category name is empty");
+
+  // Automatically get adminId from localStorage
+  const adminId = localStorage.getItem("userId") || "6811034eefbf78a8cc4b236b";
+
+  const res = await fetch(
+    `http://localhost:3000/api/admin/addCategory/${adminId}`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include", // sends cookie with JWT
+      body: JSON.stringify({ name: name.trim() }),
+    }
+  );
+
+  const data = await res.json();
+
+  if (!res.ok) throw new Error(data.message || "Failed to add category");
+
+  return {
+    id: data._id,
+    name: data.name,
+    count: 0,
+    status: "active",
+  };
+};
+//get category home page
+export const fetchCategoriesHomePage = async () => {
+  const res = await fetch("http://localhost:3000/api/admin/get", {
+    credentials: "include",
+    headers: {
+      Accept: "application/json",
+    },
+  });
+
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.message || "Failed to fetch categories");
+
+  return data;
 };

@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from "react";
+import { fetchCategories, addCategory } from "../../../profile/utils/api";
 import {
   Box,
   Typography,
@@ -10,76 +11,102 @@ import {
   TableHead,
   TableBody,
   TableRow,
-  TableCell
-} from '@mui/material';
+  TableCell,
+} from "@mui/material";
+//import { UserContext } from "../../../../shared/contexts/UserContext";
 
 const Categories = () => {
-  const [categories, setCategories] = useState([
-    { id: 1, name: 'Electronics', count: 245, status: 'active' },
-    { id: 2, name: 'Clothing', count: 189, status: 'active' },
-    { id: 3, name: 'Books', count: 132, status: 'active' },
-    { id: 4, name: 'Home & Kitchen', count: 98, status: 'active' },
-    { id: 5, name: 'Sports', count: 76, status: 'inactive' },
-  ]);
+  /* --------------------------- State ---------------------------- */
+  const [categories, setCategories] = useState([]);
+  const [newCategory, setNewCategory] = useState("");
+  //const { currentUser } = useContext(UserContext);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [saving, setSaving] = useState(false); // ✅ Fix: added missing state
 
-  const [newCategory, setNewCategory] = useState('');
-
-  const handleAddCategory = () => {
-    if (newCategory.trim() === '') return;
-    
-    const newId = Math.max(...categories.map(c => c.id)) + 1;
-    const categoryToAdd = {
-      id: newId,
-      name: newCategory,
-      count: 0,
-      status: 'active'
+  /* --------------------- Fetch on Mount ------------------------- */
+  useEffect(() => {
+    const load = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const list = await fetchCategories();
+        setCategories(list);
+      } catch (err) {
+        console.error(err);
+        setError("Failed to load categories");
+      } finally {
+        setLoading(false);
+      }
     };
-    
-    setCategories([...categories, categoryToAdd]);
-    setNewCategory('');
+    load();
+  }, []);
+
+  /* ------------------- Add Category Handler --------------------- */
+  const handleAddCategory = async () => {
+    if (!newCategory.trim()) return;
+
+    setSaving(true);
+    try {
+      const newCat = await addCategory(newCategory);
+      setCategories((prev) => [...prev, newCat]);
+      setNewCategory("");
+    } catch (err) {
+      console.error(err);
+      alert(err.message);
+    } finally {
+      setSaving(false);
+    }
   };
 
+  /* ---------------------- Toggle Status ------------------------- */
   const toggleStatus = (id) => {
-    setCategories(categories.map(category => 
-      category.id === id 
-        ? { ...category, status: category.status === 'active' ? 'inactive' : 'active' } 
-        : category
-    ));
+    setCategories((prev) =>
+      prev.map((cat) =>
+        cat.id === id
+          ? { ...cat, status: cat.status === "active" ? "inactive" : "active" }
+          : cat
+      )
+    );
   };
 
+  /* ---------------------------- UI ------------------------------ */
   return (
-    <Box sx={{ p: 3 ,mt:8 }}>
-      <Typography variant="h4" sx={{ mb: 4, fontWeight: 500, color: '#333' }}>
+    <Box sx={{ p: 3, mt: 8 }}>
+      <Typography variant="h4" sx={{ mb: 4, fontWeight: 500, color: "#333" }}>
         Categories Management
       </Typography>
-      
-      <Box sx={{ mb: 4, display: 'flex', gap: 2 }}>
+
+      {/* Add Category */}
+      <Box sx={{ mb: 4, display: "flex", gap: 2 }}>
         <TextField
           fullWidth
+          size="small"
           variant="outlined"
           placeholder="New category name"
           value={newCategory}
           onChange={(e) => setNewCategory(e.target.value)}
-          size="small"
         />
-        <Button 
-          variant="contained" 
+        <Button
+          variant="contained"
           onClick={handleAddCategory}
-          sx={{ 
-            bgcolor: '#2E8B57', 
-            '&:hover': { bgcolor: '#236b43' },
-            whiteSpace: 'nowrap'
+          disabled={saving}
+          sx={{
+            bgcolor: "#2E8B57",
+            "&:hover": { bgcolor: "#236b43" },
+            opacity: saving ? 0.6 : 1,
           }}
         >
-          Add Category
+          {saving ? "Saving…" : "Add Category"}
         </Button>
       </Box>
-      
-      <Paper sx={{ borderRadius: 2, overflow: 'hidden' }}>
+
+      {/* Categories Table */}
+      <Paper sx={{ borderRadius: 2, overflow: "hidden" }}>
         <TableContainer>
           <Table>
             <TableHead>
-              <TableRow sx={{ bgcolor: '#f9f9f9' }}>
+              <TableRow sx={{ bgcolor: "#f9f9f9" }}>
                 <TableCell>ID</TableCell>
                 <TableCell>Category Name</TableCell>
                 <TableCell>Products</TableCell>
@@ -88,42 +115,77 @@ const Categories = () => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {categories.map((category) => (
-                <TableRow key={category.id}>
-                  <TableCell>{category.id}</TableCell>
-                  <TableCell>{category.name}</TableCell>
-                  <TableCell>{category.count}</TableCell>
-                  <TableCell>
-                    <Box 
-                      sx={{ 
-                        py: 0.5, 
-                        px: 1.5, 
-                        borderRadius: 10, 
-                        width: 'fit-content',
-                        bgcolor: category.status === 'active' ? 'rgba(76, 175, 80, 0.1)' : 'rgba(158, 158, 158, 0.1)',
-                        color: category.status === 'active' ? '#4CAF50' : '#9E9E9E',
-                        textTransform: 'capitalize',
-                        fontSize: '0.85rem'
-                      }}
-                    >
-                      {category.status}
-                    </Box>
-                  </TableCell>
-                  <TableCell>
-                    <Button
-                      variant="outlined"
-                      size="small"
-                      onClick={() => toggleStatus(category.id)}
-                      sx={{ 
-                        color: category.status === 'active' ? '#F44336' : '#4CAF50',
-                        borderColor: 'rgba(0, 0, 0, 0.12)'
-                      }}
-                    >
-                      {category.status === 'active' ? 'Deactivate' : 'Activate'}
-                    </Button>
+              {loading ? (
+                <TableRow>
+                  <TableCell colSpan={5} align="center">
+                    Loading…
                   </TableCell>
                 </TableRow>
-              ))}
+              ) : error ? (
+                <TableRow>
+                  <TableCell
+                    colSpan={5}
+                    align="center"
+                    sx={{ color: "error.main" }}
+                  >
+                    {error}
+                  </TableCell>
+                </TableRow>
+              ) : categories.length ? (
+                categories.map((category) => (
+                  <TableRow key={category.id}>
+                    <TableCell>{category.id}</TableCell>
+                    <TableCell>{category.name}</TableCell>
+                    <TableCell>{category.count}</TableCell>
+                    <TableCell>
+                      <Box
+                        sx={{
+                          py: 0.5,
+                          px: 1.5,
+                          borderRadius: 10,
+                          width: "fit-content",
+                          bgcolor:
+                            category.status === "active"
+                              ? "rgba(76, 175, 80, 0.1)"
+                              : "rgba(158, 158, 158, 0.1)",
+                          color:
+                            category.status === "active"
+                              ? "#4CAF50"
+                              : "#9E9E9E",
+                          textTransform: "capitalize",
+                          fontSize: "0.85rem",
+                        }}
+                      >
+                        {category.status}
+                      </Box>
+                    </TableCell>
+                    <TableCell>
+                      <Button
+                        variant="outlined"
+                        size="small"
+                        onClick={() => toggleStatus(category.id)}
+                        sx={{
+                          color:
+                            category.status === "active"
+                              ? "#F44336"
+                              : "#4CAF50",
+                          borderColor: "rgba(0, 0, 0, 0.12)",
+                        }}
+                      >
+                        {category.status === "active"
+                          ? "Deactivate"
+                          : "Activate"}
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={5} align="center">
+                    No categories found
+                  </TableCell>
+                </TableRow>
+              )}
             </TableBody>
           </Table>
         </TableContainer>
