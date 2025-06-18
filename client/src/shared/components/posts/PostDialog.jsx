@@ -187,7 +187,7 @@ const PostDialog = ({
               {post.isLiked ? <Favorite color="primary" /> : <FavoriteBorder />}
             </IconButton>
             <Typography variant="body2" color="text.secondary">
-              {post.likes || 0}
+              {post.likes.length || 0}
             </Typography>
             <IconButton>
               <Comment />

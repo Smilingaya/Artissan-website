@@ -38,11 +38,10 @@ const PostForm = ({
   }, [initialData]);
 
   useEffect(() => {
-    // Cleanup preview URL when component unmounts or when image changes
     return () => {
-      if (previewUrl && previewUrl.startsWith('blob:')) {
-        URL.revokeObjectURL(previewUrl);
-      }
+      if (typeof previewUrl === 'string' && previewUrl.startsWith('blob:')) {
+      URL.revokeObjectURL(previewUrl);
+    }
     };
   }, [previewUrl]);
 
@@ -57,20 +56,27 @@ const PostForm = ({
   const handleImageChange = (event) => {
     const file = event.target.files[0];
     if (file) {
-      // Cleanup previous preview URL if it exists
       if (previewUrl && previewUrl.startsWith('blob:')) {
         URL.revokeObjectURL(previewUrl);
       }
-      
-      // Create new preview URL
       const newPreviewUrl = URL.createObjectURL(file);
       setPreviewUrl(newPreviewUrl);
-      
       setFormData(prev => ({
         ...prev,
         image: file
       }));
     }
+  };
+
+  const handleRemoveImage = () => {
+    if (typeof previewUrl === 'string' && previewUrl.startsWith('blob:')) {
+  URL.revokeObjectURL(previewUrl);
+}
+    setPreviewUrl('');
+    setFormData(prev => ({
+      ...prev,
+      image: null
+    }));
   };
 
   const handleSubmit = (e) => {
@@ -79,19 +85,16 @@ const PostForm = ({
       alert('Please enter some content for your post');
       return;
     }
-    onSubmit(formData);
-  };
 
-  const handleRemoveImage = () => {
-    // Cleanup preview URL if it exists
-    if (previewUrl && previewUrl.startsWith('blob:')) {
-      URL.revokeObjectURL(previewUrl);
+    // في حالة التعديل، ما نرسل الصورة
+    if (type === 'edit') {
+      onSubmit({
+        name: formData.name,
+        caption: formData.caption
+      });
+    } else {
+      onSubmit(formData);
     }
-    setPreviewUrl('');
-    setFormData(prev => ({
-      ...prev,
-      image: null
-    }));
   };
 
   return (
@@ -150,44 +153,48 @@ const PostForm = ({
                   borderRadius: '8px'
                 }}
               />
-              <IconButton
-                onClick={handleRemoveImage}
-                sx={{
-                  position: 'absolute',
-                  top: 8,
-                  right: 8,
-                  backgroundColor: 'background.paper',
-                  '&:hover': { backgroundColor: 'background.paper' }
-                }}
-              >
-                <Close />
-              </IconButton>
+              {type === 'create' && (
+                <IconButton
+                  onClick={handleRemoveImage}
+                  sx={{
+                    position: 'absolute',
+                    top: 8,
+                    right: 8,
+                    backgroundColor: 'background.paper',
+                    '&:hover': { backgroundColor: 'background.paper' }
+                  }}
+                >
+                  <Close />
+                </IconButton>
+              )}
             </Box>
           ) : (
-            <Box sx={{ 
-              display: 'flex', 
-              flexDirection: 'column', 
-              alignItems: 'center',
-              gap: 1,
-              py: 2
-            }}>
-              <IconButton
-                color="primary"
-                component="label"
-                size="large"
-              >
-                <input
-                  hidden
-                  accept="image/*"
-                  type="file"
-                  onChange={handleImageChange}
-                />
-                <PhotoCamera sx={{ fontSize: 40 }} />
-              </IconButton>
-              <Typography variant="caption" color="text.secondary">
-                Click to add an image
-              </Typography>
-            </Box>
+            type === 'create' && (
+              <Box sx={{ 
+                display: 'flex', 
+                flexDirection: 'column', 
+                alignItems: 'center',
+                gap: 1,
+                py: 2
+              }}>
+                <IconButton
+                  color="primary"
+                  component="label"
+                  size="large"
+                >
+                  <input
+                    hidden
+                    accept="image/*"
+                    type="file"
+                    onChange={handleImageChange}
+                  />
+                  <PhotoCamera sx={{ fontSize: 40 }} />
+                </IconButton>
+                <Typography variant="caption" color="text.secondary">
+                  Click to add an image
+                </Typography>
+              </Box>
+            )
           )}
         </DialogContent>
         <DialogActions sx={{ p: 2 }}>
@@ -205,4 +212,4 @@ const PostForm = ({
   );
 };
 
-export default PostForm; 
+export default PostForm;

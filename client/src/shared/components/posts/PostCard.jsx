@@ -45,7 +45,8 @@ const PostCard = ({
     handleMenuClose();
   };
 
-  const handleDelete = () => {
+  const handleDelete = (e) => {
+    e.stopPropagation();
     onDelete?.(post._id);
     handleMenuClose();
   };
@@ -108,7 +109,7 @@ const PostCard = ({
           {post.isLiked ? <Favorite color="primary" /> : <FavoriteBorder />}
         </IconButton>
         <Typography variant="body2" color="text.secondary">
-          {post.likes || 0}
+          {post.likes.length || 0}
         </Typography>
         <IconButton onClick={handleCommentClick}>
           <Comment />

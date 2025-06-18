@@ -5,7 +5,6 @@ import CssBaseline from '@mui/material/CssBaseline';
 import { Box, CircularProgress } from '@mui/material';
 
 // Import context providers directly (they're lightweight)
-import { ProductProvider } from './shared/contexts/ProductContext';
 import { UserProvider, useAuth } from './shared/contexts/UserContext';
 import { OrderProvider } from './features/orders/contexts/OrderContext';
 import { ProtectedRoute, PublicRoute, AdminRoute } from './shared/components/auth/ProtectedRoute';
@@ -50,12 +49,10 @@ const LoadingSpinner = () => (
 const EcommerceLayout = ({ children }) => (
   <ThemeProvider theme={theme}>
     <CssBaseline />
-    <ProductProvider>
         <Suspense fallback={<LoadingSpinner />}>
           <Header />
           {children}
         </Suspense>
-    </ProductProvider>
   </ThemeProvider>
 );
 

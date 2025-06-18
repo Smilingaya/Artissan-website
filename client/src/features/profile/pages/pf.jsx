@@ -28,7 +28,6 @@ import {
   unlikePost,
   addComment,
   deleteComment,
-  createOrder,
   createPost,
   updatePost,
   createProduct,
@@ -111,7 +110,11 @@ const ProfilePage = () => {
         if (Array.isArray(userPosts)) {
           const standardizedPosts = standardizePostsArray(userPosts);
           console.log('Standardized posts:', standardizedPosts);
-          setPosts(standardizedPosts);
+          const withLikeStatus = standardizedPosts.map(post => ({
+            ...post,
+            isLiked: Array.isArray(post.likes) && post.likes.includes(currentUser._id)
+      }));
+          setPosts(withLikeStatus);
         } else {
           console.error('Invalid posts data:', userPosts);
           setPosts([]);
@@ -198,25 +201,27 @@ const ProfilePage = () => {
 
   // Update the post update handler
   const handleUpdatePost = async (postId, formData) => {
-    try {
-      const updatedPost = await updatePost(postId, formData);
+  try {
+    const updatedPost = await updatePost(postId, {
+      name: formData.name,
+      caption: formData.caption
+    });
 
-      // Find the old post to get the user object
-      const oldPost = posts.find(p => p._id === postId);
+    const oldPost = posts.find(p => p._id === postId);
 
-      // Always keep the old user info, no matter what the backend returns
-      if (oldPost) {
-        updatedPost.user = oldPost.user;
-      }
-
-      setPosts(posts.map(p => p._id === updatedPost._id ? updatedPost : p));
-      setEditPostOpen(false);
-      setSelectedPost(null);
-    } catch (error) {
-      console.error('Error updating post:', error);
-      alert(error.message || 'Failed to update post. Please try again.');
+    if (oldPost) {
+      updatedPost.user = oldPost.user;
     }
-  };
+
+    setPosts(posts.map(p => p._id === updatedPost._id ? updatedPost : p));
+    setEditPostOpen(false);
+    setSelectedPost(null);
+  } catch (error) {
+    console.error('Error updating post:', error);
+    alert(error.message || 'Failed to update post. Please try again.');
+  }
+};
+
 
   // Update the post deletion handler
   const handleDeletePost = async (postId) => {
@@ -295,31 +300,33 @@ const ProfilePage = () => {
   };
 
   const handleLike = async (postId) => {
-    try {
-      const post = posts.find(p => p._id === postId);
-      if (!post) return;
+  try {
+    const updatedPost = posts.find(p => p._id === postId);
+    const alreadyLiked = updatedPost.likes.includes(currentUser._id);
 
-      if (post.isLiked) {
-        await unlikePost(postId);
-        setPosts(prevPosts => prevPosts.map(p => 
-          p._id === postId 
-            ? { ...p, isLiked: false, likes: p.likes - 1 }
-            : p
-        ));
-      } else {
-        await likePost(postId);
-        setPosts(prevPosts => prevPosts.map(p => 
-          p._id === postId 
-            ? { ...p, isLiked: true, likes: p.likes + 1 }
-            : p
-        ));
-      }
-    } catch (error) {
-      console.error('Error toggling like:', error);
+    const data = alreadyLiked
+      ? await unlikePost(postId, currentUser._id)
+      : await likePost(postId, currentUser._id);
+
+    const newPost = {
+      ...updatedPost,
+      likes: data.post.likes,
+      isLiked: !alreadyLiked
+    };
+
+    // تحديث البوست في القائمة
+    setPosts(prev => prev.map(p => p._id === postId ? newPost : p));
+
+    // إذا كنت تستخدم selectedPost لعرض التفاصيل:
+    if (selectedPost && selectedPost._id === postId) {
+      setSelectedPost(newPost);
     }
-  };
+  } catch (error) {
+    console.error('Error toggling like:', error);
+  }
+};
 
-  const handleAddComment = async (postId, commentText) => {
+const handleAddComment = async (postId, commentText) => {
     try {
       const newComment = await addComment(postId, { text: commentText });
       setPosts(prevPosts => prevPosts.map(post => 
@@ -345,16 +352,6 @@ const ProfilePage = () => {
     }
   };
 
-  const handleCreateOrder = async (productId) => {
-    try {
-      await createOrder(productId);
-      // You might want to show a success message or update the product stock
-      alert('Order created successfully!');
-    } catch (error) {
-      console.error('Error creating order:', error);
-      alert('Failed to create order. Please try again.');
-    }
-  };
 
   // PATCH: Robust product creation handler
   const handleCreateProduct = async (formData) => {
@@ -547,13 +544,13 @@ const ProfilePage = () => {
                 <ProductCard
                   key={product._id}
                   product={product}
-                  onProductClick={setSelectedProduct}
+                  onProductClick={setSelectedProduct} // opens ProductDialog
                   onEdit={handleEditProduct}
                   onDelete={handleDeleteProduct}
-                  onCreateOrder={handleCreateOrder}
                   isOwnProduct={isOwnProfile}
                   variant={viewMode === 'grid' ? 'grid' : 'list'}
                 />
+
               ))}
             </Box>
           )}
@@ -575,13 +572,14 @@ const ProfilePage = () => {
           )}
 
           {selectedProduct && (
-            <ProductDialog 
+            <ProductDialog
               product={selectedProduct}
-              open={!!selectedProduct}
-              onClose={() => setSelectedProduct(null)}
-              onCreateOrder={handleCreateOrder}
-              isOwnProduct={isOwnProfile}
-            />
+  open={Boolean(selectedProduct)}
+  onClose={() => setSelectedProduct(null)}
+  isOwnProduct={isOwnProfile}
+  currentUser={currentUser} 
+/>
+
           )}
 
           {editProfileOpen && (
@@ -613,17 +611,22 @@ const ProfilePage = () => {
           )}
 
           {(createPostOpen || editPostOpen) && (
-            <PostForm 
-              open={createPostOpen || editPostOpen}
-              onClose={() => {
-                setCreatePostOpen(false);
-                setEditPostOpen(false);
-                setSelectedPost(null);
-              }}
-              type={createPostOpen ? 'create' : 'edit'}
-              initialData={selectedPost}
-              onSubmit={createPostOpen ? handleCreatePost : handleUpdatePost}
-            />
+            <PostForm
+  open={createPostOpen || editPostOpen}
+  onClose={() => {
+    setCreatePostOpen(false);
+    setEditPostOpen(false);
+    setSelectedPost(null);
+  }}
+  type={createPostOpen ? 'create' : 'edit'}
+  initialData={selectedPost}
+  onSubmit={
+    createPostOpen
+      ? handleCreatePost
+      : (formData) => handleUpdatePost(selectedPost?._id, formData)
+  }
+/>
+
           )}
 
           {(createProductOpen || editProductOpen) && (

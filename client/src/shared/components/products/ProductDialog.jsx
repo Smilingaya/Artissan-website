@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -18,14 +18,11 @@ import {
   ListItemAvatar,
   ListItemText,
 } from '@mui/material';
-import { Close, ShoppingCart, Star, Send } from '@mui/icons-material';
-import { UserContext } from '../../contexts/UserContext';
-import { OrderContext } from '../../../features/orders/contexts/OrderContext';
+import { Close, ShoppingCart, Send } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
+import { createOrder } from '../../../features/profile/utils/api';
 
-const ProductDialog = ({ product, open, onClose, isOwnProduct }) => {
-  const { currentUser } = useContext(UserContext);
-  const { createOrder } = useContext(OrderContext);
+const ProductDialog = ({ product, open, onClose, isOwnProduct, currentUser }) => {
   const navigate = useNavigate();
   const [quantity, setQuantity] = useState(1);
   const [reviews, setReviews] = useState([]);
@@ -34,7 +31,6 @@ const ProductDialog = ({ product, open, onClose, isOwnProduct }) => {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    // Ensure reviews is always an array
     setReviews(Array.isArray(product?.reviews) ? product.reviews : []);
   }, [product]);
 
@@ -42,51 +38,49 @@ const ProductDialog = ({ product, open, onClose, isOwnProduct }) => {
 
   const handleAddReview = () => {
     if (!newReview.trim()) return;
-    
+
     const newReviewObj = {
       id: Date.now(),
       text: newReview,
       rating: newRating,
       user: {
-        name: 'Current User',
-        avatar: 'https://i.pravatar.cc/300',
+        name: currentUser?.name || 'User',
+        avatar: currentUser?.profilePicture || '',
       },
-      timestamp: 'Just now'
+      timestamp: 'Just now',
     };
 
-    setReviews(prevReviews => [...prevReviews, newReviewObj]);
+    setReviews(prev => [...prev, newReviewObj]);
     setNewReview('');
     setNewRating(5);
   };
 
-  const handleCreateOrder = () => {
-    try {
-      const orderData = {
-        items: [{
-          id: product._id,
-          name: product.name,
-          price: product.price,
-          quantity: quantity,
-          image: product.mainImage
-        }],
-        total: product.price * quantity,
-        userId: currentUser?.id || 1, // Using 1 as default for mock data
-        sellerId: product.user?._id || 2, // Using 2 as default for mock data
-        status: 'pending',
-        paymentStatus: 'unpaid'
-      };
+  const handleCreateOrder = async () => {
+    if (!currentUser || !currentUser._id || !product) {
+      setError('Missing user or product information');
+      return;
+    }
 
-      const newOrder = createOrder(orderData);
+    try {
+      const response = await createOrder(product.user._id, {
+        userId: currentUser._id,
+        items: [{ product: product._id, quantity }],
+        shippingAddress: 'To be filled in checkout', // Or collect via a dialog
+        phoneNumber: currentUser.phoneNumber || 0,
+      });
+
       onClose();
       navigate('/my-orders');
     } catch (err) {
-      setError('Failed to create order');
+      console.error('Failed to create order:', err);
+      setError(err.message || 'Failed to create order');
     }
   };
 
-  const averageRating = reviews.length > 0
-    ? (reviews.reduce((acc, review) => acc + review.rating, 0) / reviews.length).toFixed(1)
-    : 'No ratings yet';
+  const averageRating =
+    reviews.length > 0
+      ? (reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length).toFixed(1)
+      : 'No ratings yet';
 
   return (
     <Dialog
@@ -94,21 +88,16 @@ const ProductDialog = ({ product, open, onClose, isOwnProduct }) => {
       onClose={onClose}
       maxWidth="md"
       fullWidth
-      PaperProps={{
-        sx: {
-          borderRadius: 2,
-          maxHeight: '90vh'
-        }
-      }}
+      PaperProps={{ sx: { borderRadius: 2, maxHeight: '90vh' } }}
     >
       <DialogTitle sx={{ m: 0, p: 2, display: 'flex', alignItems: 'center', gap: 2 }}>
         <Avatar
-          src={product.user?.avatar}
+          src={product.user?.avatar || product.user?.profilePicture || ''}
           alt={product.user?.name}
           sx={{ width: 40, height: 40 }}
         />
         <Box sx={{ flex: 1 }}>
-          <Typography variant="subtitle1" component="div" sx={{ fontWeight: 600 }}>
+          <Typography variant="subtitle1" fontWeight={600}>
             {product.user?.name}
           </Typography>
           <Typography variant="body2" color="text.secondary">
@@ -117,17 +106,14 @@ const ProductDialog = ({ product, open, onClose, isOwnProduct }) => {
         </Box>
         <IconButton
           onClick={onClose}
-          sx={{
-            position: 'absolute',
-            right: 8,
-            top: 8,
-            color: 'text.secondary',
-          }}
+          sx={{ position: 'absolute', right: 8, top: 8, color: 'text.secondary' }}
         >
           <Close />
         </IconButton>
       </DialogTitle>
+
       <Divider />
+
       <DialogContent sx={{ p: 0 }}>
         <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 3, p: 3 }}>
           <Box sx={{ flex: 1, maxWidth: { xs: '100%', md: '50%' } }}>
@@ -135,38 +121,31 @@ const ProductDialog = ({ product, open, onClose, isOwnProduct }) => {
               component="img"
               image={product.mainImage}
               alt={product.name}
-              sx={{ 
-                width: '100%',
-                borderRadius: 2,
-                aspectRatio: '1',
-                objectFit: 'cover'
-              }}
+              sx={{ width: '100%', borderRadius: 2, aspectRatio: '1', objectFit: 'cover' }}
             />
           </Box>
+
           <Box sx={{ flex: 1 }}>
             <Typography variant="h4" gutterBottom>
               {product.name}
             </Typography>
+
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
               <Rating value={Number(averageRating) || 0} precision={0.1} readOnly />
               <Typography variant="body2" color="text.secondary">
                 ({averageRating})
               </Typography>
             </Box>
+
             <Typography variant="h5" color="primary" gutterBottom>
               ${product.price.toFixed(2)}
             </Typography>
+
             <Box sx={{ my: 2 }}>
-              <Chip 
-                label={`Stock: ${product.stoke}`}
-                color="info"
-                sx={{ mr: 1 }}
-              />
-              <Chip 
-                label={product.category}
-                variant="outlined"
-              />
+              <Chip label={`Stock: ${product.stoke}`} color="info" sx={{ mr: 1 }} />
+              <Chip label={product.category} variant="outlined" />
             </Box>
+
             <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
               {product.discreption}
             </Typography>
@@ -178,6 +157,7 @@ const ProductDialog = ({ product, open, onClose, isOwnProduct }) => {
                     {error}
                   </Typography>
                 )}
+
                 <TextField
                   fullWidth
                   label="Quantity"
@@ -187,6 +167,7 @@ const ProductDialog = ({ product, open, onClose, isOwnProduct }) => {
                   InputProps={{ inputProps: { min: 1, max: product.stoke } }}
                   sx={{ mb: 2 }}
                 />
+
                 <Button
                   variant="contained"
                   color="primary"
@@ -198,6 +179,7 @@ const ProductDialog = ({ product, open, onClose, isOwnProduct }) => {
                 >
                   {product.stoke > 0 ? 'Order Now' : 'Out of Stock'}
                 </Button>
+
                 <Typography variant="body2" color="text.secondary" sx={{ mt: 1, textAlign: 'center' }}>
                   You'll enter shipping details during checkout
                 </Typography>
@@ -206,7 +188,6 @@ const ProductDialog = ({ product, open, onClose, isOwnProduct }) => {
 
             <Divider sx={{ my: 3 }} />
 
-            {/* Reviews Section */}
             <Typography variant="h6" gutterBottom>
               Reviews ({reviews.length})
             </Typography>
@@ -219,10 +200,8 @@ const ProductDialog = ({ product, open, onClose, isOwnProduct }) => {
                   </ListItemAvatar>
                   <ListItemText
                     primary={
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <Typography variant="subtitle2">
-                          {review.user.name}
-                        </Typography>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <Typography variant="subtitle2">{review.user.name}</Typography>
                         <Typography variant="caption" color="text.secondary">
                           {review.timestamp}
                         </Typography>
@@ -241,16 +220,14 @@ const ProductDialog = ({ product, open, onClose, isOwnProduct }) => {
               ))}
             </List>
 
-            {/* Add Review Section */}
+            {/* Add Review */}
             <Box sx={{ mt: 2 }}>
               <Typography variant="subtitle2" gutterBottom>
                 Add Your Review
               </Typography>
               <Rating
                 value={newRating}
-                onChange={(event, newValue) => {
-                  setNewRating(newValue || 5);
-                }}
+                onChange={(e, val) => setNewRating(val || 5)}
                 sx={{ mb: 1 }}
               />
               <Box sx={{ display: 'flex', gap: 1 }}>
@@ -263,7 +240,7 @@ const ProductDialog = ({ product, open, onClose, isOwnProduct }) => {
                   multiline
                   rows={2}
                 />
-                <IconButton 
+                <IconButton
                   color="primary"
                   onClick={handleAddReview}
                   disabled={!newReview.trim()}
@@ -280,4 +257,4 @@ const ProductDialog = ({ product, open, onClose, isOwnProduct }) => {
   );
 };
 
-export default ProductDialog; 
+export default ProductDialog;

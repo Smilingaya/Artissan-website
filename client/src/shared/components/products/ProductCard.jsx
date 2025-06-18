@@ -18,21 +18,18 @@ import {
 import {
   Edit,
   Delete,
-  Favorite,
-  FavoriteBorder,
   MoreVert,
   ShoppingCart
 } from '@mui/icons-material';
 
 const ProductCard = ({
   product,
-  onProductClick,
+  onProductClick,   // Called when clicking the product card
   onUserClick,
   onEdit,
   onDelete,
-  onCreateOrder,
   isOwnProduct,
-  variant = 'grid' // 'grid' or 'list'
+  variant = 'grid'
 }) => {
   const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = React.useState(null);
@@ -67,15 +64,14 @@ const ProductCard = ({
     handleMenuClose();
   };
 
-  const handleOrderClick = (e) => {
-    e.stopPropagation();
-    onCreateOrder?.(product._id);
+  const handleCardClick = () => {
+    onProductClick?.(product); // This opens ProductDialog from pf.jsx
   };
 
   if (variant === 'list') {
     return (
       <Card
-        onClick={() => onProductClick?.(product)}
+        onClick={handleCardClick}
         sx={{
           display: 'flex',
           cursor: 'pointer',
@@ -105,7 +101,7 @@ const ProductCard = ({
                 variant="subtitle2"
                 component="span"
                 onClick={handleUserClick}
-                sx={{ 
+                sx={{
                   cursor: 'pointer',
                   '&:hover': { textDecoration: 'underline' }
                 }}
@@ -123,7 +119,7 @@ const ProductCard = ({
               <Typography variant="h6" color="primary">
                 ${product.price.toFixed(2)}
               </Typography>
-              <Chip 
+              <Chip
                 label={`Stock: ${product.stoke}`}
                 size="small"
                 color="info"
@@ -146,7 +142,6 @@ const ProductCard = ({
                 variant="contained"
                 color="primary"
                 startIcon={<ShoppingCart />}
-                onClick={handleOrderClick}
                 disabled={product.stoke <= 0}
               >
                 {product.stoke > 0 ? 'Order Now' : 'Out of Stock'}
@@ -160,7 +155,7 @@ const ProductCard = ({
 
   return (
     <Card
-      onClick={() => onProductClick?.(product)}
+      onClick={handleCardClick}
       sx={{
         height: '100%',
         display: 'flex',
@@ -187,7 +182,7 @@ const ProductCard = ({
             variant="subtitle2"
             component="span"
             onClick={handleUserClick}
-            sx={{ 
+            sx={{
               cursor: 'pointer',
               '&:hover': { textDecoration: 'underline' }
             }}
@@ -199,7 +194,7 @@ const ProductCard = ({
       />
       <CardMedia
         component="img"
-        height={variant === 'grid' ? '200' : '300'}
+        height="200"
         image={product.mainImage}
         alt={product.name}
         sx={{ objectFit: 'cover' }}
@@ -216,7 +211,7 @@ const ProductCard = ({
         </Typography>
       </CardContent>
       <CardActions sx={{ justifyContent: 'space-between', px: 2, pb: 2 }}>
-        <Chip 
+        <Chip
           label={`Stock: ${product.stoke}`}
           size="small"
           color="info"
@@ -236,7 +231,6 @@ const ProductCard = ({
             color="primary"
             size="small"
             startIcon={<ShoppingCart />}
-            onClick={handleOrderClick}
             disabled={product.stoke <= 0}
           >
             {product.stoke > 0 ? 'Order' : 'Out of Stock'}
@@ -260,4 +254,4 @@ const ProductCard = ({
   );
 };
 
-export default ProductCard; 
+export default ProductCard;

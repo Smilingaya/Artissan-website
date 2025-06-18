@@ -514,24 +514,17 @@ console.log(postData.image instanceof File); // يجب أن يعطي true
 // Update post
 export const updatePost = async (postId, postData) => {
   try {
-    const formData = new FormData();
-    if (postData.name) formData.append('name', postData.name);
-    if (postData.caption) formData.append('caption', postData.caption);
-    
-    if (postData.media) {
-      if (Array.isArray(postData.media)) {
-        postData.media.forEach(file => {
-          formData.append('media', file);
-        });
-      } else {
-        formData.append('media', postData.media);
-      }
-    }
-
     const response = await fetch(`${API_BASE}/blog/postBlog/${postId}`, {
       method: 'PUT',
-      body: formData,
-      ...getAuthHeaders()
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      credentials: 'include',
+      body: JSON.stringify({
+        name: postData.name,
+        caption: postData.caption
+      })
     });
 
     const data = await response.json();
@@ -541,16 +534,7 @@ export const updatePost = async (postId, postData) => {
       throw new Error(data.message || 'Failed to update post');
     }
 
-    // Do NOT try to access data.user.name here!
-    if (data.updatedPost) {
-      return data.updatedPost;
-    } else if (data.post) {
-      return data.post;
-    } else if (data._id) {
-      return data;
-    } else {
-      throw new Error('No post returned from update');
-    }
+    return data.updatedPost || data.post || data;
   } catch (error) {
     console.error('Error updating post:', error);
     throw error;
@@ -573,39 +557,50 @@ export const deletePost = async (postId) => {
 };
 
 // Like post
-export const likePost = async (postId) => {
-  try {
-    const response = await fetch(`${API_BASE}/blog/postBlog/${postId}/like`, {
-      method: 'POST',
-      ...getAuthHeaders()
-    });
-    
-    return await handleResponse(response);
-  } catch (error) {
-    console.error('Error liking post:', error);
-    throw error;
-  }
+export const likePost = async (postId, userId) => {
+  const response = await fetch(`${API_BASE}/blog/postBlog/${postId}/like`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json'
+    },
+    credentials: 'include',
+    body: JSON.stringify({ userId }) 
+  });
+
+  const data = await handleResponse(response);
+  console.log('Like result:', data.message); 
+  return data;
 };
 
+
 // Unlike post
-export const unlikePost = async (postId) => {
-  try {
+export const unlikePost = async (postId, userId) => {
     const response = await fetch(`${API_BASE}/blog/postBlog/${postId}/dislike`, {
       method: 'POST',
-      ...getAuthHeaders()
-    });
-    
-    return await handleResponse(response);
-  } catch (error) {
-    console.error('Error unliking post:', error);
-    throw error;
-  }
+    headers: {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json'
+    },
+    credentials: 'include',
+    body: JSON.stringify({ userId }) 
+  });
+
+  return await handleResponse(response);
 };
+
 
 // Get post likes
 export const getPostLikes = async (postId) => {
   try {
-    const response = await fetch(`${API_BASE}/blog/postBlog/${postId}/likes`, getAuthHeaders());
+    const response = await fetch(`${API_BASE}/blog/postBlog/${postId}/likes`, {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json'
+      },
+      credentials: 'include'
+    });
+
     return await handleResponse(response);
   } catch (error) {
     console.error('Error fetching post likes:', error);
@@ -828,19 +823,26 @@ export const fetchArtisanOrders = async (artisanId) => {
 };
 
 // Create order
-export const createOrder = async (productId) => {
+// Create order
+export const createOrder = async (artisanId, orderData) => {
   try {
-    const response = await fetch(`${API_BASE}/order/create/${productId}`, {
+    const response = await fetch(`${API_BASE}/order/create/${artisanId}`, {
       method: 'POST',
-      ...getAuthHeaders()
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      credentials: 'include',
+      body: JSON.stringify(orderData)
     });
-    
+
     return await handleResponse(response);
   } catch (error) {
     console.error('Error creating order:', error);
     throw error;
   }
 };
+
+
 
 // Update order status
 export const updateOrderStatus = async (orderId, status) => {
