@@ -1,43 +1,59 @@
 // src/features/home/pages/HP.jsx
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Box, Chip, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material';
-import { GridView, ViewList } from '@mui/icons-material';
-import SideDrawer from '../../../shared/components/layout/SideDrawer';
-import AppHeader from '../../../shared/components/layout/AppHeader';
-import PostCard from '../../../shared/components/posts/PostCard';
-import ProductCard from '../../../shared/components/products/ProductCard';
-import PostDialog from '../../../shared/components/posts/PostDialog';
-import ProductDialog from '../../../shared/components/products/ProductDialog';
-import SearchBar from '../../../shared/components/common/SearchBar';
-import { fetchRecommendedPosts, searchPosts, fetchAllProducts, searchProducts, fetchProductsByCategory, fetchUserPosts, fetchAllPosts } from '../../../features/profile/utils/api';
-import { standardizePostsArray } from '../../../shared/utils/dataTransformers';
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import {
+  Box,
+  Chip,
+  ToggleButton,
+  ToggleButtonGroup,
+  Typography,
+} from "@mui/material";
+import { GridView, ViewList } from "@mui/icons-material";
+import SideDrawer from "../../../shared/components/layout/SideDrawer";
+import AppHeader from "../../../shared/components/layout/AppHeader";
+import PostCard from "../../../shared/components/posts/PostCard";
+import ProductCard from "../../../shared/components/products/ProductCard";
+import PostDialog from "../../../shared/components/posts/PostDialog";
+import ProductDialog from "../../../shared/components/products/ProductDialog";
+import SearchBar from "../../../shared/components/common/SearchBar";
+import {
+  fetchRecommendedPosts,
+  searchPosts,
+  fetchAllProducts,
+  searchProducts,
+  fetchProductsByCategory,
+  fetchUserPosts,
+  fetchAllPosts,
+} from "../../../features/profile/utils/api";
+import { standardizePostsArray } from "../../../shared/utils/dataTransformers";
 
 const Homepage = () => {
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [profileMenuAnchor, setProfileMenuAnchor] = useState(null);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("");
   const [categoryTab, setCategoryTab] = useState(0);
   const [posts, setPosts] = useState([]);
   const [products, setProducts] = useState([]);
   const [selectedPost, setSelectedPost] = useState(null);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [showProducts, setShowProducts] = useState(false);
-  const [viewMode, setViewMode] = useState('grid');
+  const [viewMode, setViewMode] = useState("grid");
   const [loading, setLoading] = useState(true);
 
   const handleLike = (postId) => {
-    setPosts(prevPosts => prevPosts.map(post => 
-      post.id === postId 
-        ? { 
-            ...post, 
-            isLiked: !post.isLiked, 
-            likes: post.isLiked ? post.likes - 1 : post.likes + 1 
-          }
-        : post
-    ));
+    setPosts((prevPosts) =>
+      prevPosts.map((post) =>
+        post.id === postId
+          ? {
+              ...post,
+              isLiked: !post.isLiked,
+              likes: post.isLiked ? post.likes - 1 : post.likes + 1,
+            }
+          : post
+      )
+    );
   };
 
   const handleSearch = (value) => {
@@ -87,7 +103,7 @@ const Homepage = () => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const userId = localStorage.getItem('userId');
+        const userId = localStorage.getItem("userId");
         let recommendedPosts = [];
         if (userId) {
           recommendedPosts = await fetchRecommendedPosts(userId);
@@ -101,7 +117,7 @@ const Homepage = () => {
         }
         setProducts([]); // No products by default
       } catch (error) {
-        console.error('Error loading home data:', error);
+        console.error("Error loading home data:", error);
       } finally {
         setLoading(false);
       }
@@ -121,13 +137,15 @@ const Homepage = () => {
         setProducts(foundProducts || []);
       } else if (selectedCategory) {
         // Filter products by category
-        const filteredProducts = await fetchProductsByCategory(selectedCategory);
+        const filteredProducts = await fetchProductsByCategory(
+          selectedCategory
+        );
         setProducts(filteredProducts || []);
       } else {
         // No products if not searching or filtering
         setProducts([]);
         // Default: fetch recommended posts
-        const userId = localStorage.getItem('userId');
+        const userId = localStorage.getItem("userId");
         let recommendedPosts = [];
         if (userId) {
           recommendedPosts = await fetchRecommendedPosts(userId);
@@ -139,57 +157,73 @@ const Homepage = () => {
   }, [searchTerm, selectedCategory]);
 
   // Filter posts based on search and category
-  const filteredPosts = posts.filter(post => {
-    const matchesSearch = searchTerm ? 
-      (post.content || post.title || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-      post.user.name.toLowerCase().includes(searchTerm.toLowerCase()) : true;
-    
-    const matchesCategory = selectedCategory ? 
-      post.category?.toLowerCase() === selectedCategory.toLowerCase() : true;
-    
+  const filteredPosts = posts.filter((post) => {
+    const matchesSearch = searchTerm
+      ? (post.content || post.title || "")
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase()) ||
+        post.user.name.toLowerCase().includes(searchTerm.toLowerCase())
+      : true;
+
+    const matchesCategory = selectedCategory
+      ? post.category?.toLowerCase() === selectedCategory.toLowerCase()
+      : true;
+
     return matchesSearch && matchesCategory;
   });
 
   // Filter products based on search and category
-  const filteredProducts = products.filter(product => {
-    const matchesSearch = searchTerm ? 
-      product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      product.category.toLowerCase().includes(searchTerm.toLowerCase()) : true;
-    
-    const matchesCategory = selectedCategory ? 
-      product.category.toLowerCase() === selectedCategory.toLowerCase() : true;
-    
+  const filteredProducts = products.filter((product) => {
+    const matchesSearch = searchTerm
+      ? product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        product.category.toLowerCase().includes(searchTerm.toLowerCase())
+      : true;
+
+    const matchesCategory = selectedCategory
+      ? product.category.toLowerCase() === selectedCategory.toLowerCase()
+      : true;
+
     return matchesSearch && matchesCategory;
   });
 
   // Get unique categories for filter chips
-  const categories = [...new Set([
-    ...posts.map(post => post.category).filter(Boolean),
-    ...products.map(product => product.category)
-  ])].filter(Boolean); // Remove any undefined/null values
+  const categories = [
+    ...new Set([
+      ...posts.map((post) => post.category).filter(Boolean),
+      ...products.map((product) => product.category),
+    ]),
+  ].filter(Boolean); // Remove any undefined/null values
 
   return (
     <>
       <AppHeader />
-      <Box sx={{ display: 'flex', minHeight: '100vh', backgroundColor: 'background.default' }}>
+      <Box
+        sx={{
+          display: "flex",
+          minHeight: "100vh",
+          backgroundColor: "background.default",
+        }}
+      >
         {/* Sidebar */}
-        <SideDrawer 
-          open={sidebarOpen} 
+        <SideDrawer
+          open={sidebarOpen}
           onClose={() => setSidebarOpen(false)}
           onCategorySelect={handleCategorySelect}
           selectedCategory={selectedCategory}
         />
 
         {/* Main Content */}
-        <Box sx={{ 
-          flexGrow: 1, 
-          paddingLeft: { xs: 0, sm: '96px' },
-          paddingTop: '64px',
-          transition: 'padding-left 0.3s ease'
-        }}>
+        <Box
+          sx={{
+            flexGrow: 1,
+            paddingLeft: { xs: 0, sm: "96px" },
+            paddingTop: "64px",
+            transition: "padding-left 0.3s ease",
+          }}
+        >
           {/* Search Bar */}
-          <Box sx={{ padding: '20px', paddingBottom: '10px' }}>
-            <SearchBar 
+          <Box sx={{ padding: "20px", paddingBottom: "10px" }}>
+            <SearchBar
               value={searchTerm}
               onChange={handleSearch}
               placeholder="Search posts and products..."
@@ -197,53 +231,60 @@ const Homepage = () => {
           </Box>
 
           {/* Category Filter Chips */}
-          <Box sx={{ 
-            padding: '0 20px 20px', 
-            display: 'flex', 
-            gap: 1, 
-            flexWrap: 'wrap' 
-          }}>
-            <Chip 
+          <Box
+            sx={{
+              padding: "0 20px 20px",
+              display: "flex",
+              gap: 1,
+              flexWrap: "wrap",
+            }}
+          >
+            <Chip
               key="all"
-              label="All" 
+              label="All"
               onClick={() => {
-                setSelectedCategory('');
+                setSelectedCategory("");
                 setShowProducts(false);
               }}
-              color={selectedCategory === '' ? 'primary' : 'default'}
-              variant={selectedCategory === '' ? 'filled' : 'outlined'}
+              color={selectedCategory === "" ? "primary" : "default"}
+              variant={selectedCategory === "" ? "filled" : "outlined"}
             />
             {categories.map((category, index) => (
-              <Chip 
+              <Chip
                 key={`${category}-${index}`}
                 label={category}
                 onClick={() => handleCategorySelect(category)}
-                color={selectedCategory === category ? 'primary' : 'default'}
-                variant={selectedCategory === category ? 'filled' : 'outlined'}
+                color={selectedCategory === category ? "primary" : "default"}
+                variant={selectedCategory === category ? "filled" : "outlined"}
               />
             ))}
           </Box>
 
           {/* Content Area */}
-          <Box sx={{ padding: '0 20px 20px' }}>
+          <Box sx={{ padding: "0 20px 20px" }}>
             {/* Products Section */}
             {showProducts && filteredProducts.length > 0 && (
-              <Box sx={{ marginBottom: '30px' }}>
-                <Box sx={{ 
-                  fontSize: '18px', 
-                  fontWeight: 'bold', 
-                  marginBottom: '15px',
-                  color: 'text.primary'
-                }}>
+              <Box sx={{ marginBottom: "30px" }}>
+                <Box
+                  sx={{
+                    fontSize: "18px",
+                    fontWeight: "bold",
+                    marginBottom: "15px",
+                    color: "text.primary",
+                  }}
+                >
                   Products ({filteredProducts.length})
                 </Box>
-                <Box sx={{ 
-                  display: 'grid', 
-                  gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', 
-                  gap: 2 
-                }}>
-                  {filteredProducts.map(product => (
-                    <ProductCard 
+                <Box
+                  sx={{
+                    display: "grid",
+                    gridTemplateColumns:
+                      "repeat(auto-fill, minmax(280px, 1fr))",
+                    gap: 2,
+                  }}
+                >
+                  {filteredProducts.map((product) => (
+                    <ProductCard
                       key={product._id || `product-${product.id}`}
                       product={product}
                       onProductClick={handleProductClick}
@@ -257,12 +298,14 @@ const Homepage = () => {
 
             {/* Posts Section */}
             <Box>
-              <Box sx={{ 
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                marginBottom: '15px'
-              }}>
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  marginBottom: "15px",
+                }}
+              >
                 <Typography variant="h6" color="text.primary">
                   Posts ({filteredPosts.length})
                 </Typography>
@@ -280,20 +323,25 @@ const Homepage = () => {
                   </ToggleButton>
                 </ToggleButtonGroup>
               </Box>
-              <Box sx={{ 
-                display: viewMode === 'grid' ? 'grid' : 'flex',
-                gridTemplateColumns: viewMode === 'grid' ? 'repeat(auto-fill, minmax(280px, 1fr))' : 'none',
-                flexDirection: viewMode === 'grid' ? 'unset' : 'column',
-                gap: 2
-              }}>
-                {filteredPosts.map(post => (
-                  <PostCard 
+              <Box
+                sx={{
+                  display: viewMode === "grid" ? "grid" : "flex",
+                  gridTemplateColumns:
+                    viewMode === "grid"
+                      ? "repeat(auto-fill, minmax(280px, 1fr))"
+                      : "none",
+                  flexDirection: viewMode === "grid" ? "unset" : "column",
+                  gap: 2,
+                }}
+              >
+                {filteredPosts.map((post) => (
+                  <PostCard
                     key={post._id || `post-${post.id}`}
                     post={post}
                     onPostClick={handlePostClick}
                     onLike={handleLike}
                     isOwnPost={false}
-                    variant={viewMode === 'grid' ? 'grid' : 'feed'}
+                    variant={viewMode === "grid" ? "grid" : "feed"}
                     onEdit={null}
                     onDelete={null}
                   />
@@ -304,7 +352,7 @@ const Homepage = () => {
 
           {/* Dialogs */}
           {selectedPost && (
-            <PostDialog 
+            <PostDialog
               post={selectedPost}
               open={!!selectedPost}
               onClose={handleClosePostDialog}
@@ -313,7 +361,7 @@ const Homepage = () => {
           )}
 
           {selectedProduct && (
-            <ProductDialog 
+            <ProductDialog
               product={selectedProduct}
               open={!!selectedProduct}
               onClose={handleCloseProductDialog}
