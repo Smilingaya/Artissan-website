@@ -175,10 +175,11 @@ const Update_product = async (req, res) => {
 const search_product = async (req, res) => {
   const { query } = req.query;
   try {
+    const regex = new RegExp(query, "i");
     const products = await Product.find({
       $or: [
-        { name: { $regex: query, $options: "i" } },
-        { category: { $regex: query, $options: "i" } },
+        { name: { $regex: regex } },
+        { category: { $regex: regex } }, // ensure category is string or string ID
       ],
     });
     res.status(200).json({ success: true, products });
@@ -186,6 +187,7 @@ const search_product = async (req, res) => {
     res.status(500).json({ success: false, message: err.message });
   }
 };
+
 const length_product = async (req, res) => {
   try {
     const count = await Product.countDocuments();

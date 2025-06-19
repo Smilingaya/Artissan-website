@@ -6,7 +6,6 @@ import {
   CardActions,
   IconButton,
   Typography,
-  Box,
   Menu,
   MenuItem,
 } from '@mui/material';
@@ -59,34 +58,44 @@ const PostCard = ({
     onPostClick?.(post);
   };
 
-  const hasImage = post.media || (post.images && post.images.length > 0);
-  const mainImage = post.media || (post.images && post.images[0]);
-
-  const userName = post.user && typeof post.user === 'object' && post.user.name ? post.user.name : (typeof post.user === 'string' ? post.user : 'User');
-  const userAvatar = post.user && typeof post.user === 'object' ? (post.user.avatar || post.user.profilePicture || '') : '';
+  const mainMedia = Array.isArray(post.media) ? post.media[0] : post.media;
+  const isVideo = mainMedia?.match(/\.(mp4|webm|ogg)$/i);
 
   return (
-    <Card 
-      sx={{ 
-        mb: 2, 
+    <Card
+      sx={{
+        mb: 2,
         borderRadius: 2,
         cursor: 'pointer',
-        '&:hover': {
-          boxShadow: 3
-        }
+        '&:hover': { boxShadow: 3 }
       }}
       onClick={handleCardClick}
     >
-      {hasImage && (
-        <CardMedia
-          component="img"
-          image={mainImage}
-          alt={post.name || 'Post image'}
-          sx={{ 
-            maxHeight: 500,
-            objectFit: 'contain'
-          }}
-        />
+      {mainMedia && (
+        isVideo ? (
+          <CardMedia
+            component="video"
+            src={mainMedia}
+            controls
+            sx={{
+              maxHeight: 500,
+              width: '100%',
+              objectFit: 'contain',
+              backgroundColor: 'black'
+            }}
+          />
+        ) : (
+          <CardMedia
+            component="img"
+            image={mainMedia}
+            alt={post.name || 'Post media'}
+            sx={{
+              maxHeight: 500,
+              width: '100%',
+              objectFit: 'contain'
+            }}
+          />
+        )
       )}
       <CardContent>
         {post.name && (
@@ -103,7 +112,7 @@ const PostCard = ({
           {post.isLiked ? <Favorite color="primary" /> : <FavoriteBorder />}
         </IconButton>
         <Typography variant="body2" color="text.secondary">
-          {post.likes.length || 0}
+          {post.likes?.length || 0}
         </Typography>
         <IconButton onClick={handleCardClick}>
           <Comment />
@@ -137,4 +146,4 @@ const PostCard = ({
   );
 };
 
-export default PostCard; 
+export default PostCard;

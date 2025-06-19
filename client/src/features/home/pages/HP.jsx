@@ -20,16 +20,13 @@ import SearchBar from "../../../shared/components/common/SearchBar";
 import {
   fetchRecommendedPosts,
   searchPosts,
-  fetchAllProducts,
   searchProducts,
   fetchProductsByCategory,
   fetchAllPosts,
   likePost,
   unlikePost,
-  addComment,
-  deleteComment
+  fetchCategoriesHomePage
 } from "../../../features/profile/utils/api";
-import { standardizePostsArray } from "../../../shared/utils/dataTransformers";
 import { useAuth } from "../../../shared/contexts/UserContext";
 
 const Homepage = () => {
@@ -38,6 +35,7 @@ const Homepage = () => {
 
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
+  const [categories, setCategories] = useState([]);
   const [posts, setPosts] = useState([]);
   const [products, setProducts] = useState([]);
   const [selectedPost, setSelectedPost] = useState(null);
@@ -47,13 +45,29 @@ const Homepage = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const loadCategories = async () => {
+      try {
+        const data = await fetchCategoriesHomePage();
+        setCategories(data.map(cat => cat.name));
+      } catch (err) {
+        console.error("Failed to load categories:", err);
+      }
+    };
+    loadCategories();
+  }, []);
+
+  useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const userId = currentUser?._id;
-        if (userId) {
-          const data = await fetchRecommendedPosts(userId);
-          setPosts(data.recommendedPosts || []);
+        if (currentUser?._id) {
+          const data = await fetchRecommendedPosts(currentUser._id);
+          if (Array.isArray(data) && data.length > 0) {
+            setPosts(data);
+          } else {
+            const allPosts = await fetchAllPosts();
+            setPosts(allPosts || []);
+          }
         } else {
           const allPosts = await fetchAllPosts();
           setPosts(allPosts || []);
@@ -65,29 +79,43 @@ const Homepage = () => {
         setLoading(false);
       }
     };
-    fetchData();
-  }, []);
+
+    if (currentUser) fetchData();
+  }, [currentUser]);
 
   useEffect(() => {
-    const fetchSearchResults = async () => {
-      if (searchTerm) {
-        const foundPosts = await searchPosts(searchTerm);
-        const foundProducts = await searchProducts(searchTerm);
-        setPosts(foundPosts || []);
-        setProducts(foundProducts || []);
-      } else if (selectedCategory) {
-        const filteredProducts = await fetchProductsByCategory(selectedCategory);
-        setProducts(filteredProducts || []);
-      } else {
-        if (currentUser?._id) {
-        const data = await fetchRecommendedPosts(currentUser._id);
-        setPosts(data.recommendedPosts || []);
-}
-        setProducts([]);
+    const fetchSearchAndCategory = async () => {
+      try {
+        if (searchTerm.trim()) {
+          const [foundPosts, foundProducts] = await Promise.all([
+            searchPosts(searchTerm),
+            searchProducts(searchTerm)
+          ]);
+          setPosts(foundPosts?.posts || []);
+          setProducts(foundProducts?.products || []);
+          setShowProducts(true);
+        } else if (selectedCategory) {
+          const filteredProducts = await fetchProductsByCategory(selectedCategory);
+          setPosts([]);
+          setProducts(filteredProducts || []);
+          setShowProducts(true);
+        } else {
+          if (currentUser?._id) {
+            const data = await fetchRecommendedPosts(currentUser._id);
+            setPosts(data || []);
+          } else {
+            const allPosts = await fetchAllPosts();
+            setPosts(allPosts || []);
+          }
+          setProducts([]);
+          setShowProducts(false);
+        }
+      } catch (err) {
+        console.error("Error loading filtered content:", err);
       }
     };
-    fetchSearchResults();
-  }, [searchTerm, selectedCategory]);
+    fetchSearchAndCategory();
+  }, [searchTerm, selectedCategory, currentUser]);
 
   const handleLike = async (postId) => {
     try {
@@ -119,20 +147,10 @@ const Homepage = () => {
   };
 
   const handleCategorySelect = (category) => {
+    setSearchTerm("");
     setSelectedCategory(category);
-    setShowProducts(category.length > 0);
+    setShowProducts(true);
   };
-
-  const handleUserClick = (userId) => {
-    navigate(`/profile/${userId}`);
-  };
-
-  const categories = [
-    ...new Set([
-      ...posts.map(p => p.category).filter(Boolean),
-      ...products.map(p => p.category).filter(Boolean)
-    ])
-  ];
 
   const filteredPosts = posts.filter(post => {
     const matchSearch = searchTerm
@@ -148,13 +166,15 @@ const Homepage = () => {
   });
 
   const filteredProducts = products.filter(product => {
+    const category = typeof product.category === "string" ? product.category : product.category?.name || "";
+
     const matchSearch = searchTerm
-      ? product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        product.category.toLowerCase().includes(searchTerm.toLowerCase())
+      ? product.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        category.toLowerCase().includes(searchTerm.toLowerCase())
       : true;
 
     const matchCat = selectedCategory
-      ? product.category.toLowerCase() === selectedCategory.toLowerCase()
+      ? category.toLowerCase() === selectedCategory.toLowerCase()
       : true;
 
     return matchSearch && matchCat;

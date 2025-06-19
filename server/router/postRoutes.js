@@ -45,7 +45,7 @@ router.get(
   requireMidllware,
   postController.likes_get_controller
 );
-router.get("/serchPost", postController.search_post);
+router.get("/searchPost", postController.search_post);
 router.get(
   "/postBlog/recommend/:userId",
   requireMidllware,

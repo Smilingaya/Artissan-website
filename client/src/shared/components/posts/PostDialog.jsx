@@ -1,37 +1,21 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+// This version of PostDialog includes a Swiper slider for multiple media (images/videos)
+// and uses MUI icons for navigation. The layout mimics Instagram with media left and content right.
 
+import React, { useState, useEffect, useRef } from 'react';
 import {
-  Dialog,
-  DialogContent,
-  DialogTitle,
-  IconButton,
-  Typography,
-  Box,
-  Avatar,
-  CardMedia,
-  Divider,
-  TextField,
-  Button,
-  List,
-  ListItem,
-  ListItemAvatar,
-  ListItemText,
-  Menu,
-  MenuItem,
+  Dialog, Box, IconButton, Avatar, Typography, Divider,
+  TextField, List, ListItem, ListItemAvatar, ListItemText,
+  Menu, MenuItem
 } from '@mui/material';
 import {
-  Close,
-  Send,
-  Favorite,
-  FavoriteBorder,
-  MoreVert,
-  Comment,
-  Share,
-  Delete,
-  Edit
+  Close, Send, Favorite, FavoriteBorder, MoreVert,
+  Delete, Edit, ArrowBackIosNew, ArrowForwardIos
 } from '@mui/icons-material';
 import { fetchPostComments } from '../../../features/profile/utils/api';
+import { Swiper, SwiperSlide } from 'swiper/react';
+import { Navigation } from 'swiper/modules';
+import 'swiper/css';
+import 'swiper/css/navigation';
 
 const PostDialog = ({
   post,
@@ -45,60 +29,67 @@ const PostDialog = ({
   isOwnPost,
   currentUser
 }) => {
-  const navigate = useNavigate();
-
   const [newComment, setNewComment] = useState('');
   const [comments, setComments] = useState([]);
   const [anchorEl, setAnchorEl] = useState(null);
 
+  const prevRef = useRef(null);
+  const nextRef = useRef(null);
+  const swiperRef = useRef(null);
+
   useEffect(() => {
-  const loadComments = async () => {
-    if (post && post._id) {
-      try {
-        const res = await fetchPostComments(post._id);
-        const commentsWithOwnership = res.comments.map(comment => ({
-          ...comment,
-          isOwnComment: currentUser && comment.user === currentUser._id || comment.user?._id === currentUser._id
-        }));
-        setComments(commentsWithOwnership);
-      } catch (error) {
-        console.error('Failed to load comments:', error);
-        setComments([]);
+    const loadComments = async () => {
+      if (post?._id) {
+        try {
+          const res = await fetchPostComments(post._id);
+          const updated = res.comments.map(c => ({
+            ...c,
+            isOwnComment:
+              (currentUser && c.user === currentUser._id) ||
+              c.user?._id === currentUser._id
+          }));
+          setComments(updated);
+        } catch (error) {
+          console.error('Error loading comments:', error);
+        }
       }
+    };
+
+    if (open && post?._id) {
+      loadComments();
     }
-  };
+  }, [open, post?._id, currentUser]);
 
-  if (open && post?._id) {
-    loadComments();
-  }
-}, [open, post?._id, currentUser]);
-
+  useEffect(() => {
+    if (
+      swiperRef.current &&
+      swiperRef.current.params &&
+      prevRef.current &&
+      nextRef.current
+    ) {
+      swiperRef.current.params.navigation.prevEl = prevRef.current;
+      swiperRef.current.params.navigation.nextEl = nextRef.current;
+      swiperRef.current.navigation.init();
+      swiperRef.current.navigation.update();
+    }
+  }, [open]);
 
   if (!post) return null;
 
-
-  const handleUserClick = () => {
-  if (post.user && typeof post.user === 'object' && post.user._id) {
-    navigate(`/profile/${post.user._id}`);
-  }
-};
-
+  const handleLikeClick = () => onLike?.(post._id);
+  const handleEdit = () => { onEdit?.(post); setAnchorEl(null); };
+  const handleDelete = () => { onDelete?.(post._id); setAnchorEl(null); };
   const handleAddComment = async () => {
     if (!newComment.trim()) return;
-    
     try {
       await onAddComment?.(post._id, newComment);
-
-      // Always fetch all comments after adding
       const refreshed = await fetchPostComments(post._id);
       setComments(refreshed.comments || []);
-
       setNewComment('');
     } catch (error) {
       console.error('Error adding comment:', error);
     }
   };
-
   const handleDeleteComment = async (commentId) => {
     try {
       await onDeleteComment?.(commentId, post._id);
@@ -108,176 +99,93 @@ const PostDialog = ({
     }
   };
 
-  const handleMenuClick = (e) => {
-    e.stopPropagation();
-    setAnchorEl(e.currentTarget);
-  };
-
-  const handleMenuClose = () => {
-    setAnchorEl(null);
-  };
-
-  const handleEdit = () => {
-    onEdit?.(post);
-    handleMenuClose();
-  };
-
-  const handleDelete = () => {
-    onDelete?.(post._id);
-    handleMenuClose();
-  };
-
-  const handleLikeClick = (e) => {
-    e.stopPropagation();
-    onLike?.(post._id);
-  };
-
-  const hasImage = post.media || (post.images && post.images.length > 0);
-  const mainImage = post.media || (post.images && post.images[0]);
+  const mediaItems = Array.isArray(post.media) ? post.media : [post.media];
 
   return (
-    <Dialog
-      open={open}
-      onClose={onClose}
-      maxWidth="sm"
-      fullWidth
-      PaperProps={{
-        sx: {
-          borderRadius: 2,
-          maxHeight: '90vh'
-        }
-      }}
-    >
-      <DialogTitle sx={{ m: 0, p: 2, display: 'flex', alignItems: 'center', gap: 2 }}>
-       { console.log('Post User:', post.user)}
-        <IconButton onClick={handleUserClick} sx={{ p: 0 }}>
-  <Avatar
-    src={post.user?.profilePicture || ''}
-    alt={post.user?.name || 'User'}
-    sx={{ width: 40, height: 40 }}
-  />
-</IconButton>
+    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
+      <Box sx={{ display: 'flex', height: '80vh' }}>
+        {/* Left: Media Swiper */}
+        <Box sx={{width: '50%', flex: 1, bgcolor: 'black', position: 'relative' }}>
+          <Swiper
+            ref={swiperRef}
+            modules={[Navigation]}
+            navigation
+            spaceBetween={10}
+            slidesPerView={1}
+            style={{ height: '100%' }}
+          >
+            {mediaItems.map((url, i) => (
+              <SwiperSlide key={i}>
+                {url.match(/\.(mp4|webm|ogg)$/i) ? (
+                  <video controls style={{ width: '100%', height: '100%', objectFit: 'contain' }}>
+                    <source src={url} type="video/mp4" />
+                  </video>
+                ) : (
+                  <img
+                    src={url}
+                    alt={`media-${i}`}
+                    style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+                  />
+                )}
+              </SwiperSlide>
+            ))}
+          </Swiper>
 
-        <Box sx={{ flex: 1 }}>
-          <Typography
-  variant="subtitle1"
-  component="div"
-  sx={{ fontWeight: 600, cursor: 'pointer' }}
-  onClick={handleUserClick}
->
-  {post.user?.name || 'User'}
-</Typography>
-
-          <Typography variant="body2" color="text.secondary">
-            {post.createdAt}
-          </Typography>
-        </Box>
-        {isOwnPost && (
-          <IconButton onClick={handleMenuClick}>
-            <MoreVert />
+          <IconButton ref={prevRef} sx={{ position: 'absolute', top: '50%', left: 8, zIndex: 10, color: 'white' }}>
+            <ArrowBackIosNew fontSize="small" />
           </IconButton>
-        )}
-        <IconButton
-          onClick={onClose}
-          sx={{
-            position: 'absolute',
-            right: 8,
-            top: 8,
-            color: 'text.secondary',
-          }}
-        >
-          <Close />
-        </IconButton>
-      </DialogTitle>
-      <Divider />
-      <DialogContent sx={{ p: 0 }}>
-        {hasImage && (
-          <CardMedia
-            component="img"
-            image={mainImage}
-            alt={post.name || 'Post image'}
-            sx={{ 
-              width: '100%',
-              maxHeight: '60vh',
-              objectFit: 'contain',
-              bgcolor: 'black'
-            }}
-          />
-        )}
-        <Box sx={{ p: 3 }}>
-          {post.name && (
-            <Typography variant="h6" gutterBottom>
-              {post.name}
-            </Typography>
-          )}
-          <Typography variant="body1" sx={{ whiteSpace: 'pre-wrap', mb: 3 }}>
-            {post.caption}
-          </Typography>
+          <IconButton ref={nextRef} sx={{ position: 'absolute', top: '50%', right: 8, zIndex: 10, color: 'white' }}>
+            <ArrowForwardIos fontSize="small" />
+          </IconButton>
+        </Box>
 
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 2 }}>
+        {/* Right: Post info */}
+        <Box sx={{ width: 400, display: 'flex', flexDirection: 'column', position: 'relative' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', p: 2 }}>
+            <Avatar src={post.user?.profilePicture || ''} sx={{ mr: 1 }} />
+            <Typography variant="subtitle2" sx={{ flexGrow: 1 }}>{post.user?.name || 'User'}</Typography>
+            {isOwnPost && (
+              <IconButton onClick={(e) => setAnchorEl(e.currentTarget)}><MoreVert /></IconButton>
+            )}
+            <IconButton onClick={onClose}><Close /></IconButton>
+          </Box>
+
+          <Divider />
+
+          <Box sx={{ p: 2, flex: 1, overflowY: 'auto' }}>
+            <Typography variant="body2" sx={{ mb: 2 }}>{post.caption}</Typography>
+            <List>
+              {comments.map(comment => (
+                <ListItem key={comment._id} disableGutters>
+                  <ListItemAvatar>
+                    <Avatar src={comment.user?.profilePicture || ''} />
+                  </ListItemAvatar>
+                  <ListItemText
+                    primary={
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <Typography variant="subtitle2">{comment.user?.name || 'User'}</Typography>
+                        {(comment.isOwnComment || isOwnPost) && (
+                          <IconButton size="small" onClick={() => handleDeleteComment(comment._id)}><Delete fontSize="small" /></IconButton>
+                        )}
+                      </Box>
+                    }
+                    secondary={comment.comment}
+                  />
+                </ListItem>
+              ))}
+            </List>
+          </Box>
+
+          <Divider />
+
+          <Box sx={{ display: 'flex', alignItems: 'center', p: 1 }}>
             <IconButton onClick={handleLikeClick}>
               {post.isLiked ? <Favorite color="primary" /> : <FavoriteBorder />}
             </IconButton>
-            <Typography variant="body2" color="text.secondary">
-              {post.likes.length || 0}
-            </Typography>
-            <IconButton>
-              <Comment />
-            </IconButton>
-            <Typography variant="body2" color="text.secondary">
-              {comments.length}
-            </Typography>
-            <IconButton>
-              <Share />
-            </IconButton>
+            <Typography variant="body2">{post.likes?.length || 0} likes</Typography>
           </Box>
 
-          <Divider sx={{ my: 2 }} />
-          
-          {/* Comments Section */}
-          <Typography variant="h6" gutterBottom>
-            Comments ({comments.length})
-          </Typography>
-          
-          <List sx={{ mb: 2 }}>
-            {Array.isArray(comments) && comments.map((comment) => (
-              <ListItem key={comment._id} alignItems="flex-start">
-                <ListItemAvatar>
-                  <Avatar 
-                    src={comment.user && typeof comment.user === 'object' ? (comment.user.avatar || comment.user.profilePicture) : ''} 
-                    alt={comment.user && typeof comment.user === 'object' ? comment.user.name : 'User'} 
-                  />
-                </ListItemAvatar>
-                <ListItemText
-                  primary={
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <Typography variant="subtitle2">
-                        {comment.user && typeof comment.user === 'object' ? comment.user.name : 'User'}
-                      </Typography>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <Typography variant="caption" color="text.secondary">
-                          {comment.timestamp || comment.createdAt}
-                        </Typography>
-                        {(comment.isOwnComment || isOwnPost) && (
-                          <IconButton 
-                            size="small" 
-                            onClick={() => handleDeleteComment(comment._id, post._id)}
-                            sx={{ p: 0.5 }}
-                          >
-                            <Delete fontSize="small" />
-                          </IconButton>
-                        )}
-                      </Box>
-                    </Box>
-                  }
-                  secondary={comment.comment}
-                />
-              </ListItem>
-            ))}
-          </List>
-
-          {/* Add Comment Section */}
-          <Box sx={{ display: 'flex', gap: 1, mt: 2 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', p: 1 }}>
             <TextField
               fullWidth
               size="small"
@@ -285,37 +193,23 @@ const PostDialog = ({
               value={newComment}
               onChange={(e) => setNewComment(e.target.value)}
               onKeyPress={(e) => {
-                if (e.key === 'Enter' && !e.shiftKey) {
+                if (e.key === 'Enter') {
                   e.preventDefault();
                   handleAddComment();
                 }
               }}
             />
-            <IconButton 
-              color="primary"
-              onClick={handleAddComment}
-              disabled={!newComment.trim()}
-            >
-              <Send />
-            </IconButton>
+            <IconButton onClick={handleAddComment}><Send /></IconButton>
           </Box>
-        </Box>
-      </DialogContent>
 
-      <Menu
-        anchorEl={anchorEl}
-        open={Boolean(anchorEl)}
-        onClose={handleMenuClose}
-      >
-        <MenuItem onClick={handleEdit}>
-          <Edit sx={{ mr: 1 }} /> Edit Post
-        </MenuItem>
-        <MenuItem onClick={handleDelete}>
-          <Delete sx={{ mr: 1 }} /> Delete Post
-        </MenuItem>
-      </Menu>
+          <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={() => setAnchorEl(null)}>
+            <MenuItem onClick={handleEdit}><Edit fontSize="small" sx={{ mr: 1 }} /> Edit</MenuItem>
+            <MenuItem onClick={handleDelete}><Delete fontSize="small" sx={{ mr: 1 }} /> Delete</MenuItem>
+          </Menu>
+        </Box>
+      </Box>
     </Dialog>
   );
 };
 
-export default PostDialog; 
+export default PostDialog;
