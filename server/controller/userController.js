@@ -26,7 +26,7 @@ const Update_user_profile = async (req, res) => {
   const { userId } = req.params;
   const profile_pictures = req.file;
   const { name, bio } = req.body;
-  
+
   try {
     const user = await User.findById(userId);
     if (!user) {
@@ -40,29 +40,32 @@ const Update_user_profile = async (req, res) => {
     // Only handle image upload if a new file is provided
     if (profile_pictures) {
       // Try to delete old image if it exists and is a Cloudinary URL
-      if (user.profilePicture && user.profilePicture.includes('cloudinary')) {
+      if (user.profilePicture && user.profilePicture.includes("cloudinary")) {
         try {
           const publicId = extractPublicId(user.profilePicture);
           if (publicId) {
             await cloudinary.uploader.destroy(publicId);
           }
         } catch (cloudinaryError) {
-          console.error('Error deleting old profile picture:', cloudinaryError);
+          console.error("Error deleting old profile picture:", cloudinaryError);
           // Continue with the update even if deletion fails
         }
       }
 
       // Upload new image
       try {
-        const uploadres = await cloudinary.uploader.upload(profile_pictures.path, {
-          folder: "profile_pictures",
-        });
+        const uploadres = await cloudinary.uploader.upload(
+          profile_pictures.path,
+          {
+            folder: "profile_pictures",
+          }
+        );
         imageUrl = uploadres.secure_url;
       } catch (uploadError) {
-        console.error('Error uploading new profile picture:', uploadError);
-        return res.status(500).json({ 
-          success: false, 
-          message: "Failed to upload profile picture" 
+        console.error("Error uploading new profile picture:", uploadError);
+        return res.status(500).json({
+          success: false,
+          message: "Failed to upload profile picture",
         });
       }
     }
@@ -70,7 +73,7 @@ const Update_user_profile = async (req, res) => {
     // Update user with new information
     const updateData = {
       name: name || user.name,
-      bio: bio || user.bio
+      bio: bio || user.bio,
     };
 
     // Only update profilePicture if we have a new one
@@ -78,22 +81,20 @@ const Update_user_profile = async (req, res) => {
       updateData.profilePicture = imageUrl;
     }
 
-    const updatedUser = await User.findByIdAndUpdate(
-      userId,
-      updateData,
-      { new: true }
-    );
+    const updatedUser = await User.findByIdAndUpdate(userId, updateData, {
+      new: true,
+    });
 
-    res.status(200).json({ 
+    res.status(200).json({
       success: true,
-      message: "Profile updated successfully!", 
-      user: updatedUser 
+      message: "Profile updated successfully!",
+      user: updatedUser,
     });
   } catch (err) {
-    console.error('Profile update error:', err);
-    res.status(500).json({ 
-      success: false, 
-      message: err.message || "Failed to update profile" 
+    console.error("Profile update error:", err);
+    res.status(500).json({
+      success: false,
+      message: err.message || "Failed to update profile",
     });
   }
 };
@@ -104,18 +105,24 @@ const Update_User_Controller = async (req, res) => {
   try {
     const user = await User.findById(userId);
     if (!user) {
-      return res.status(404).json({ success: false, message: "User not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found" });
     }
 
     // Verify current password
     if (!currentPassword) {
-      return res.status(400).json({ success: false, message: "Current password is required" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Current password is required" });
     }
-    
+
     // Verify current password
     const isMatch = await bcrypt.compare(currentPassword, user.password);
     if (!isMatch) {
-      return res.status(400).json({ success: false, message: "Current password is incorrect" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Current password is incorrect" });
     }
 
     // Update password
@@ -125,16 +132,16 @@ const Update_User_Controller = async (req, res) => {
       { new: true }
     );
 
-    res.status(200).json({ 
-      success: true, 
+    res.status(200).json({
+      success: true,
       message: "Password updated successfully",
-      user: updatedUser 
+      user: updatedUser,
     });
   } catch (err) {
-    console.error('Password update error:', err);
-    res.status(500).json({ 
-      success: false, 
-      message: err.message || "Failed to update password" 
+    console.error("Password update error:", err);
+    res.status(500).json({
+      success: false,
+      message: err.message || "Failed to update password",
     });
   }
 };
@@ -239,9 +246,9 @@ const ContactList = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    const contacts = await User.find({
-      _id: { $in: [...user.followers, ...user.followings] },
-    });
+    const contactIds = [...new Set([...user.followings, ...user.followers])];
+
+    const contacts = await User.find({ _id: { $in: contactIds } });
 
     res.status(200).json(contacts);
   } catch (err) {

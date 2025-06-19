@@ -76,7 +76,7 @@ login_Post = async (req, res) => {
     const user = await User.login(email, password);
     const token = createToken(user._id);
     res.cookie("jwt", token, { httpOnly: true, maxAge });
-    res.status(200).json({ user: user._id });
+    res.status(200).json({ token, user: { _id: user._id, role: user.role } });
   } catch (err) {
     const errore = hundleErrore(err);
     res.status(400).json(errore);
@@ -114,13 +114,13 @@ const login_admine = async (req, res) => {
 const logout_Post = async (req, res) => {
   try {
     // Clear the JWT cookie by setting it to expire immediately
-    res.cookie("jwt", "", { 
-      httpOnly: true, 
+    res.cookie("jwt", "", {
+      httpOnly: true,
       expires: new Date(0),
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict'
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
     });
-    
+
     res.status(200).json({ message: "Logged out successfully" });
   } catch (err) {
     console.error("Logout error:", err);

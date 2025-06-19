@@ -1,19 +1,22 @@
+// models/Message.js
 const mongoose = require("mongoose");
 
 const messageSchema = new mongoose.Schema({
-  senderId: {
+  chatId: { type: String, required: true },
+  sender: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+  receiver: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
     required: true,
   },
-  receiverId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "User",
-    required: true,
+  text: { type: String, required: true },
+  type: {
+    type: String,
+    enum: ["text", "image", "video", "audio", "file"],
+    default: "text",
   },
-  message: { type: String, required: true },
+  read: { type: Boolean, default: false },
   createdAt: { type: Date, default: Date.now },
 });
 
-const SchemaMessage = mongoose.model("Message", messageSchema);
-module.exports = { SchemaMessage };
+module.exports = mongoose.model("Message", messageSchema);
