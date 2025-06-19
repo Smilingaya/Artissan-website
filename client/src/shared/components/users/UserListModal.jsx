@@ -56,12 +56,12 @@ const UserListModal = ({
       
       <DialogContent sx={{ pt: 1 }}>
         {users.length > 0 ? (
-          <List sx={{ py: 0 }}>
+          <List sx={{ py: 0 , cursor: 'pointer'}}>
             {users.map((user) => (
               <ListItem 
-                key={user.id} 
+                key={user._id} 
                 button 
-                onClick={() => handleUserClick(user.id)}
+                onClick={() => handleUserClick(user._id)}
                 sx={{
                   borderRadius: 1,
                   mb: 0.5,

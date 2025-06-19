@@ -24,14 +24,10 @@ export const standardizePostsArray = (posts) => {
   return posts.map(post => ({
     ...post,
     id: post.id || post._id,
-    user: {
-      id: post.user?.id || post.userId,
-      name: post.user?.name || post.userName,
-      avatar: post.user?.avatar || post.userAvatar
-    },
-    likes: post.likes || 0,
-    comments: post.comments || 0,
-    timestamp: post.timestamp || 'Just now',
+    user: post.user,
+    likes: post.likes || [],
+    Comments: post.Comments || [],
+    timestamp: post.timestamp || post.createdAt || 'Just now',
     isLiked: post.isLiked || false
   }));
-}; 
+};

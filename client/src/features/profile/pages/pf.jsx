@@ -97,7 +97,12 @@ const ProfilePage = () => {
           setIsLoading(false);
           return;
         }
-        setUser(userData);
+        const isFollowing = userData.followers?.includes(currentUser._id);
+
+        setUser({
+  ...userData,
+  isFollowing: isFollowing || false
+});
         
         // Check if viewing own profile
         setIsOwnProfile(currentUser && currentUser._id === targetUserId);
@@ -276,28 +281,34 @@ const ProfilePage = () => {
   };
 
   const handleFollowToggle = async () => {
-    if (!user || !currentUser) return;
-    
-    try {
-      if (user.isFollowing) {
-        await unfollowUser(user._id);
-        setUser({
-          ...user,
-          isFollowing: false,
-          followers: user.followers - 1
-        });
-      } else {
-        await followUser(user._id);
-        setUser({
-          ...user,
-          isFollowing: true,
-          followers: user.followers + 1
-        });
-      }
-    } catch (error) {
-      console.error('Error toggling follow:', error);
+    console.log('Toggling follow for user:', userId);
+  if (!user || !currentUser) return;
+
+  try {
+    if (user.isFollowing) {
+      await unfollowUser(userId);
+      const updatedFollowers = followers.filter(f => f._id !== currentUser._id);
+      setFollowers(updatedFollowers);
+      setUser({
+        ...user,
+        isFollowing: false,
+        followers: updatedFollowers
+      });
+    } else {
+      await followUser(userId);
+      const newFollowers = [...followers, currentUser]; // assuming currentUser contains _id and name
+      setFollowers(newFollowers);
+      setUser({
+        ...user,
+        isFollowing: true,
+        followers: newFollowers
+      });
     }
-  };
+  } catch (error) {
+    console.error('Error toggling follow:', error);
+    alert(error.message || 'Something went wrong while toggling follow.');
+  }
+};
 
   const handleLike = async (postId) => {
   try {
@@ -314,10 +325,8 @@ const ProfilePage = () => {
       isLiked: !alreadyLiked
     };
 
-    // تحديث البوست في القائمة
     setPosts(prev => prev.map(p => p._id === postId ? newPost : p));
 
-    // إذا كنت تستخدم selectedPost لعرض التفاصيل:
     if (selectedPost && selectedPost._id === postId) {
       setSelectedPost(newPost);
     }
@@ -327,30 +336,52 @@ const ProfilePage = () => {
 };
 
 const handleAddComment = async (postId, commentText) => {
-    try {
-      const newComment = await addComment(postId, { text: commentText });
-      setPosts(prevPosts => prevPosts.map(post => 
-        post._id === postId 
-          ? { ...post, comments: [...(post.comments || []), newComment] }
-          : post
-      ));
-    } catch (error) {
-      console.error('Error adding comment:', error);
-    }
-  };
+  try {
+    const newComment = await addComment(postId, {
+      comment: commentText,
+      user: currentUser._id  
+    });
 
-  const handleDeleteComment = async (commentId, postId) => {
-    try {
-      await deleteComment(commentId);
-      setPosts(prevPosts => prevPosts.map(post => 
-        post._id === postId 
-          ? { ...post, comments: post.comments.filter(c => c._id !== commentId) }
+    setPosts(prevPosts => prevPosts.map(post => 
+      post._id === postId 
+        ? { ...post, Comments: [...(post.Comments || []), newComment] }
+        : post
+    ));
+  } catch (error) {
+    console.error('Error adding comment:', error);
+  }
+};
+
+const handleDeleteComment = async (commentId, postId) => {
+  try {
+    await deleteComment(commentId, postId);
+
+    setPosts(prevPosts =>
+      prevPosts.map(post =>
+        post._id === postId
+          ? {
+              ...post,
+              Comments: (post.Comments || []).filter(
+                c => c.toString() !== commentId.toString()
+              )
+            }
           : post
-      ));
-    } catch (error) {
-      console.error('Error deleting comment:', error);
+      )
+    );
+    if (selectedPost && selectedPost._id === postId) {
+      setSelectedPost(prev => ({
+        ...prev,
+        Comments: (prev.Comments || []).filter(
+          c => c.toString() !== commentId.toString()
+        )
+      }));
     }
-  };
+  } catch (error) {
+    console.error('Error deleting comment:', error);
+  }
+};
+
+
 
 
   // PATCH: Robust product creation handler
@@ -376,8 +407,6 @@ const handleAddComment = async (postId, commentText) => {
         // Refresh the products list after creating a new product
         await refreshProducts();
         setCreateProductOpen(false);
-        // Show success message
-        alert('Product created successfully!');
       } else {
         throw new Error('Invalid response from server');
       }
@@ -387,6 +416,32 @@ const handleAddComment = async (postId, commentText) => {
       alert(error.message || 'Failed to save product. Please try again.');
     }
   };
+
+  const handleUpdateProduct = async (productId, formData) => {
+  try {
+    console.log('Updating product:', productId, formData);
+
+    const result = await updateProduct(productId, {
+      ...formData,
+      userId: currentUser._id
+    });
+
+    const updated = result?.updatedProduct || result; // support both cases
+
+    if (updated && updated._id) {
+      await refreshProducts();
+      setEditProductOpen(false);
+      setSelectedProduct(null);
+    } else {
+      throw new Error('Invalid update response from server');
+    }
+  } catch (error) {
+    console.error('Error updating product:', error);
+    alert(error.message || 'Failed to update product. Please try again.');
+  }
+};
+
+
 
   // PATCH: Add refreshProducts function
   const refreshProducts = async () => {
@@ -523,8 +578,6 @@ const handleAddComment = async (postId, commentText) => {
                   onPostClick={setSelectedPost}
                   onEdit={handleEditPost}
                   onDelete={handleDeletePost}
-                  onAddComment={handleAddComment}
-                  onDeleteComment={handleDeleteComment}
                   isOwnPost={isOwnProfile}
                   variant={viewMode === 'grid' ? 'grid' : 'feed'}
                 />
@@ -574,11 +627,11 @@ const handleAddComment = async (postId, commentText) => {
           {selectedProduct && (
             <ProductDialog
               product={selectedProduct}
-  open={Boolean(selectedProduct)}
-  onClose={() => setSelectedProduct(null)}
-  isOwnProduct={isOwnProfile}
-  currentUser={currentUser} 
-/>
+              open={Boolean(selectedProduct)}
+              onClose={() => setSelectedProduct(null)}
+              isOwnProduct={isOwnProfile}
+              currentUser={currentUser} 
+            />
 
           )}
 
@@ -639,7 +692,12 @@ const handleAddComment = async (postId, commentText) => {
               }}
               type={createProductOpen ? 'create' : 'edit'}
               initialData={selectedProduct}
-              onSubmit={handleCreateProduct}
+              onSubmit={
+  createProductOpen
+    ? handleCreateProduct
+    : (formData) => handleUpdateProduct(selectedProduct?._id, formData)
+}
+
             />
           )}
 

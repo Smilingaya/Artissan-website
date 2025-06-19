@@ -34,7 +34,7 @@ const GET_post = async (req, res) => {
         .json({ success: false, message: "User not found" });
     }
 
-    const userPosts = await Post.find({ user: userId }).populate('user', 'name avatar profilePicture');
+    const userPosts = await Post.find({ user: userId }).populate('user', 'name avatar profilePicture').populate('Comments');
 
     res.status(200).json({ success: true, posts: userPosts });
   } catch (err) {

@@ -6,7 +6,6 @@ import { Box, CircularProgress } from '@mui/material';
 
 // Import context providers directly (they're lightweight)
 import { UserProvider, useAuth } from './shared/contexts/UserContext';
-import { OrderProvider } from './features/orders/contexts/OrderContext';
 import { ProtectedRoute, PublicRoute, AdminRoute } from './shared/components/auth/ProtectedRoute';
 
 // Import themes directly to avoid loading issues
@@ -43,17 +42,6 @@ const LoadingSpinner = () => (
   >
     <CircularProgress />
   </Box>
-);
-
-// Optimized E-commerce Layout
-const EcommerceLayout = ({ children }) => (
-  <ThemeProvider theme={theme}>
-    <CssBaseline />
-        <Suspense fallback={<LoadingSpinner />}>
-          <Header />
-          {children}
-        </Suspense>
-  </ThemeProvider>
 );
 
 // Optimized Forgot Password Layout
@@ -114,9 +102,7 @@ const AppRoutes = () => {
         {/* E-commerce Routes - Protected */}
         <Route path="/checkout" element={
           <ProtectedRoute>
-            <EcommerceLayout>
               <CheckoutPage />
-            </EcommerceLayout>
           </ProtectedRoute>
         } />
         <Route path="/my-orders" element={
@@ -155,11 +141,9 @@ function App() {
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <UserProvider>
-        <OrderProvider>
           <Router>
             <AppRoutes />
           </Router>
-        </OrderProvider>
       </UserProvider>
     </ThemeProvider>
   );

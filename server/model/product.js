@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 const { isFloat } = require("validator");
 const Category = require("./category");
+const User = require('./user');
 const ProductSchema = new mongoose.Schema({
   user: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
 

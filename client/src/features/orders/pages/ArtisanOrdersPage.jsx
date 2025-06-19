@@ -1,8 +1,8 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { 
-  Container, 
-  Typography, 
-  Box, 
+import {
+  Container,
+  Typography,
+  Box,
   Paper,
   Tabs,
   Tab,
@@ -11,12 +11,11 @@ import {
   CircularProgress
 } from '@mui/material';
 import { UserContext } from '../../../shared/contexts/UserContext';
-import { OrderContext } from '../contexts/OrderContext';
-import OrderItem from '../components/OrderItem';
 import MainLayout from '../../../shared/components/layout/MainLayout';
+import OrderItem from '../components/OrderItem';
+import { fetchArtisanOrders, updateOrderStatus as updateOrderStatusAPI } from '../../profile/utils/api'; 
 
 const ArtisanOrdersPage = () => {
-  const { getSellerOrders, updateOrderStatus } = useContext(OrderContext);
   const { currentUser } = useContext(UserContext);
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -27,19 +26,25 @@ const ArtisanOrdersPage = () => {
     severity: 'success'
   });
 
-  const loadOrders = () => {
-    if (currentUser && currentUser.id) {
-      console.log('Loading orders for seller:', currentUser.id);
-      const sellerOrders = getSellerOrders(currentUser.id);
-      console.log('Found seller orders:', sellerOrders);
-      setOrders(sellerOrders);
-    }
-    setLoading(false);
-  };
-
   useEffect(() => {
+    const loadOrders = async () => {
+      if (!currentUser?._id) return;
+      try {
+        const data = await fetchArtisanOrders(currentUser._id);
+        setOrders(Array.isArray(data) ? data : data.orders || []);
+      } catch (error) {
+        setSnackbar({
+          open: true,
+          message: 'Failed to load orders',
+          severity: 'error'
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
     loadOrders();
-  }, [currentUser, getSellerOrders]);
+  }, [currentUser]);
 
   const handleTabChange = (event, newValue) => {
     setTabValue(newValue);
@@ -47,21 +52,18 @@ const ArtisanOrdersPage = () => {
 
   const handleUpdateStatus = async (orderId, newStatus) => {
     try {
-      await updateOrderStatus(orderId, newStatus);
-      
-      // Update the order status in the local state immediately
-      setOrders(prevOrders => prevOrders.map(order => {
-        if (order.id === orderId) {
-          const updates = { status: newStatus };
-          // Auto-update payment status if marking as shipped
-          if (newStatus === 'shipped') {
-            updates.paymentStatus = 'paid';
-          }
-          return { ...order, ...updates };
-        }
-        return order;
-      }));
-
+      await updateOrderStatusAPI(orderId, newStatus);
+      setOrders(prev =>
+        prev.map(order =>
+          order._id === orderId
+            ? {
+                ...order,
+                status: newStatus,
+                paymentStatus: newStatus === 'shipped' ? 'paid' : order.paymentStatus
+              }
+            : order
+        )
+      );
       setSnackbar({
         open: true,
         message: `Order status updated to ${newStatus}`,
@@ -80,9 +82,8 @@ const ArtisanOrdersPage = () => {
     setSnackbar(prev => ({ ...prev, open: false }));
   };
 
-  // Filter orders based on selected tab
   const filteredOrders = orders.filter(order => {
-    if (tabValue === 0) return true; // All orders
+    if (tabValue === 0) return true;
     if (tabValue === 1) return order.status === 'pending';
     if (tabValue === 2) return order.status === 'accepted' && order.paymentStatus === 'unpaid';
     if (tabValue === 3) return order.status === 'accepted' && order.paymentStatus === 'paid';
@@ -100,12 +101,12 @@ const ArtisanOrdersPage = () => {
             Artisan Dashboard
           </Typography>
         </Box>
-        
+
         <Paper elevation={0} sx={{ mb: 3 }}>
-          <Tabs 
-            value={tabValue} 
-            onChange={handleTabChange} 
-            variant="scrollable" 
+          <Tabs
+            value={tabValue}
+            onChange={handleTabChange}
+            variant="scrollable"
             scrollButtons="auto"
           >
             <Tab label="All Orders" />
@@ -124,9 +125,9 @@ const ArtisanOrdersPage = () => {
           </Box>
         ) : filteredOrders.length > 0 ? (
           filteredOrders.map(order => (
-            <OrderItem 
-              key={order.id} 
-              order={order} 
+            <OrderItem
+              key={order._id}
+              order={order}
               isSellerView={true}
               onUpdateStatus={handleUpdateStatus}
             />
@@ -134,27 +135,26 @@ const ArtisanOrdersPage = () => {
         ) : (
           <Box sx={{ textAlign: 'center', py: 4 }}>
             <Typography variant="body1" color="text.secondary">
-              {tabValue === 0 
-                ? "You don't have any orders yet" 
-                : tabValue === 1 
-                  ? "No new orders to review" 
-                  : tabValue === 2
-                    ? "No orders awaiting payment"
-                    : tabValue === 3
-                      ? "No orders ready to ship"
-                      : tabValue === 4
-                        ? "No orders in transit"
-                        : tabValue === 5
-                          ? "No delivered orders"
-                          : "No cancelled orders"}
+              {tabValue === 0
+                ? "You don't have any orders yet"
+                : tabValue === 1
+                ? 'No new orders to review'
+                : tabValue === 2
+                ? 'No orders awaiting payment'
+                : tabValue === 3
+                ? 'No orders ready to ship'
+                : tabValue === 4
+                ? 'No orders in transit'
+                : tabValue === 5
+                ? 'No delivered orders'
+                : 'No cancelled orders'}
             </Typography>
           </Box>
         )}
 
-        {/* Status Update Snackbar */}
-        <Snackbar 
-          open={snackbar.open} 
-          autoHideDuration={6000} 
+        <Snackbar
+          open={snackbar.open}
+          autoHideDuration={6000}
           onClose={handleCloseSnackbar}
           anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
         >
@@ -167,4 +167,4 @@ const ArtisanOrdersPage = () => {
   );
 };
 
-export default ArtisanOrdersPage; 
+export default ArtisanOrdersPage;

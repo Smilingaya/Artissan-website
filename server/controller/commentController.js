@@ -7,27 +7,37 @@ const create_comment_controller = async function (req, res) {
   try {
     const { postId } = req.params;
     const { user, comment } = req.body;
+
     const newComment = new Comment({
       post: postId,
       user,
       comment,
     });
+
     await newComment.save();
+
+    // Push comment ID into Post model if needed
     const post = await Post.findById(postId);
-    post.Comments.push(newComment._id);
-    await post.save();
-    res.status(201).json({ success: true, comment: newComment });
+    if (post) {
+      post.Comments.push(newComment._id);
+      await post.save();
+    }
+
+    const populatedComment = await newComment.populate('user', 'name avatar profilePicture');
+
+    res.status(201).json({ success: true, comment: populatedComment });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }
 };
+
 const get_comment_controller = async function (req, res) {
   try {
     const { postId } = req.params;
 
-    const post = await Post.findById(postId);
-
-    const comments = await Comment.find({ post: post._id }); // searches the comments collection for documents where the post field matches the _id of a specific post.
+    const comments = await Comment.find({ post: postId })
+      .populate('user', 'name avatar profilePicture')
+      .sort({ createdAt: -1 }); // newest first (optional)
 
     res.status(200).json({ success: true, comments });
   } catch (err) {

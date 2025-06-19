@@ -29,12 +29,19 @@ const ProductDialog = ({ product, open, onClose, isOwnProduct, currentUser }) =>
   const [newReview, setNewReview] = useState('');
   const [newRating, setNewRating] = useState(5);
   const [error, setError] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
 
   useEffect(() => {
     setReviews(Array.isArray(product?.reviews) ? product.reviews : []);
   }, [product]);
 
   if (!product) return null;
+
+  const handleUserClick = () => {
+  if (product.user && typeof product.user === 'object' && product.user._id) {
+    navigate(`/profile/${product.user._id}`);
+  }
+};
 
   const handleAddReview = () => {
     if (!newReview.trim()) return;
@@ -56,26 +63,43 @@ const ProductDialog = ({ product, open, onClose, isOwnProduct, currentUser }) =>
   };
 
   const handleCreateOrder = async () => {
-    if (!currentUser || !currentUser._id || !product) {
-      setError('Missing user or product information');
+  try {
+    if (!product || !product.user || !product.user._id || !currentUser?._id) {
+      setError('Missing user information');
       return;
     }
 
-    try {
-      const response = await createOrder(product.user._id, {
-        userId: currentUser._id,
-        items: [{ product: product._id, quantity }],
-        shippingAddress: 'To be filled in checkout', // Or collect via a dialog
-        phoneNumber: currentUser.phoneNumber || 0,
-      });
+    const orderData = {
+      userId: currentUser._id,
+      items: [
+        {
+          product: product._id,
+          quantity: quantity,
+        }
+      ],
+      shippingAddress: 'Temporary Address Placeholder',
+      phoneNumber: 1234567890
+    };
 
+    console.log('Creating order with data:', orderData);
+    console.log('Artisan ID:', product.user._id);
+
+    const result = await createOrder(product.user._id, orderData);
+
+    setSuccessMessage('✅ Order created successfully!');
+    
+    // Optional: wait a moment before closing and navigating
+    setTimeout(() => {
       onClose();
       navigate('/my-orders');
-    } catch (err) {
-      console.error('Failed to create order:', err);
-      setError(err.message || 'Failed to create order');
-    }
-  };
+    }, 1500);
+  } catch (err) {
+    setError(err.message || 'Failed to create order');
+    console.error('Failed to create order:', err);
+  }
+};
+
+
 
   const averageRating =
     reviews.length > 0
@@ -91,17 +115,24 @@ const ProductDialog = ({ product, open, onClose, isOwnProduct, currentUser }) =>
       PaperProps={{ sx: { borderRadius: 2, maxHeight: '90vh' } }}
     >
       <DialogTitle sx={{ m: 0, p: 2, display: 'flex', alignItems: 'center', gap: 2 }}>
-        <Avatar
-          src={product.user?.avatar || product.user?.profilePicture || ''}
-          alt={product.user?.name}
-          sx={{ width: 40, height: 40 }}
-        />
+         <IconButton onClick={handleUserClick} sx={{ p: 0 }}>
+          <Avatar
+            src={product.user?.profilePicture || ''}
+            alt={product.user?.name || 'User'}
+            sx={{ width: 40, height: 40 }}
+          />
+        </IconButton>
         <Box sx={{ flex: 1 }}>
-          <Typography variant="subtitle1" fontWeight={600}>
-            {product.user?.name}
+          <Typography
+            variant="subtitle1"
+            component="div"
+            sx={{ fontWeight: 600, cursor: 'pointer' }}
+            onClick={handleUserClick}
+          >
+            {product.user?.name || 'User'}
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            {product.category}
+            {product.category?.name || 'No category'}
           </Typography>
         </Box>
         <IconButton
@@ -143,7 +174,7 @@ const ProductDialog = ({ product, open, onClose, isOwnProduct, currentUser }) =>
 
             <Box sx={{ my: 2 }}>
               <Chip label={`Stock: ${product.stoke}`} color="info" sx={{ mr: 1 }} />
-              <Chip label={product.category} variant="outlined" />
+              <Chip label={product.category?.name || 'No category'} variant="outlined" />
             </Box>
 
             <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
@@ -157,6 +188,11 @@ const ProductDialog = ({ product, open, onClose, isOwnProduct, currentUser }) =>
                     {error}
                   </Typography>
                 )}
+                {successMessage && (
+  <Typography color="success.main" variant="body2" sx={{ mb: 2 }}>
+    {successMessage}
+  </Typography>
+)}
 
                 <TextField
                   fullWidth

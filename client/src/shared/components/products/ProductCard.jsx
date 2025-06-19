@@ -168,30 +168,6 @@ const ProductCard = ({
         }
       }}
     >
-      <CardHeader
-        avatar={
-          <Avatar
-            src={product.user?.avatar}
-            alt={product.user?.name}
-            onClick={handleUserClick}
-            sx={{ cursor: 'pointer' }}
-          />
-        }
-        title={
-          <Typography
-            variant="subtitle2"
-            component="span"
-            onClick={handleUserClick}
-            sx={{
-              cursor: 'pointer',
-              '&:hover': { textDecoration: 'underline' }
-            }}
-          >
-            {product.user?.name}
-          </Typography>
-        }
-        subheader={product.category}
-      />
       <CardMedia
         component="img"
         height="200"

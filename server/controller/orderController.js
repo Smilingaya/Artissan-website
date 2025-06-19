@@ -73,13 +73,26 @@ const create_order = async (req, res) => {
 const Get_user_orders = async (req, res) => {
   const userId = req.params.userId;
   try {
-    const user = await User.findById(userId).populate("orders");
+    const user = await User.findById(userId).populate({
+  path: 'orders',
+  populate: {
+    path: 'items',
+    populate: {
+      path: 'product',
+      populate: {
+        path: 'user', 
+        select: 'name _id'
+      }
+    }
+  }
+});
 
     res.status(200).json({ success: true, orders: user.orders });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }
 };
+
 const delete_order = async (req, res) => {
   const orderId = req.params.orderId;
   try {
@@ -132,9 +145,13 @@ const delete_order = async (req, res) => {
 const get_user_commanded_products = async (req, res) => {
   const artisanId = req.params.artisanId;
   try {
-    const artisan = await User.findById(artisanId).populate(
-      "commandedProducts"
-    );
+    const artisan = await User.findById(artisanId).populate({
+  path: "commandedProducts",
+  populate: [
+    { path: "items", populate: { path: "product", populate: "user" } },
+    { path: "user" }
+  ]
+});
 
     res.status(200).json({
       success: true,
@@ -145,23 +162,29 @@ const get_user_commanded_products = async (req, res) => {
   }
 };
 const update_status = async (req, res) => {
-  const orderId = req.params.orderId;
-  const { status } = req.body;
+  const { orderId } = req.params;
+  const { status, paymentStatus } = req.body;
+
   try {
-    const order = await Order.findByIdAndUpdate(
+    const updatedOrder = await Order.findByIdAndUpdate(
       orderId,
-      { status },
+      {
+        ...(status && { status }),             // optional update of order status
+        ...(paymentStatus && { paymentStatus }) // optional update of payment status
+      },
       { new: true }
     );
-    res.status(200).json({
-      success: true,
-      message: "Order status updated successfully",
-      order,
-    });
+
+    if (!updatedOrder) {
+      return res.status(404).json({ success: false, message: 'Order not found' });
+    }
+
+    res.status(200).json({ success: true, order: updatedOrder });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }
 };
+
 const Get_One_order = async (req, res) => {
   const orderId = req.params.orderId;
   try {

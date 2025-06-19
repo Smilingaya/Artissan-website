@@ -74,7 +74,7 @@ const Get_product = async (req, res) => {
         .status(404)
         .json({ success: false, message: "User not found" });
     }
-    const userProducts = await Product.find({ user: userId });
+    const userProducts = await Product.find({ user: userId }).populate('user').populate('category', 'name');
     res.status(200).json({ success: true, products: userProducts });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });

@@ -23,7 +23,6 @@ import {
 const PostCard = ({
   post,
   onLike,
-  onComment,
   onEdit,
   onDelete,
   isOwnPost,
@@ -54,11 +53,6 @@ const PostCard = ({
   const handleLikeClick = (e) => {
     e.stopPropagation();
     onLike?.(post._id);
-  };
-
-  const handleCommentClick = (e) => {
-    e.stopPropagation();
-    onComment?.(post);
   };
 
   const handleCardClick = () => {
@@ -111,11 +105,11 @@ const PostCard = ({
         <Typography variant="body2" color="text.secondary">
           {post.likes.length || 0}
         </Typography>
-        <IconButton onClick={handleCommentClick}>
+        <IconButton onClick={handleCardClick}>
           <Comment />
         </IconButton>
         <Typography variant="body2" color="text.secondary">
-          {post.comments?.length || 0}
+          {post.Comments?.length || 0}
         </Typography>
         <IconButton>
           <Share />

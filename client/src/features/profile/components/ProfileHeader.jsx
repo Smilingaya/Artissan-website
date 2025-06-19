@@ -119,12 +119,6 @@ const ProfileHeader = ({
               </Typography>
             </Box>
           </Stack>
-
-          {user?.location && (
-            <Typography variant="body2" color="text.secondary">
-              📍 {user.location}
-            </Typography>
-          )}
         </Box>
       </Box>
     </Paper>

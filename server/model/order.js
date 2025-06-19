@@ -13,6 +13,11 @@ const orderSchema = new mongoose.Schema({
     enum: ["pending", "shipped", "delivered", "cancelled", "Accepted"],
     default: "pending",
   },
+  paymentStatus: {
+    type: String,
+    enum: ["unpaid", "paid"],
+    default: "unpaid"
+  },
   shippingAddress: {
     type: String,
     required: true,

@@ -197,27 +197,41 @@ const Get_User_followings = async (req, res) => {
 };
 const unfollow_Post_Controller = async (req, res) => {
   const { userId } = req.params;
-  const { currentUserId } = req.body;
-  try {
-    await User.findByIdAndUpdate(
-      userId,
-      {
-        $pull: { followers: currentUserId },
-      },
-      { new: true }
+  const userToken = req.cookies.jwt;
+
+  if (!userToken) return res.status(401).json({ message: "Unauthorized" });
+
+  jwt.verify(userToken, "artissan web site", async (err, decoded) => {
+    if (err) return res.status(403).json({ message: "Invalid token" });
+
+    const loggedInUserId = decoded.id;
+
+    if (userId === loggedInUserId) {
+      return res.status(400).json({ message: "You can't unfollow yourself" });
+    }
+
+    const userToUnfollow = await User.findById(userId);
+    const loggedInUser = await User.findById(loggedInUserId);
+
+    if (!userToUnfollow || !loggedInUser) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Remove the relationship
+    userToUnfollow.followers = userToUnfollow.followers.filter(
+      (id) => id.toString() !== loggedInUserId
     );
-    await User.findByIdAndUpdate(
-      currentUserId,
-      {
-        $pull: { followings: userId },
-      },
-      { new: true }
+    loggedInUser.followings = loggedInUser.followings.filter(
+      (id) => id.toString() !== userId
     );
-    res.status(200).json({ message: " user Unfollow success !!" });
-  } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
-  }
+
+    await userToUnfollow.save();
+    await loggedInUser.save();
+
+    res.status(200).json({ message: "Successfully unfollowed user" });
+  });
 };
+
 const ContactList = async (req, res) => {
   try {
     const user = await User.findById(req.params.userId);

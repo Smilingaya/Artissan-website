@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react';
+import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
   Container,
@@ -19,8 +19,6 @@ import {
   Divider,
   Alert
 } from '@mui/material';
-import { OrderContext } from '../contexts/OrderContext';
-import { UserContext } from '../../../shared/contexts/UserContext';
 import MainLayout from '../../../shared/components/layout/MainLayout';
 
 const steps = ['Shipping Address', 'Payment Method', 'Review Order'];
@@ -28,127 +26,54 @@ const steps = ['Shipping Address', 'Payment Method', 'Review Order'];
 const CheckoutPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { createOrder, updatePaymentStatus } = useContext(OrderContext);
-  const { currentUser } = useContext(UserContext);
   const [activeStep, setActiveStep] = useState(0);
   const [shippingAddress, setShippingAddress] = useState({
-    name: '',
-    street: '',
-    city: '',
-    state: '',
-    zipCode: '',
-    country: ''
+    name: '', street: '', city: '', state: '', zipCode: '', country: ''
   });
   const [paymentMethod, setPaymentMethod] = useState('card');
   const order = location.state?.order;
+  console.log('Order ID being sent to update:', order._id);
 
-  const handleNext = () => {
-    setActiveStep((prevActiveStep) => prevActiveStep + 1);
+  const handleNext = () => setActiveStep(prev => prev + 1);
+  const handleBack = () => setActiveStep(prev => prev - 1);
+
+  const handleAddressChange = (e) => {
+    const { name, value } = e.target;
+    setShippingAddress(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleBack = () => {
-    setActiveStep((prevActiveStep) => prevActiveStep - 1);
-  };
+  const handlePaymentMethodChange = (e) => setPaymentMethod(e.target.value);
 
-  const handleAddressChange = (event) => {
-    const { name, value } = event.target;
-    setShippingAddress(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
-
-  const handlePaymentMethodChange = (event) => {
-    setPaymentMethod(event.target.value);
-  };
-
-  const handlePlaceOrder = async () => {
-    if (!order) {
-      // Create a new order if there isn't one
-      const orderData = {
-        items: [],  // You'll need to populate this with actual items
-        payment: paymentMethod,
-        userId: currentUser?.id,
-        address: shippingAddress
-      };
-      await createOrder(orderData);
-    } else {
-      // Update existing order
-      await updatePaymentStatus(order.id, 'paid');
-    }
+const handlePlaceOrder = async () => {
+  try {
+    if (!order) return;
+    await fetch(`http://localhost:3000/api/order/update/${order._id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ paymentStatus: 'paid' })
+    });
     navigate('/my-orders');
-  };
+  } catch (err) {
+    console.error('Error placing order:', err);
+  }
+};
 
-  // Validate the current step
-  const validateCurrentStep = () => {
-    if (activeStep === 0) {
-      return Object.values(shippingAddress).every(value => value.trim() !== '');
-    }
-    return true;
-  };
 
   const renderAddressForm = () => (
     <Grid container spacing={3}>
-      <Grid item xs={12}>
-        <TextField
-          required
-          fullWidth
-          label="Full Name"
-          name="name"
-          value={shippingAddress.name}
-          onChange={handleAddressChange}
-        />
-      </Grid>
-      <Grid item xs={12}>
-        <TextField
-          required
-          fullWidth
-          label="Street Address"
-          name="street"
-          value={shippingAddress.street}
-          onChange={handleAddressChange}
-        />
-      </Grid>
-      <Grid item xs={12} sm={6}>
-        <TextField
-          required
-          fullWidth
-          label="City"
-          name="city"
-          value={shippingAddress.city}
-          onChange={handleAddressChange}
-        />
-      </Grid>
-      <Grid item xs={12} sm={6}>
-        <TextField
-          required
-          fullWidth
-          label="State/Province"
-          name="state"
-          value={shippingAddress.state}
-          onChange={handleAddressChange}
-        />
-      </Grid>
-      <Grid item xs={12} sm={6}>
-        <TextField
-          required
-          fullWidth
-          label="ZIP / Postal Code"
-          name="zipCode"
-          value={shippingAddress.zipCode}
-          onChange={handleAddressChange}
-        />
-      </Grid>
-      <Grid item xs={12} sm={6}>
-        <TextField
-          required
-          fullWidth
-          label="Country"
-          name="country"
-          value={shippingAddress.country}
-          onChange={handleAddressChange}
-        />
-      </Grid>
+      {['name', 'street', 'city', 'state', 'zipCode', 'country'].map((field, i) => (
+        <Grid item xs={12} sm={i >= 2 ? 6 : 12} key={field}>
+          <TextField
+            required
+            fullWidth
+            label={field.replace(/([A-Z])/g, ' $1')}
+            name={field}
+            value={shippingAddress[field]}
+            onChange={handleAddressChange}
+          />
+        </Grid>
+      ))}
     </Grid>
   );
 
@@ -170,9 +95,7 @@ const CheckoutPage = () => {
 
   const renderOrderSummary = () => (
     <Box>
-      <Typography variant="h6" gutterBottom>
-        Order Summary
-      </Typography>
+      <Typography variant="h6" gutterBottom>Order Summary</Typography>
       {order ? (
         <>
           {order.items.map((item, index) => (
@@ -180,9 +103,7 @@ const CheckoutPage = () => {
               <Grid container>
                 <Grid item xs={8}>
                   <Typography>{item.name}</Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Quantity: {item.quantity}
-                  </Typography>
+                  <Typography variant="body2" color="text.secondary">Quantity: {item.quantity}</Typography>
                 </Grid>
                 <Grid item xs={4} textAlign="right">
                   <Typography>${item.price * item.quantity}</Typography>
@@ -192,60 +113,33 @@ const CheckoutPage = () => {
           ))}
           <Divider sx={{ my: 2 }} />
           <Grid container>
-            <Grid item xs={8}>
-              <Typography variant="subtitle1">Total</Typography>
-            </Grid>
-            <Grid item xs={4} textAlign="right">
-              <Typography variant="subtitle1">${order.total}</Typography>
-            </Grid>
+            <Grid item xs={8}><Typography variant="subtitle1">Total</Typography></Grid>
+            <Grid item xs={4} textAlign="right"><Typography variant="subtitle1">${order.total}</Typography></Grid>
           </Grid>
         </>
       ) : (
-        <Alert severity="info">
-          No items in order yet. Please add items before proceeding.
-        </Alert>
+        <Alert severity="info">No items in order yet. Please add items before proceeding.</Alert>
       )}
     </Box>
   );
-
-  const renderStepContent = (step) => {
-    switch (step) {
-      case 0:
-        return renderAddressForm();
-      case 1:
-        return renderPaymentForm();
-      case 2:
-        return renderOrderSummary();
-      default:
-        return null;
-    }
-  };
 
   return (
     <MainLayout>
       <Container maxWidth="md" sx={{ mb: 4 }}>
         <Paper sx={{ p: 4 }}>
-          <Typography component="h1" variant="h4" align="center" sx={{ mb: 4 }}>
-            Checkout
-          </Typography>
+          <Typography component="h1" variant="h4" align="center" sx={{ mb: 4 }}>Checkout</Typography>
           <Stepper activeStep={activeStep} sx={{ mb: 4 }}>
-            {steps.map((label) => (
-              <Step key={label}>
-                <StepLabel>{label}</StepLabel>
-              </Step>
-            ))}
+            {steps.map((label) => <Step key={label}><StepLabel>{label}</StepLabel></Step>)}
           </Stepper>
-          {renderStepContent(activeStep)}
+          {activeStep === 0 && renderAddressForm()}
+          {activeStep === 1 && renderPaymentForm()}
+          {activeStep === 2 && renderOrderSummary()}
           <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 3 }}>
-            {activeStep !== 0 && (
-              <Button onClick={handleBack} sx={{ mr: 1 }}>
-                Back
-              </Button>
-            )}
+            {activeStep !== 0 && <Button onClick={handleBack} sx={{ mr: 1 }}>Back</Button>}
             <Button
               variant="contained"
               onClick={activeStep === steps.length - 1 ? handlePlaceOrder : handleNext}
-              disabled={!validateCurrentStep()}
+              disabled={activeStep === 0 && !Object.values(shippingAddress).every(v => v.trim())}
             >
               {activeStep === steps.length - 1 ? 'Place Order' : 'Next'}
             </Button>

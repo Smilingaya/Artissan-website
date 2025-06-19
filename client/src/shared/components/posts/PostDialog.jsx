@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+
 import {
   Dialog,
   DialogContent,
@@ -43,23 +45,43 @@ const PostDialog = ({
   isOwnPost,
   currentUser
 }) => {
+  const navigate = useNavigate();
+
   const [newComment, setNewComment] = useState('');
   const [comments, setComments] = useState([]);
   const [anchorEl, setAnchorEl] = useState(null);
 
   useEffect(() => {
-    if (post && Array.isArray(post.comments)) {
-      const commentsWithOwnership = post.comments.map(comment => ({
-        ...comment,
-        isOwnComment: currentUser && comment.userId === currentUser._id
-      }));
-      setComments(commentsWithOwnership);
-    } else {
-      setComments([]);
+  const loadComments = async () => {
+    if (post && post._id) {
+      try {
+        const res = await fetchPostComments(post._id);
+        const commentsWithOwnership = res.comments.map(comment => ({
+          ...comment,
+          isOwnComment: currentUser && comment.user === currentUser._id || comment.user?._id === currentUser._id
+        }));
+        setComments(commentsWithOwnership);
+      } catch (error) {
+        console.error('Failed to load comments:', error);
+        setComments([]);
+      }
     }
-  }, [post, currentUser]);
+  };
+
+  if (open && post?._id) {
+    loadComments();
+  }
+}, [open, post?._id, currentUser]);
+
 
   if (!post) return null;
+
+
+  const handleUserClick = () => {
+  if (post.user && typeof post.user === 'object' && post.user._id) {
+    navigate(`/profile/${post.user._id}`);
+  }
+};
 
   const handleAddComment = async () => {
     if (!newComment.trim()) return;
@@ -127,15 +149,25 @@ const PostDialog = ({
       }}
     >
       <DialogTitle sx={{ m: 0, p: 2, display: 'flex', alignItems: 'center', gap: 2 }}>
-        <Avatar
-          src={post.user && typeof post.user === 'object' ? (post.user.avatar || post.user.profilePicture || '') : ''}
-          alt={post.user && typeof post.user === 'object' ? (post.user.name || 'User') : (typeof post.user === 'string' ? post.user : 'User')}
-          sx={{ width: 40, height: 40 }}
-        />
+       { console.log('Post User:', post.user)}
+        <IconButton onClick={handleUserClick} sx={{ p: 0 }}>
+  <Avatar
+    src={post.user?.profilePicture || ''}
+    alt={post.user?.name || 'User'}
+    sx={{ width: 40, height: 40 }}
+  />
+</IconButton>
+
         <Box sx={{ flex: 1 }}>
-          <Typography variant="subtitle1" component="div" sx={{ fontWeight: 600 }}>
-            {post.user && typeof post.user === 'object' ? (post.user.name || 'User') : (typeof post.user === 'string' ? post.user : 'User')}
-          </Typography>
+          <Typography
+  variant="subtitle1"
+  component="div"
+  sx={{ fontWeight: 600, cursor: 'pointer' }}
+  onClick={handleUserClick}
+>
+  {post.user?.name || 'User'}
+</Typography>
+
           <Typography variant="body2" color="text.secondary">
             {post.createdAt}
           </Typography>
@@ -229,7 +261,7 @@ const PostDialog = ({
                         {(comment.isOwnComment || isOwnPost) && (
                           <IconButton 
                             size="small" 
-                            onClick={() => handleDeleteComment(comment._id)}
+                            onClick={() => handleDeleteComment(comment._id, post._id)}
                             sx={{ p: 0.5 }}
                           >
                             <Delete fontSize="small" />
@@ -238,7 +270,7 @@ const PostDialog = ({
                       </Box>
                     </Box>
                   }
-                  secondary={comment.text}
+                  secondary={comment.comment}
                 />
               </ListItem>
             ))}
