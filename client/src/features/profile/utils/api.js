@@ -1,214 +1,217 @@
 // src/utils/api.js
 // Note: This is a mock API. In a real app, you would make actual API calls.
-import post1 from '../../../assets/post1.jpg';
-import post2 from '../../../assets/post2.jpg';
-import post3 from '../../../assets/post3.jpg';
-import post4 from '../../../assets/post4.jpg';
-import profile1 from '../../../assets/profile.jpg';
-import profile2 from '../../../assets/post1.jpg';
+import post1 from "../../../assets/post1.jpg";
+import post2 from "../../../assets/post2.jpg";
+import post3 from "../../../assets/post3.jpg";
+import post4 from "../../../assets/post4.jpg";
+import profile1 from "../../../assets/profile.jpg";
+import profile2 from "../../../assets/post1.jpg";
 
 // Mock user data
 const users = [
   {
-    _id: '1',
-    name: 'Dr. Olivia Johnson',
-    bio: 'Artisan & Professional Craftsperson | Creating unique pieces that tell a story',
-    avatar: 'https://i.pravatar.cc/300',
+    _id: "1",
+    name: "Dr. Olivia Johnson",
+    bio: "Artisan & Professional Craftsperson | Creating unique pieces that tell a story",
+    avatar: "https://i.pravatar.cc/300",
     followers: 1234,
     following: 421,
-    location: 'New York, USA',
+    location: "New York, USA",
     isOwner: true,
     isFollowing: false,
-    joinedDate: '2023-01-15'
+    joinedDate: "2023-01-15",
   },
   {
-    _id: '2',
-    name: 'Marcus Chen',
-    bio: 'Ceramic Artist | Exploring forms and textures in clay',
-    avatar: 'https://i.pravatar.cc/301',
+    _id: "2",
+    name: "Marcus Chen",
+    bio: "Ceramic Artist | Exploring forms and textures in clay",
+    avatar: "https://i.pravatar.cc/301",
     followers: 856,
     following: 234,
-    location: 'San Francisco, USA',
+    location: "San Francisco, USA",
     isOwner: false,
     isFollowing: true,
-    joinedDate: '2023-03-20'
+    joinedDate: "2023-03-20",
   },
   {
-    _id: '3',
-    name: 'Emma Wilson',
-    bio: 'Jewelry Designer | Creating wearable art',
-    avatar: 'https://i.pravatar.cc/302',
+    _id: "3",
+    name: "Emma Wilson",
+    bio: "Jewelry Designer | Creating wearable art",
+    avatar: "https://i.pravatar.cc/302",
     followers: 2341,
     following: 567,
-    location: 'London, UK',
+    location: "London, UK",
     isOwner: false,
     isFollowing: false,
-    joinedDate: '2023-02-10'
-  }
+    joinedDate: "2023-02-10",
+  },
 ];
 
 // Mock posts data
 const posts = [
   {
-    _id: '1',
-    title: 'New Collection',
-    content: 'Check out my latest handmade collection!',
-    imageUrl: 'https://picsum.photos/800/600',
+    _id: "1",
+    title: "New Collection",
+    content: "Check out my latest handmade collection!",
+    imageUrl: "https://picsum.photos/800/600",
     user: users[0],
     likes: 42,
     comments: [
       {
         id: 1,
-        text: 'Beautiful work! Love the attention to detail.',
+        text: "Beautiful work! Love the attention to detail.",
         user: users[1],
-        timestamp: '1 hour ago'
+        timestamp: "1 hour ago",
       },
       {
         id: 2,
-        text: 'Where can I purchase this?',
+        text: "Where can I purchase this?",
         user: users[2],
-        timestamp: '30 minutes ago'
-      }
+        timestamp: "30 minutes ago",
+      },
     ],
     isLiked: false,
-    timestamp: '2 hours ago'
+    timestamp: "2 hours ago",
   },
   {
-    _id: '2',
-    content: 'Work in progress on a new piece',
-    imageUrl: 'https://picsum.photos/800/601',
+    _id: "2",
+    content: "Work in progress on a new piece",
+    imageUrl: "https://picsum.photos/800/601",
     user: users[0],
     likes: 28,
     comments: [
       {
         id: 1,
-        text: 'Can\'t wait to see the final result!',
+        text: "Can't wait to see the final result!",
         user: users[1],
-        timestamp: '45 minutes ago'
-      }
+        timestamp: "45 minutes ago",
+      },
     ],
     isLiked: true,
-    timestamp: '1 day ago'
+    timestamp: "1 day ago",
   },
   {
-    _id: '3',
-    title: 'Latest Ceramic Collection',
-    content: 'Excited to share my new series of ceramic vessels inspired by ocean waves.',
-    imageUrl: 'https://picsum.photos/800/602',
+    _id: "3",
+    title: "Latest Ceramic Collection",
+    content:
+      "Excited to share my new series of ceramic vessels inspired by ocean waves.",
+    imageUrl: "https://picsum.photos/800/602",
     user: users[1],
     likes: 156,
     comments: [
       {
         id: 1,
-        text: 'These are stunning! Love the wave patterns.',
+        text: "These are stunning! Love the wave patterns.",
         user: users[0],
-        timestamp: '3 hours ago'
-      }
+        timestamp: "3 hours ago",
+      },
     ],
     isLiked: false,
-    timestamp: '5 hours ago'
+    timestamp: "5 hours ago",
   },
   {
-    _id: '4',
-    content: 'Studio day - experimenting with new glazes',
-    imageUrl: 'https://picsum.photos/800/603',
+    _id: "4",
+    content: "Studio day - experimenting with new glazes",
+    imageUrl: "https://picsum.photos/800/603",
     user: users[1],
     likes: 89,
     comments: [],
     isLiked: false,
-    timestamp: '2 days ago'
-  }
+    timestamp: "2 days ago",
+  },
 ];
 
 // Mock products data
 const products = [
   {
-    _id: '1',
-    name: 'Handmade Ceramic Vase',
-    discreption: 'Beautiful handcrafted ceramic vase with unique glaze',
+    _id: "1",
+    name: "Handmade Ceramic Vase",
+    discreption: "Beautiful handcrafted ceramic vase with unique glaze",
     price: 89.99,
     stoke: 5,
-    category: 'Home Decor',
-    mainImage: 'https://picsum.photos/800/800',
+    category: "Home Decor",
+    mainImage: "https://picsum.photos/800/800",
     user: users[0],
     reviews: [
       {
         id: 1,
-        text: 'Absolutely beautiful piece! The craftsmanship is outstanding.',
+        text: "Absolutely beautiful piece! The craftsmanship is outstanding.",
         rating: 5,
         user: users[1],
-        timestamp: '2 days ago'
+        timestamp: "2 days ago",
       },
       {
         id: 2,
-        text: 'Love the unique glaze pattern. Perfect size for my space.',
+        text: "Love the unique glaze pattern. Perfect size for my space.",
         rating: 4,
         user: users[2],
-        timestamp: '1 week ago'
-      }
-    ]
+        timestamp: "1 week ago",
+      },
+    ],
   },
   {
-    _id: '2',
-    name: 'Woven Wall Hanging',
-    discreption: 'Modern macrame wall hanging made with natural cotton rope',
+    _id: "2",
+    name: "Woven Wall Hanging",
+    discreption: "Modern macrame wall hanging made with natural cotton rope",
     price: 129.99,
     stoke: 3,
-    category: 'Wall Art',
-    mainImage: 'https://picsum.photos/800/801',
+    category: "Wall Art",
+    mainImage: "https://picsum.photos/800/801",
     user: users[0],
     reviews: [
       {
         id: 1,
-        text: 'Exactly what I was looking for! The natural tones are perfect.',
+        text: "Exactly what I was looking for! The natural tones are perfect.",
         rating: 5,
         user: users[1],
-        timestamp: '3 days ago'
-      }
-    ]
+        timestamp: "3 days ago",
+      },
+    ],
   },
   {
-    _id: '3',
-    name: 'Ocean Wave Ceramic Bowl',
-    discreption: 'Hand-thrown ceramic bowl with unique wave-inspired glaze pattern',
+    _id: "3",
+    name: "Ocean Wave Ceramic Bowl",
+    discreption:
+      "Hand-thrown ceramic bowl with unique wave-inspired glaze pattern",
     price: 75.99,
     stoke: 2,
-    category: 'Tableware',
-    mainImage: 'https://picsum.photos/800/802',
+    category: "Tableware",
+    mainImage: "https://picsum.photos/800/802",
     user: users[1], // Marcus Chen
     reviews: [
       {
         id: 1,
-        text: 'The glaze work is absolutely stunning!',
+        text: "The glaze work is absolutely stunning!",
         rating: 5,
         user: users[0],
-        timestamp: '1 day ago'
-      }
-    ]
+        timestamp: "1 day ago",
+      },
+    ],
   },
   {
-    _id: '4',
-    name: 'Crystalline Glaze Vase',
-    discreption: 'Tall ceramic vase featuring stunning crystalline glaze effects',
+    _id: "4",
+    name: "Crystalline Glaze Vase",
+    discreption:
+      "Tall ceramic vase featuring stunning crystalline glaze effects",
     price: 199.99,
     stoke: 1,
-    category: 'Home Decor',
-    mainImage: 'https://picsum.photos/800/803',
+    category: "Home Decor",
+    mainImage: "https://picsum.photos/800/803",
     user: users[1], // Marcus Chen
-    reviews: []
-  }
+    reviews: [],
+  },
 ];
 
 // Real API functions for profile functionality
-const API_BASE = 'http://localhost:3000/api';
+const API_BASE = "http://localhost:3000/api";
 
 // Helper function to get auth headers
 const getAuthHeaders = () => {
   return {
-    credentials: 'include',
+    credentials: "include",
     headers: {
-      'Accept': 'application/json'
-    }
+      Accept: "application/json",
+    },
   };
 };
 
@@ -216,30 +219,35 @@ const getAuthHeaders = () => {
 const handleResponse = async (response) => {
   if (!response.ok) {
     const errorData = await response.json();
-    throw new Error(errorData.message || 'API request failed');
+    throw new Error(errorData.message || "API request failed");
   }
   return response.json();
 };
 
 // PATCH: Helper to always extract the correct userId
-const getUserId = (user) => user?._id || user?.id || user || '';
+const getUserId = (user) => user?._id || user?.id || user || "";
 
 // ==================== USER API FUNCTIONS ====================
 
 // Get user profile
 export const fetchUser = async (userId) => {
   try {
-    const response = await fetch(`${API_BASE}/user/${getUserId(userId)}`, getAuthHeaders());
+    const response = await fetch(
+      `${API_BASE}/user/${getUserId(userId)}`,
+      getAuthHeaders()
+    );
     const data = await response.json();
     if (!response.ok) {
-      throw new Error(data.message || `HTTP ${response.status}: Failed to fetch user`);
+      throw new Error(
+        data.message || `HTTP ${response.status}: Failed to fetch user`
+      );
     }
     if (!data) {
-      throw new Error('No user data received');
+      throw new Error("No user data received");
     }
     return data;
   } catch (error) {
-    console.error('Error fetching user:', error);
+    console.error("Error fetching user:", error);
     throw error;
   }
 };
@@ -247,67 +255,68 @@ export const fetchUser = async (userId) => {
 // Update user profile (name, bio, image)
 export const updateProfile = async (userId, data) => {
   try {
-    console.log('Updating profile for user:', userId);
+    console.log("Updating profile for user:", userId);
     const formData = new FormData();
-    formData.append('name', data.name);
-    formData.append('bio', data.bio);
-    
+    formData.append("name", data.name);
+    formData.append("bio", data.bio);
+
     // Only append profilePicture if it's a File
     if (data.profilePicture instanceof File) {
-      console.log('Including new profile picture');
-      formData.append('profilePicture', data.profilePicture);
+      console.log("Including new profile picture");
+      formData.append("profilePicture", data.profilePicture);
     }
 
     const response = await fetch(`${API_BASE}/user/updatePicture/${userId}`, {
-      method: 'PUT',
+      method: "PUT",
       body: formData,
-      credentials: 'include'
+      credentials: "include",
     });
 
     const result = await response.json();
-    console.log('Profile update response:', result);
+    console.log("Profile update response:", result);
 
     if (!response.ok) {
-      throw new Error(result.message || 'Failed to update profile');
+      throw new Error(result.message || "Failed to update profile");
     }
 
     return result;
   } catch (err) {
-    console.error('Error updating profile:', err);
+    console.error("Error updating profile:", err);
     throw err;
   }
 };
-
 
 // Update user credentials (email, password)
 export const updateUserCredentials = async (userId, credentials) => {
   try {
     const response = await fetch(`${API_BASE}/user/updateProfile/${userId}`, {
-      method: 'PUT',
+      method: "PUT",
       headers: {
-        'Content-Type': 'application/json'
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({
         currentPassword: credentials.currentPassword,
-        password: credentials.newPassword
+        password: credentials.newPassword,
       }),
-      credentials: 'include'
+      credentials: "include",
     });
-    
+
     const data = await response.json();
-    console.log('Password update response:', data);
+    console.log("Password update response:", data);
 
     if (!response.ok) {
-      if (data.message?.includes('incorrect password') || 
-          data.message?.includes('Current password is incorrect')) {
-        throw new Error('Current password is incorrect');
+      if (
+        data.message?.includes("incorrect password") ||
+        data.message?.includes("Current password is incorrect")
+      ) {
+        throw new Error("Current password is incorrect");
       }
-      throw new Error(data.message || 'Failed to update password');
+      throw new Error(data.message || "Failed to update password");
     }
-    
+
     return data;
   } catch (error) {
-    console.error('Error updating credentials:', error);
+    console.error("Error updating credentials:", error);
     throw error;
   }
 };
@@ -316,17 +325,17 @@ export const updateUserCredentials = async (userId, credentials) => {
 export const updateUserProfilePicture = async (userId, profilePicture) => {
   try {
     const formData = new FormData();
-    formData.append('profilePicture', profilePicture);
-    
+    formData.append("profilePicture", profilePicture);
+
     const response = await fetch(`${API_BASE}/user/${userId}`, {
-      method: 'PUT',
+      method: "PUT",
       body: formData,
-      ...getAuthHeaders()
+      ...getAuthHeaders(),
     });
-    
+
     return await handleResponse(response);
   } catch (error) {
-    console.error('Error updating profile picture:', error);
+    console.error("Error updating profile picture:", error);
     throw error;
   }
 };
@@ -335,13 +344,13 @@ export const updateUserProfilePicture = async (userId, profilePicture) => {
 export const followUser = async (userId) => {
   try {
     const response = await fetch(`${API_BASE}/user/follow/${userId}`, {
-      method: 'POST',
-      ...getAuthHeaders()
+      method: "POST",
+      ...getAuthHeaders(),
     });
-    
+
     return await handleResponse(response);
   } catch (error) {
-    console.error('Error following user:', error);
+    console.error("Error following user:", error);
     throw error;
   }
 };
@@ -350,17 +359,17 @@ export const followUser = async (userId) => {
 export const unfollowUser = async (userId) => {
   try {
     const response = await fetch(`${API_BASE}/user/unfollow/${userId}`, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json'
+        "Content-Type": "application/json",
       },
-      body: JSON.stringify({ currentUserId: 'current' }),
-      ...getAuthHeaders()
+      body: JSON.stringify({ currentUserId: "current" }),
+      ...getAuthHeaders(),
     });
-    
+
     return await handleResponse(response);
   } catch (error) {
-    console.error('Error unfollowing user:', error);
+    console.error("Error unfollowing user:", error);
     throw error;
   }
 };
@@ -368,11 +377,14 @@ export const unfollowUser = async (userId) => {
 // Get user followers
 export const fetchUserFollowers = async (userId) => {
   try {
-    const response = await fetch(`${API_BASE}/user/${getUserId(userId)}/followers`, getAuthHeaders());
+    const response = await fetch(
+      `${API_BASE}/user/${getUserId(userId)}/followers`,
+      getAuthHeaders()
+    );
     const data = await handleResponse(response);
     return data.followers || [];
   } catch (error) {
-    console.error('Error fetching followers:', error);
+    console.error("Error fetching followers:", error);
     throw error;
   }
 };
@@ -380,11 +392,14 @@ export const fetchUserFollowers = async (userId) => {
 // Get user following
 export const fetchUserFollowing = async (userId) => {
   try {
-    const response = await fetch(`${API_BASE}/user/${getUserId(userId)}/followings`, getAuthHeaders());
+    const response = await fetch(
+      `${API_BASE}/user/${getUserId(userId)}/followings`,
+      getAuthHeaders()
+    );
     const data = await handleResponse(response);
     return data.followings || [];
   } catch (error) {
-    console.error('Error fetching following:', error);
+    console.error("Error fetching following:", error);
     throw error;
   }
 };
@@ -392,10 +407,13 @@ export const fetchUserFollowing = async (userId) => {
 // Get user contacts (followers + following)
 export const fetchUserContacts = async (userId) => {
   try {
-    const response = await fetch(`${API_BASE}/user/${userId}/contacts`, getAuthHeaders());
+    const response = await fetch(
+      `${API_BASE}/user/${userId}/contacts`,
+      getAuthHeaders()
+    );
     return await handleResponse(response);
   } catch (error) {
-    console.error('Error fetching contacts:', error);
+    console.error("Error fetching contacts:", error);
     throw error;
   }
 };
@@ -403,10 +421,13 @@ export const fetchUserContacts = async (userId) => {
 // Get total user count
 export const fetchUserCount = async () => {
   try {
-    const response = await fetch(`${API_BASE}/user/length_user`, getAuthHeaders());
+    const response = await fetch(
+      `${API_BASE}/user/length_user`,
+      getAuthHeaders()
+    );
     return await handleResponse(response);
   } catch (error) {
-    console.error('Error fetching user count:', error);
+    console.error("Error fetching user count:", error);
     throw error;
   }
 };
@@ -416,17 +437,22 @@ export const fetchUserCount = async () => {
 // Get user posts
 export const fetchUserPosts = async (userId) => {
   try {
-    const response = await fetch(`${API_BASE}/blog/postBlog/${getUserId(userId)}`, getAuthHeaders());
+    const response = await fetch(
+      `${API_BASE}/blog/postBlog/${getUserId(userId)}`,
+      getAuthHeaders()
+    );
     const data = await response.json();
     if (!response.ok) {
-      throw new Error(data.message || `HTTP ${response.status}: Failed to fetch posts`);
+      throw new Error(
+        data.message || `HTTP ${response.status}: Failed to fetch posts`
+      );
     }
     if (!data || !data.posts) {
-      throw new Error('Invalid response format from server');
+      throw new Error("Invalid response format from server");
     }
     return Array.isArray(data.posts) ? data.posts : [];
   } catch (error) {
-    console.error('Error fetching user posts:', error);
+    console.error("Error fetching user posts:", error);
     throw error;
   }
 };
@@ -434,10 +460,13 @@ export const fetchUserPosts = async (userId) => {
 // Get single post
 export const fetchPost = async (postId) => {
   try {
-    const response = await fetch(`${API_BASE}/blog/postBlog/get/${postId}`, getAuthHeaders());
+    const response = await fetch(
+      `${API_BASE}/blog/postBlog/get/${postId}`,
+      getAuthHeaders()
+    );
     return await handleResponse(response);
   } catch (error) {
-    console.error('Error fetching post:', error);
+    console.error("Error fetching post:", error);
     throw error;
   }
 };
@@ -445,51 +474,51 @@ export const fetchPost = async (postId) => {
 // Create post
 export const createPost = async (postData) => {
   try {
-    console.log('Creating post with data:', {
-      name: postData.name || postData.title || 'Untitled Post',
+    console.log("Creating post with data:", {
+      name: postData.name || postData.title || "Untitled Post",
       caption: postData.caption || postData.content,
       userId: postData.userId,
-      hasImage: !!postData.image
+      hasImage: !!postData.image,
     });
 
     const formData = new FormData();
-    formData.append('name', postData.name || postData.title || 'Untitled Post');
-    formData.append('caption', postData.caption || postData.content);
-    formData.append('userId', postData.userId);
+    formData.append("name", postData.name || postData.title || "Untitled Post");
+    formData.append("caption", postData.caption || postData.content);
+    formData.append("userId", postData.userId);
 
     // Support single or multiple images
     if (postData.image) {
       if (Array.isArray(postData.image)) {
-        postData.image.forEach(file => {
-          formData.append('media', file);
+        postData.image.forEach((file) => {
+          formData.append("media", file);
         });
       } else {
         console.log(postData.image);
-console.log(postData.image instanceof File); // يجب أن يعطي true
+        console.log(postData.image instanceof File); // يجب أن يعطي true
 
-        formData.append('media', postData.image);
+        formData.append("media", postData.image);
       }
     }
 
     const response = await fetch(`${API_BASE}/blog/postBlog`, {
-    method: 'POST',
-    body: formData,
-    credentials: 'include', // مباشرة بدون استدعاء
-    // ⚠️ لا تضيفي أي headers هنا إطلاقًا!
-});
+      method: "POST",
+      body: formData,
+      credentials: "include", // مباشرة بدون استدعاء
+      // ⚠️ لا تضيفي أي headers هنا إطلاقًا!
+    });
     // Check if response is JSON
-    const contentType = response.headers.get('content-type');
-    if (!contentType || !contentType.includes('application/json')) {
+    const contentType = response.headers.get("content-type");
+    if (!contentType || !contentType.includes("application/json")) {
       const text = await response.text();
-      console.error('Server returned non-JSON response:', text);
-      throw new Error('Server returned invalid response format');
+      console.error("Server returned non-JSON response:", text);
+      throw new Error("Server returned invalid response format");
     }
 
     const data = await response.json();
-    console.log('Server response:', data);
+    console.log("Server response:", data);
 
     if (!response.ok) {
-      throw new Error(data.message || 'Failed to create post');
+      throw new Error(data.message || "Failed to create post");
     }
 
     // Return the post data in the expected format
@@ -503,10 +532,10 @@ console.log(postData.image instanceof File); // يجب أن يعطي true
       likes: data.post.likes || [],
       comments: data.post.comments || [],
       createdAt: data.post.createdAt || new Date().toISOString(),
-      isLiked: false
+      isLiked: false,
     };
   } catch (error) {
-    console.error('Error creating post:', error);
+    console.error("Error creating post:", error);
     throw error;
   }
 };
@@ -515,28 +544,28 @@ console.log(postData.image instanceof File); // يجب أن يعطي true
 export const updatePost = async (postId, postData) => {
   try {
     const response = await fetch(`${API_BASE}/blog/postBlog/${postId}`, {
-      method: 'PUT',
+      method: "PUT",
       headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
+        "Content-Type": "application/json",
+        Accept: "application/json",
       },
-      credentials: 'include',
+      credentials: "include",
       body: JSON.stringify({
         name: postData.name,
-        caption: postData.caption
-      })
+        caption: postData.caption,
+      }),
     });
 
     const data = await response.json();
-    console.log('Update post response:', data);
+    console.log("Update post response:", data);
 
     if (!response.ok) {
-      throw new Error(data.message || 'Failed to update post');
+      throw new Error(data.message || "Failed to update post");
     }
 
     return data.updatedPost || data.post || data;
   } catch (error) {
-    console.error('Error updating post:', error);
+    console.error("Error updating post:", error);
     throw error;
   }
 };
@@ -545,13 +574,13 @@ export const updatePost = async (postId, postData) => {
 export const deletePost = async (postId) => {
   try {
     const response = await fetch(`${API_BASE}/blog/postBlog/${postId}`, {
-      method: 'DELETE',
-      ...getAuthHeaders()
+      method: "DELETE",
+      ...getAuthHeaders(),
     });
-    
+
     return await handleResponse(response);
   } catch (error) {
-    console.error('Error deleting post:', error);
+    console.error("Error deleting post:", error);
     throw error;
   }
 };
@@ -559,51 +588,49 @@ export const deletePost = async (postId) => {
 // Like post
 export const likePost = async (postId, userId) => {
   const response = await fetch(`${API_BASE}/blog/postBlog/${postId}/like`, {
-    method: 'POST',
+    method: "POST",
     headers: {
-      'Content-Type': 'application/json',
-      'Accept': 'application/json'
+      "Content-Type": "application/json",
+      Accept: "application/json",
     },
-    credentials: 'include',
-    body: JSON.stringify({ userId }) 
+    credentials: "include",
+    body: JSON.stringify({ userId }),
   });
 
   const data = await handleResponse(response);
-  console.log('Like result:', data.message); 
+  console.log("Like result:", data.message);
   return data;
 };
 
-
 // Unlike post
 export const unlikePost = async (postId, userId) => {
-    const response = await fetch(`${API_BASE}/blog/postBlog/${postId}/dislike`, {
-      method: 'POST',
+  const response = await fetch(`${API_BASE}/blog/postBlog/${postId}/dislike`, {
+    method: "POST",
     headers: {
-      'Content-Type': 'application/json',
-      'Accept': 'application/json'
+      "Content-Type": "application/json",
+      Accept: "application/json",
     },
-    credentials: 'include',
-    body: JSON.stringify({ userId }) 
+    credentials: "include",
+    body: JSON.stringify({ userId }),
   });
 
   return await handleResponse(response);
 };
 
-
 // Get post likes
 export const getPostLikes = async (postId) => {
   try {
     const response = await fetch(`${API_BASE}/blog/postBlog/${postId}/likes`, {
-      method: 'GET',
+      method: "GET",
       headers: {
-        'Accept': 'application/json'
+        Accept: "application/json",
       },
-      credentials: 'include'
+      credentials: "include",
     });
 
     return await handleResponse(response);
   } catch (error) {
-    console.error('Error fetching post likes:', error);
+    console.error("Error fetching post likes:", error);
     throw error;
   }
 };
@@ -611,10 +638,13 @@ export const getPostLikes = async (postId) => {
 // Search posts
 export const searchPosts = async (query) => {
   try {
-    const response = await fetch(`${API_BASE}/blog/serchPost?q=${query}`, getAuthHeaders());
+    const response = await fetch(
+      `${API_BASE}/blog/serchPost?q=${query}`,
+      getAuthHeaders()
+    );
     return await handleResponse(response);
   } catch (error) {
-    console.error('Error searching posts:', error);
+    console.error("Error searching posts:", error);
     throw error;
   }
 };
@@ -624,11 +654,14 @@ export const searchPosts = async (query) => {
 // Get user products
 export const fetchUserProducts = async (userId) => {
   try {
-    const response = await fetch(`${API_BASE}/product/get/${getUserId(userId)}`, getAuthHeaders());
+    const response = await fetch(
+      `${API_BASE}/product/get/${getUserId(userId)}`,
+      getAuthHeaders()
+    );
     const data = await handleResponse(response);
-    return Array.isArray(data) ? data : (data.products || []);
+    return Array.isArray(data) ? data : data.products || [];
   } catch (error) {
-    console.error('Error fetching user products:', error);
+    console.error("Error fetching user products:", error);
     throw error;
   }
 };
@@ -636,10 +669,13 @@ export const fetchUserProducts = async (userId) => {
 // Get single product
 export const fetchProduct = async (productId) => {
   try {
-    const response = await fetch(`${API_BASE}/product/getOne/${productId}`, getAuthHeaders());
+    const response = await fetch(
+      `${API_BASE}/product/getOne/${productId}`,
+      getAuthHeaders()
+    );
     return await handleResponse(response);
   } catch (error) {
-    console.error('Error fetching product:', error);
+    console.error("Error fetching product:", error);
     throw error;
   }
 };
@@ -648,88 +684,100 @@ export const fetchProduct = async (productId) => {
 export const createProduct = async (productData) => {
   try {
     // Validate required fields
-    if (!productData.name) throw new Error('Product name is required');
-    if (!productData.category) throw new Error('Product category is required');
-    if (!productData.mainImage) throw new Error('Product image is required');
-    if (!productData.price) throw new Error('Product price is required');
-    if (!productData.stoke && productData.stoke !== 0) throw new Error('Product stock is required');
+    if (!productData.name) throw new Error("Product name is required");
+    if (!productData.category) throw new Error("Product category is required");
+    if (!productData.mainImage) throw new Error("Product image is required");
+    if (!productData.price) throw new Error("Product price is required");
+    if (!productData.stoke && productData.stoke !== 0)
+      throw new Error("Product stock is required");
 
     const formData = new FormData();
-    formData.append('name', productData.name);
-    formData.append('discreption', productData.description || productData.discreption || '');
-    formData.append('price', productData.price);
-    formData.append('stoke', productData.stock || productData.stoke || 1);
-    formData.append('category', productData.category);
-    formData.append('userId', getUserId(productData.userId || productData.user));
+    formData.append("name", productData.name);
+    formData.append(
+      "discreption",
+      productData.description || productData.discreption || ""
+    );
+    formData.append("price", productData.price);
+    formData.append("stoke", productData.stock || productData.stoke || 1);
+    formData.append("category", productData.category);
+    formData.append(
+      "userId",
+      getUserId(productData.userId || productData.user)
+    );
 
     // Handle mainImage - ensure it's a File object if it's a base64 string
     if (productData.mainImage) {
-      if (productData.mainImage.startsWith('data:')) {
+      if (productData.mainImage.startsWith("data:")) {
         // Convert base64 to File
         const response = await fetch(productData.mainImage);
         const blob = await response.blob();
-        const file = new File([blob], 'product-image.jpg', { type: 'image/jpeg' });
-        formData.append('mainImage', file);
+        const file = new File([blob], "product-image.jpg", {
+          type: "image/jpeg",
+        });
+        formData.append("mainImage", file);
       } else {
-        formData.append('mainImage', productData.mainImage);
+        formData.append("mainImage", productData.mainImage);
       }
     }
 
     // Handle multiple files if present
     if (productData.multipleFiles) {
       if (Array.isArray(productData.multipleFiles)) {
-        productData.multipleFiles.forEach(file => {
-          formData.append('multipleFiles', file);w
+        productData.multipleFiles.forEach((file) => {
+          formData.append("multipleFiles", file);
+          w;
         });
       } else {
-        formData.append('multipleFiles', productData.multipleFiles);
+        formData.append("multipleFiles", productData.multipleFiles);
       }
     }
 
     // Log the request details for debugging
-    console.log('Creating product with data:', {
-      name: formData.get('name'),
-      category: formData.get('category'),
-      price: formData.get('price'),
-      stoke: formData.get('stoke'),
-      userId: formData.get('userId'),
-      hasImage: !!formData.get('mainImage')
+    console.log("Creating product with data:", {
+      name: formData.get("name"),
+      category: formData.get("category"),
+      price: formData.get("price"),
+      stoke: formData.get("stoke"),
+      userId: formData.get("userId"),
+      hasImage: !!formData.get("mainImage"),
     });
 
     const response = await fetch(`${API_BASE}/product/create`, {
-      method: 'POST',
+      method: "POST",
       body: formData,
-      ...getAuthHeaders()
+      ...getAuthHeaders(),
     });
 
     // Check if response is JSON
-    const contentType = response.headers.get('content-type');
-    if (!contentType || !contentType.includes('application/json')) {
+    const contentType = response.headers.get("content-type");
+    if (!contentType || !contentType.includes("application/json")) {
       const text = await response.text();
-      console.error('Server returned non-JSON response:', text);
-      if (text.includes('Must supply api_key')) {
-        throw new Error('Authentication failed. Please log in again.');
+      console.error("Server returned non-JSON response:", text);
+      if (text.includes("Must supply api_key")) {
+        throw new Error("Authentication failed. Please log in again.");
       }
-      throw new Error('Server returned invalid response format');
+      throw new Error("Server returned invalid response format");
     }
 
     const data = await response.json();
     if (!response.ok) {
-      throw new Error(data.message || 'Failed to create product');
+      throw new Error(data.message || "Failed to create product");
     }
 
     // Log successful response
-    console.log('Product created successfully:', data);
+    console.log("Product created successfully:", data);
     return data.product || data;
   } catch (error) {
-    console.error('Error creating product:', error);
+    console.error("Error creating product:", error);
     // Provide more detailed error message
-    if (error.message.includes('Failed to fetch')) {
-      throw new Error('Unable to connect to server. Please check your internet connection.');
-    } else if (error.message.includes('invalid response format')) {
-      throw new Error('Server error. Please try again later.');
-    } else if (error.message.includes('Authentication failed')) {
-      throw new Error('Please log in again to continue.');
+    if (error.message.includes("Failed to fetch")) {
+      throw new Error(
+        "Unable to connect to server. Please check your internet connection."
+      );
+    } else if (error.message.includes("invalid response format")) {
+      throw new Error("Server error. Please try again later.");
+    } else if (error.message.includes("Authentication failed")) {
+      throw new Error("Please log in again to continue.");
     }
     throw error;
   }
@@ -739,35 +787,36 @@ export const createProduct = async (productData) => {
 export const updateProduct = async (productId, productData) => {
   try {
     const formData = new FormData();
-    if (productData.name) formData.append('name', productData.name);
-    if (productData.description) formData.append('discreption', productData.description);
-    if (productData.price) formData.append('price', productData.price);
-    if (productData.stock) formData.append('stoke', productData.stock);
-    if (productData.category) formData.append('category', productData.category);
-    
+    if (productData.name) formData.append("name", productData.name);
+    if (productData.description)
+      formData.append("discreption", productData.description);
+    if (productData.price) formData.append("price", productData.price);
+    if (productData.stock) formData.append("stoke", productData.stock);
+    if (productData.category) formData.append("category", productData.category);
+
     if (productData.mainImage) {
-      formData.append('mainImage', productData.mainImage);
+      formData.append("mainImage", productData.mainImage);
     }
-    
+
     if (productData.multipleFiles) {
       if (Array.isArray(productData.multipleFiles)) {
-        productData.multipleFiles.forEach(file => {
-          formData.append('multipleFiles', file);
+        productData.multipleFiles.forEach((file) => {
+          formData.append("multipleFiles", file);
         });
       } else {
-        formData.append('multipleFiles', productData.multipleFiles);
+        formData.append("multipleFiles", productData.multipleFiles);
       }
     }
 
     const response = await fetch(`${API_BASE}/product/update/${productId}`, {
-      method: 'PUT',
+      method: "PUT",
       body: formData,
-      ...getAuthHeaders()
+      ...getAuthHeaders(),
     });
-    
+
     return await handleResponse(response);
   } catch (error) {
-    console.error('Error updating product:', error);
+    console.error("Error updating product:", error);
     throw error;
   }
 };
@@ -776,13 +825,13 @@ export const updateProduct = async (productId, productData) => {
 export const deleteProduct = async (productId) => {
   try {
     const response = await fetch(`${API_BASE}/product/delete/${productId}`, {
-      method: 'DELETE',
-      ...getAuthHeaders()
+      method: "DELETE",
+      ...getAuthHeaders(),
     });
-    
+
     return await handleResponse(response);
   } catch (error) {
-    console.error('Error deleting product:', error);
+    console.error("Error deleting product:", error);
     throw error;
   }
 };
@@ -790,10 +839,13 @@ export const deleteProduct = async (productId) => {
 // Search products
 export const searchProducts = async (query) => {
   try {
-    const response = await fetch(`${API_BASE}/product/searchproduct?q=${query}`, getAuthHeaders());
+    const response = await fetch(
+      `${API_BASE}/product/searchproduct?q=${query}`,
+      getAuthHeaders()
+    );
     return await handleResponse(response);
   } catch (error) {
-    console.error('Error searching products:', error);
+    console.error("Error searching products:", error);
     throw error;
   }
 };
@@ -803,10 +855,13 @@ export const searchProducts = async (query) => {
 // Get user orders
 export const fetchUserOrders = async (userId) => {
   try {
-    const response = await fetch(`${API_BASE}/order/user/${userId}`, getAuthHeaders());
+    const response = await fetch(
+      `${API_BASE}/order/user/${userId}`,
+      getAuthHeaders()
+    );
     return await handleResponse(response);
   } catch (error) {
-    console.error('Error fetching user orders:', error);
+    console.error("Error fetching user orders:", error);
     throw error;
   }
 };
@@ -814,10 +869,13 @@ export const fetchUserOrders = async (userId) => {
 // Get artisan orders (orders from this artisan)
 export const fetchArtisanOrders = async (artisanId) => {
   try {
-    const response = await fetch(`${API_BASE}/order/artissan/${artisanId}`, getAuthHeaders());
+    const response = await fetch(
+      `${API_BASE}/order/artissan/${artisanId}`,
+      getAuthHeaders()
+    );
     return await handleResponse(response);
   } catch (error) {
-    console.error('Error fetching artisan orders:', error);
+    console.error("Error fetching artisan orders:", error);
     throw error;
   }
 };
@@ -827,38 +885,36 @@ export const fetchArtisanOrders = async (artisanId) => {
 export const createOrder = async (artisanId, orderData) => {
   try {
     const response = await fetch(`${API_BASE}/order/create/${artisanId}`, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json'
+        "Content-Type": "application/json",
       },
-      credentials: 'include',
-      body: JSON.stringify(orderData)
+      credentials: "include",
+      body: JSON.stringify(orderData),
     });
 
     return await handleResponse(response);
   } catch (error) {
-    console.error('Error creating order:', error);
+    console.error("Error creating order:", error);
     throw error;
   }
 };
-
-
 
 // Update order status
 export const updateOrderStatus = async (orderId, status) => {
   try {
     const response = await fetch(`${API_BASE}/order/update/${orderId}`, {
-      method: 'PUT',
+      method: "PUT",
       headers: {
-        'Content-Type': 'application/json'
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({ status }),
-      ...getAuthHeaders()
+      ...getAuthHeaders(),
     });
-    
+
     return await handleResponse(response);
   } catch (error) {
-    console.error('Error updating order status:', error);
+    console.error("Error updating order status:", error);
     throw error;
   }
 };
@@ -867,13 +923,13 @@ export const updateOrderStatus = async (orderId, status) => {
 export const deleteOrder = async (orderId) => {
   try {
     const response = await fetch(`${API_BASE}/order/delete/${orderId}`, {
-      method: 'DELETE',
-      ...getAuthHeaders()
+      method: "DELETE",
+      ...getAuthHeaders(),
     });
-    
+
     return await handleResponse(response);
   } catch (error) {
-    console.error('Error deleting order:', error);
+    console.error("Error deleting order:", error);
     throw error;
   }
 };
@@ -881,10 +937,13 @@ export const deleteOrder = async (orderId) => {
 // Get single order
 export const fetchOrder = async (orderId) => {
   try {
-    const response = await fetch(`${API_BASE}/order/get/${orderId}`, getAuthHeaders());
+    const response = await fetch(
+      `${API_BASE}/order/get/${orderId}`,
+      getAuthHeaders()
+    );
     return await handleResponse(response);
   } catch (error) {
-    console.error('Error fetching order:', error);
+    console.error("Error fetching order:", error);
     throw error;
   }
 };
@@ -894,10 +953,13 @@ export const fetchOrder = async (orderId) => {
 // Get post comments
 export const fetchPostComments = async (postId) => {
   try {
-    const response = await fetch(`${API_BASE}/comment/post/${postId}`, getAuthHeaders());
+    const response = await fetch(
+      `${API_BASE}/comment/post/${postId}`,
+      getAuthHeaders()
+    );
     return await handleResponse(response);
   } catch (error) {
-    console.error('Error fetching comments:', error);
+    console.error("Error fetching comments:", error);
     throw error;
   }
 };
@@ -907,20 +969,20 @@ export const addComment = async (postId, commentData) => {
   try {
     const payload = {
       ...commentData,
-      comment: commentData.text || commentData.comment
+      comment: commentData.text || commentData.comment,
     };
     delete payload.text;
     const response = await fetch(`${API_BASE}/comment/create/${postId}`, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json'
+        "Content-Type": "application/json",
       },
       body: JSON.stringify(payload),
-      ...getAuthHeaders()
+      ...getAuthHeaders(),
     });
     return await handleResponse(response);
   } catch (error) {
-    console.error('Error creating comment:', error);
+    console.error("Error creating comment:", error);
     throw error;
   }
 };
@@ -929,13 +991,13 @@ export const addComment = async (postId, commentData) => {
 export const deleteComment = async (commentId) => {
   try {
     const response = await fetch(`${API_BASE}/comment/delete/${commentId}`, {
-      method: 'DELETE',
-      ...getAuthHeaders()
+      method: "DELETE",
+      ...getAuthHeaders(),
     });
-    
+
     return await handleResponse(response);
   } catch (error) {
-    console.error('Error deleting comment:', error);
+    console.error("Error deleting comment:", error);
     throw error;
   }
 };
@@ -957,10 +1019,13 @@ export const checkIsFollowedBy = (currentUser, targetUserId) => {
 // Get all users (for compatibility)
 export const fetchAllUsers = async () => {
   try {
-    const response = await fetch(`${API_BASE}/user/length_user`, getAuthHeaders());
+    const response = await fetch(
+      `${API_BASE}/user/length_user`,
+      getAuthHeaders()
+    );
     return await handleResponse(response);
   } catch (error) {
-    console.error('Error fetching all users:', error);
+    console.error("Error fetching all users:", error);
     throw error;
   }
 };
@@ -978,13 +1043,23 @@ export const unsavePost = (postId) => {
 export const fetchAllProducts = async () => {
   try {
     // Use the admin endpoint to fetch all products (if user is admin)
-    const response = await fetch('http://localhost:3000/api/admin/get', getAuthHeaders());
+    const response = await fetch(
+      "http://localhost:3000/api/admin/get",
+      getAuthHeaders()
+    );
     const data = await response.json();
-    if (!response.ok) throw new Error(data.message || 'Failed to fetch products');
+    if (!response.ok)
+      throw new Error(data.message || "Failed to fetch products");
     // The admin endpoint may return products directly or in a property
-    return Array.isArray(data.products) ? data.products : (Array.isArray(data) ? data : []);
+    return Array.isArray(data.products)
+      ? data.products
+      : Array.isArray(data)
+      ? data
+      : [];
   } catch (error) {
-    console.error('Error fetching all products: No endpoint for all products. Backend must provide an endpoint to fetch all products.');
+    console.error(
+      "Error fetching all products: No endpoint for all products. Backend must provide an endpoint to fetch all products."
+    );
     return [];
   }
 };
@@ -992,12 +1067,20 @@ export const fetchAllProducts = async () => {
 // Fetch recommended posts for a user
 export const fetchRecommendedPosts = async (userId) => {
   try {
-    const response = await fetch(`http://localhost:3000/api/postBlog/recommend/${userId}`, getAuthHeaders());
+    const response = await fetch(
+      `http://localhost:3000/api/postBlog/recommend/${userId}`,
+      getAuthHeaders()
+    );
     const data = await response.json();
-    if (!response.ok) throw new Error(data.message || 'Failed to fetch recommended posts');
-    return Array.isArray(data.posts) ? data.posts : (Array.isArray(data) ? data : []);
+    if (!response.ok)
+      throw new Error(data.message || "Failed to fetch recommended posts");
+    return Array.isArray(data.posts)
+      ? data.posts
+      : Array.isArray(data)
+      ? data
+      : [];
   } catch (error) {
-    console.error('Error fetching recommended posts:', error);
+    console.error("Error fetching recommended posts:", error);
     return [];
   }
 };
@@ -1005,12 +1088,20 @@ export const fetchRecommendedPosts = async (userId) => {
 // Fetch products by category (admin endpoint)
 export const fetchProductsByCategory = async (categoryName) => {
   try {
-    const response = await fetch(`http://localhost:3000/api/admin/get/${encodeURIComponent(categoryName)}`, getAuthHeaders());
+    const response = await fetch(
+      `http://localhost:3000/api/admin/get/${encodeURIComponent(categoryName)}`,
+      getAuthHeaders()
+    );
     const data = await response.json();
-    if (!response.ok) throw new Error(data.message || 'Failed to fetch products by category');
-    return Array.isArray(data.products) ? data.products : (Array.isArray(data) ? data : []);
+    if (!response.ok)
+      throw new Error(data.message || "Failed to fetch products by category");
+    return Array.isArray(data.products)
+      ? data.products
+      : Array.isArray(data)
+      ? data
+      : [];
   } catch (error) {
-    console.error('Error fetching products by category:', error);
+    console.error("Error fetching products by category:", error);
     return [];
   }
 };
@@ -1018,13 +1109,20 @@ export const fetchProductsByCategory = async (categoryName) => {
 export const fetchAllPosts = async () => {
   try {
     // Use the search endpoint with an empty query to fetch all posts
-    const response = await fetch('http://localhost:3000/api/serchPost?query=', getAuthHeaders());
+    const response = await fetch(
+      "http://localhost:3000/api/serchPost?query=",
+      getAuthHeaders()
+    );
     const data = await response.json();
-    console.log('fetchAllPosts response:', data); // Debug log
-    if (!response.ok) throw new Error(data.message || 'Failed to fetch posts');
-    return Array.isArray(data.posts) ? data.posts : (Array.isArray(data) ? data : []);
+    console.log("fetchAllPosts response:", data); // Debug log
+    if (!response.ok) throw new Error(data.message || "Failed to fetch posts");
+    return Array.isArray(data.posts)
+      ? data.posts
+      : Array.isArray(data)
+      ? data
+      : [];
   } catch (error) {
-    console.error('Error fetching all posts:', error);
+    console.error("Error fetching all posts:", error);
     return [];
   }
 };
@@ -1092,4 +1190,16 @@ export const fetchCategoriesHomePage = async () => {
   if (!res.ok) throw new Error(data.message || "Failed to fetch categories");
 
   return data;
+};
+//cout products by category
+
+export const fetchCategoryCounts = async () => {
+  const res = await fetch(`http://localhost:3000/api/admin/categories`, {
+    credentials: "include",
+    headers: {
+      Accept: "application/json",
+    },
+  });
+  if (!res.ok) throw new Error("Unable to fetch category counts");
+  return res.json(); // returns: [ { _id: "CategoryName", total: 12 }, ... ]
 };
