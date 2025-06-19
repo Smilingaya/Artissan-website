@@ -766,7 +766,8 @@ const MessagePage = () => {
     width: "100%",
     display: "grid",
     gridTemplateColumns: window.innerWidth < 768 ? "1fr" : "380px 1fr",
-    background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+    background: "linear-gradient(135deg, #3a3f94 0%, #502f74 100%)",
+
     fontFamily:
       '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
   };
@@ -793,7 +794,7 @@ const MessagePage = () => {
     width: "40px",
     height: "40px",
     borderRadius: "50%",
-    background: "linear-gradient(45deg, #4ade80, #3b82f6)",
+    background: "linear-gradient(45deg,rgb(156, 87, 194),rgb(94, 33, 127),rgb(7, 23, 69))",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
@@ -897,7 +898,7 @@ const MessagePage = () => {
   const sendButtonStyle = {
     width: "48px",
     height: "48px",
-    background: "linear-gradient(45deg, #4ade80, #3b82f6)",
+    background: "linear-gradient(190deg,rgb(156, 87, 194),rgb(94, 33, 127),rgb(7, 23, 69))",
     borderRadius: "50%",
     display: "flex",
     alignItems: "center",
@@ -1076,7 +1077,7 @@ const MessagePage = () => {
 
         {/* Search Box */}
         <div style={searchBoxStyle}>
-          <Search size={16} color="rgba(255,255,255,0.5)" />
+          <Search size={16} color="white" />
           <input
             type="text"
             placeholder="Search messages..."
@@ -1154,22 +1155,37 @@ const MessagePage = () => {
                 style={{ display: "flex", alignItems: "center", gap: "12px" }}
               >
                 <div style={{ position: "relative" }}>
-                  <div
-                    style={{
-                      width: "48px",
-                      height: "48px",
-                      borderRadius: "50%",
-                      backgroundColor: user.color,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      color: "white",
-                      fontWeight: "600",
-                      fontSize: "14px",
-                    }}
-                  >
-                    {user.initials}
-                  </div>
+                  {console.log('rrrrr',user)}
+                  { user. profilePicture? (
+  <img
+    src={user. profilePicture}
+    alt={`${user.name}'s profile`}
+    style={{
+      width: "48px",
+      height: "48px",
+      borderRadius: "50%",
+      objectFit: "cover",
+    }}
+  />
+) : (
+  <div
+    style={{
+      width: "48px",
+      height: "48px",
+      borderRadius: "50%",
+      background: "linear-gradient(190deg,rgb(190, 129, 223),rgb(116, 50, 151),rgb(36, 64, 145))",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      color: "white",
+      fontWeight: "600",
+      fontSize: "14px",
+    }}
+  >
+    {user.name?.charAt(0)}
+  </div>
+)}
+
                   <div
                     style={{
                       position: "absolute",
@@ -1285,22 +1301,42 @@ const MessagePage = () => {
                   </button>
                 )}
                 <div style={{ position: "relative" }}>
-                  <div
-                    style={{
-                      width: "40px",
-                      height: "40px",
-                      borderRadius: "50%",
-                      backgroundColor: currentChatUser.color,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      color: "white",
-                      fontWeight: "600",
-                      fontSize: "14px",
-                    }}
-                  >
-                    {currentChatUser.initials}
-                  </div>
+                  <div style={{ position: "relative", width: "40px", height: "40px" }}>
+  {currentChatUser.profilePicture ? (
+    <img
+      src={currentChatUser.profilePicture}
+      alt={`${currentChatUser.name}'s profile`}
+      style={{
+        width: "40px",
+        height: "40px",
+        borderRadius: "50%",
+        objectFit: "cover",
+      }}
+    />
+  ) : (
+    <div
+      style={{
+        width: "40px",
+        height: "40px",
+        borderRadius: "50%",
+        background: "linear-gradient(190deg,rgb(190, 129, 223),rgb(116, 50, 151),rgb(36, 64, 145))",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        color: "white",
+        fontWeight: "600",
+        fontSize: "14px",
+        textTransform: "uppercase",
+      }}
+    >
+      {currentChatUser.initials || currentChatUser.name?.charAt(0) || "U"}
+    </div>
+  )}
+  <div>
+    {/* your status dot or anything else can go here */}
+  </div>
+</div>
+
                   <div
                     style={{
                       position: "absolute",
@@ -1397,24 +1433,40 @@ const MessagePage = () => {
                     }}
                   >
                     {!isOwnMessage && (
-                      <div
-                        style={{
-                          width: "32px",
-                          height: "32px",
-                          borderRadius: "50%",
-                          backgroundColor: sender?.color || "#ccc",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          color: "white",
-                          fontWeight: "600",
-                          fontSize: "12px",
-                          flexShrink: 0,
-                        }}
-                      >
-                        {sender?.initials || "U"}
-                      </div>
-                    )}
+  <div style={{ position: "relative", width: "32px", height: "32px", flexShrink: 0 }}>
+    {sender?.profilePicture ? (
+      <img
+        src={sender.profilePicture}
+        alt={`${sender.name}'s profile`}
+        style={{
+          width: "32px",
+          height: "32px",
+          borderRadius: "50%",
+          objectFit: "cover",
+        }}
+      />
+    ) : (
+      <div
+        style={{
+          width: "32px",
+          height: "32px",
+          borderRadius: "50%",
+          background: "linear-gradient(190deg,rgb(190, 129, 223),rgb(116, 50, 151),rgb(36, 64, 145))",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          color: "white",
+          fontWeight: "600",
+          fontSize: "12px",
+          textTransform: "uppercase",
+        }}
+      >
+        {sender?.name?.charAt(0) || "U"}
+      </div>
+    )}
+  </div>
+)}
+
                     <div
                       style={{
                         maxWidth: "70%",
