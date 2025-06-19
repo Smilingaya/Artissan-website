@@ -2,6 +2,8 @@ const express = require("express");
 const Category = require("../model/category");
 const Product = require("../model/product");
 const User = require("../model/user");
+const Post = require("../model/post");
+const Order = require("../model/order");
 const blacklistedUser = require("../model/blackList");
 const add_category = async (req, res) => {
   const { id } = req.params;
@@ -128,6 +130,23 @@ const deleteBlacklistedUser = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+
+const getPlatformStats = async (req, res) => {
+  try {
+    const [users, posts, products, orders] = await Promise.all([
+      User.countDocuments(),
+      Post.countDocuments(),
+      Product.countDocuments(),
+      Order.countDocuments(),
+    ]);
+
+    res.status(200).json({ users, posts, products, orders });
+  } catch (err) {
+    res
+      .status(500)
+      .json({ message: "Failed to load stats", error: err.message });
+  }
+};
 module.exports = {
   add_category,
   get_category,
@@ -137,4 +156,5 @@ module.exports = {
   addBlacklistedUser,
   blackList,
   deleteBlacklistedUser,
+  getPlatformStats,
 };

@@ -1,5 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { fetchCategories, addCategory } from "../../../profile/utils/api";
+import {
+  fetchCategories,
+  addCategory,
+  fetchCategoryCounts,
+} from "../../../profile/utils/api";
 import {
   Box,
   Typography,
@@ -13,16 +17,14 @@ import {
   TableRow,
   TableCell,
 } from "@mui/material";
-//import { UserContext } from "../../../../shared/contexts/UserContext";
 
 const Categories = () => {
   /* --------------------------- State ---------------------------- */
   const [categories, setCategories] = useState([]);
   const [newCategory, setNewCategory] = useState("");
-  //const { currentUser } = useContext(UserContext);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [saving, setSaving] = useState(false); // ✅ Fix: added missing state
+  const [saving, setSaving] = useState(false);
 
   /* --------------------- Fetch on Mount ------------------------- */
   useEffect(() => {
@@ -30,8 +32,25 @@ const Categories = () => {
       setLoading(true);
       setError(null);
       try {
-        const list = await fetchCategories();
-        setCategories(list);
+        /* 1️⃣  load category rows ⬌ 2️⃣  load product totals          */
+        const [rawCats, prodCounts] = await Promise.all([
+          fetchCategories(), // [{ id OR _id, name, status }]
+          fetchCategoryCounts(), // [{ _id, total }]
+        ]);
+
+        /* normalise each category so we always have `id` field        */
+        const cats = rawCats.map((c) => ({
+          ...c,
+          id: c.id || c._id, // keep compatibility
+        }));
+
+        /* merge the totals in by *id*                                 */
+        const merged = cats.map((cat) => {
+          const match = prodCounts.find((p) => p._id === cat.id);
+          return { ...cat, count: match ? match.total : 0 };
+        });
+
+        setCategories(merged);
       } catch (err) {
         console.error(err);
         setError("Failed to load categories");
@@ -48,7 +67,13 @@ const Categories = () => {
 
     setSaving(true);
     try {
-      const newCat = await addCategory(newCategory);
+      // backend returns: { id OR _id, name, status }
+      const created = await addCategory(newCategory);
+      const newCat = {
+        ...created,
+        id: created.id || created._id,
+        count: 0,
+      };
       setCategories((prev) => [...prev, newCat]);
       setNewCategory("");
     } catch (err) {

@@ -876,3 +876,15 @@ export const fetchCategoriesHomePage = async () => {
 
   return data;
 };
+
+//cout products by category
+export const fetchCategoryCounts = async () => {
+  const res = await fetch(`http://localhost:3000/api/admin/categories`, {
+    credentials: "include",
+    headers: {
+      Accept: "application/json",
+    },
+  });
+  if (!res.ok) throw new Error("Unable to fetch category counts");
+  return res.json(); // returns: [ { _id: "CategoryName", total: 12 }, ... ]
+};

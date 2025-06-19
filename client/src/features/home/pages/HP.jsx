@@ -50,7 +50,7 @@ const Homepage = () => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const userId = localStorage.getItem("userId");
+        const userId = currentUser?._id;
         if (userId) {
           const data = await fetchRecommendedPosts(userId);
           setPosts(data.recommendedPosts || []);
@@ -79,9 +79,10 @@ const Homepage = () => {
         const filteredProducts = await fetchProductsByCategory(selectedCategory);
         setProducts(filteredProducts || []);
       } else {
-        const userId = localStorage.getItem("userId");
-        const data = await fetchRecommendedPosts(userId);
+        if (currentUser?._id) {
+        const data = await fetchRecommendedPosts(currentUser._id);
         setPosts(data.recommendedPosts || []);
+}
         setProducts([]);
       }
     };

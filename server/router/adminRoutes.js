@@ -10,11 +10,13 @@ router.post(
   adminController.addBlacklistedUser
 );
 router.get("/get", requireMidllware, adminController.get_category);
+router.get("/stat", requireMidllware, adminController.getPlatformStats);
 router.get(
   "/get/:categoryName",
   requireMidllware,
   adminController.get_product_by_category
 );
+
 router.delete(
   "/delete",
   requireMidllware,
