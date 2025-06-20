@@ -117,9 +117,11 @@ const Categories = () => {
           onClick={handleAddCategory}
           disabled={saving}
           sx={{
-            bgcolor: "#2E8B57",
-            "&:hover": { bgcolor: "#236b43" },
+            bgcolor:'#E5B3D3',
+            "&:hover": { bgcolor: '#F0CBE4'},
             opacity: saving ? 0.6 : 1,
+            width: "150px",
+            hight:"70px",
           }}
         >
           {saving ? "Saving…" : "Add Category"}
@@ -127,7 +129,7 @@ const Categories = () => {
       </Box>
 
       {/* Categories Table */}
-      <Paper sx={{ borderRadius: 2, overflow: "hidden" }}>
+      <Paper sx={{width: "90%",margin:"0 70px", borderRadius: 2, overflow: "hidden" }}>
         <TableContainer>
           <Table>
             <TableHead>
@@ -135,8 +137,6 @@ const Categories = () => {
                 <TableCell>ID</TableCell>
                 <TableCell>Category Name</TableCell>
                 <TableCell>Products</TableCell>
-                <TableCell>Status</TableCell>
-                <TableCell>Actions</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -162,46 +162,7 @@ const Categories = () => {
                     <TableCell>{category.id}</TableCell>
                     <TableCell>{category.name}</TableCell>
                     <TableCell>{category.count}</TableCell>
-                    <TableCell>
-                      <Box
-                        sx={{
-                          py: 0.5,
-                          px: 1.5,
-                          borderRadius: 10,
-                          width: "fit-content",
-                          bgcolor:
-                            category.status === "active"
-                              ? "rgba(76, 175, 80, 0.1)"
-                              : "rgba(158, 158, 158, 0.1)",
-                          color:
-                            category.status === "active"
-                              ? "#4CAF50"
-                              : "#9E9E9E",
-                          textTransform: "capitalize",
-                          fontSize: "0.85rem",
-                        }}
-                      >
-                        {category.status}
-                      </Box>
-                    </TableCell>
-                    <TableCell>
-                      <Button
-                        variant="outlined"
-                        size="small"
-                        onClick={() => toggleStatus(category.id)}
-                        sx={{
-                          color:
-                            category.status === "active"
-                              ? "#F44336"
-                              : "#4CAF50",
-                          borderColor: "rgba(0, 0, 0, 0.12)",
-                        }}
-                      >
-                        {category.status === "active"
-                          ? "Deactivate"
-                          : "Activate"}
-                      </Button>
-                    </TableCell>
+
                   </TableRow>
                 ))
               ) : (

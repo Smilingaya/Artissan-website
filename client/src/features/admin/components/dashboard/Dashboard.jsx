@@ -4,11 +4,10 @@ import {
   Grid,
   Paper,
   Typography,
-  IconButton,
-  useTheme,
   Card,
+  IconButton,
   CardContent,
-  Fade,
+  useTheme,
   Grow,
   Skeleton,
 } from "@mui/material";
@@ -32,97 +31,39 @@ const StatCard = ({ icon, title, value, trend, color }) => {
   }, []);
 
   return (
-    <Grow in={isVisible} timeout={600}>
+    <Grow in={isVisible} timeout={600} style={{ height: "150px" }}>
       <Card
         sx={{
           height: "100%",
           transition: "all 0.3s ease",
-          "&:hover": {
-            transform: "translateY(-4px)",
-            boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
-          },
+          display: "grid",
+          gridTemplateColumns: "1fr 1fr",
+          alignItems: "center",
+          p: 2,
         }}
       >
-        <CardContent>
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "flex-start",
-              justifyContent: "space-between",
-            }}
-          >
-            <Box
-              sx={{
-                p: 1.5,
-                borderRadius: 3,
-                bgcolor: `${color}15`,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              {icon}
-            </Box>
-            <IconButton
-              size="small"
-              sx={{
-                transition: "all 0.3s ease",
-                "&:hover": {
-                  transform: "scale(1.1)",
-                  backgroundColor: "rgba(0,0,0,0.04)",
-                },
-              }}
-            >
-              <MoreVertIcon />
-            </IconButton>
-          </Box>
-
-          <Typography
-            variant="h4"
-            sx={{
-              mt: 2,
-              mb: 1,
-              fontWeight: 600,
-              display: "flex",
-              alignItems: "center",
-              gap: 1,
-            }}
-          >
+        <Box
+          sx={{
+            bgcolor: `${color}15`,
+            p: 2,
+            borderRadius: 2,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            width: "50px",
+            marginLeft: "25px",
+          }}
+        >
+          {icon}
+        </Box>
+        <Box>
+          <Typography variant="h4" sx={{ fontWeight: 600 }}>
             {value.toLocaleString()}
-            {trend && (
-              <Typography
-                component="span"
-                variant="caption"
-                sx={{
-                  color:
-                    trend >= 0
-                      ? theme.palette.success.main
-                      : theme.palette.error.main,
-                  bgcolor: trend >= 0 ? "success.light" : "error.light",
-                  px: 1,
-                  py: 0.5,
-                  borderRadius: 1,
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 0.5,
-                  fontSize: "0.75rem",
-                }}
-              >
-                <TrendingUpIcon
-                  sx={{
-                    fontSize: 16,
-                    transform: trend >= 0 ? "none" : "rotate(180deg)",
-                  }}
-                />
-                {Math.abs(trend)}%
-              </Typography>
-            )}
           </Typography>
-
           <Typography variant="body2" color="text.secondary">
             {title}
           </Typography>
-        </CardContent>
+        </Box>
       </Card>
     </Grow>
   );
@@ -133,20 +74,17 @@ const QuickActionCard = ({ icon, title, description, delay }) => {
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
-    setIsVisible(true);
-  }, []);
+    const timer = setTimeout(() => setIsVisible(true), delay);
+    return () => clearTimeout(timer);
+  }, [delay]);
 
   return (
-    <Grow
-      in={isVisible}
-      timeout={600}
-      style={{ transitionDelay: `${delay}ms` }}
-    >
+    <Grow in={isVisible} timeout={600} style={{ margin:'0 30px' }}>
       <Paper
         sx={{
           p: 2.5,
-          cursor: "pointer",
           height: "100%",
+          cursor: "pointer",
           transition: "all 0.3s ease",
           "&:hover": {
             transform: "translateY(-4px)",
@@ -168,7 +106,6 @@ const QuickActionCard = ({ icon, title, description, delay }) => {
 
 const Dashboard = () => {
   const theme = useTheme();
-  const [isVisible, setIsVisible] = useState(false);
   const [platformStats, setPlatformStats] = useState({
     users: 0,
     posts: 0,
@@ -178,12 +115,9 @@ const Dashboard = () => {
   const [stats, setStats] = useState(null);
 
   useEffect(() => {
-    setIsVisible(true);
-
     const fetchStats = async () => {
       try {
         const token = localStorage.getItem("token");
-
         const res = await fetch("http://localhost:3000/api/admin/stat", {
           method: "GET",
           credentials: "include",
@@ -194,15 +128,13 @@ const Dashboard = () => {
           },
         });
 
-        if (!res.ok) {
-          throw new Error(`HTTP error! status: ${res.status}`);
-        }
+        if (!res.ok) throw new Error("Error fetching stats");
 
         const data = await res.json();
         setPlatformStats(data);
         setStats("loaded");
       } catch (err) {
-        console.error("Failed to fetch platform stats:", err.message);
+        console.error(err);
         setStats("error");
       }
     };
@@ -210,138 +142,76 @@ const Dashboard = () => {
     fetchStats();
   }, []);
 
-  // Memoized calculations to ensure consistency
-  const chartCalculations = useMemo(() => {
-    const chartData = [
-      {
-        value: platformStats.posts,
-        color: theme.palette.secondary.main,
-        label: "Posts",
-      },
-      {
-        value: platformStats.users,
-        color: theme.palette.primary.main,
-        label: "Users",
-      },
-      {
-        value: platformStats.products,
-        color: theme.palette.warning.main,
-        label: "Products",
-      },
-      {
-        value: platformStats.orders,
-        color: theme.palette.info.main,
-        label: "Orders",
-      },
+  const chartData = useMemo(() => {
+    const items = [
+      { label: "Posts", value: platformStats.posts, color: theme.palette.secondary.main },
+      { label: "Users", value: platformStats.users, color: theme.palette.primary.main },
+      { label: "Products", value: platformStats.products, color: theme.palette.warning.main },
+      { label: "Orders", value: platformStats.orders, color: theme.palette.info.main },
     ];
 
-    const total = chartData.reduce((sum, item) => sum + item.value, 0);
-    const series = chartData.map((item) => item.value);
-
-    // Calculate percentages for each item
-    const dataWithPercentages = chartData.map((item) => ({
-      ...item,
-      percentage: total > 0 ? Math.round((item.value / total) * 100) : 0,
-    }));
-
-    return { chartData: dataWithPercentages, total, series };
+    const total = items.reduce((acc, cur) => acc + cur.value, 0);
+    return {
+      total,
+      chartData: items.map((i) => ({
+        ...i,
+        percentage: total ? Math.round((i.value / total) * 100) : 0,
+      })),
+      series: items.map((i) => i.value),
+      labels: items.map((i) => i.label),
+      colors: items.map((i) => i.color),
+    };
   }, [platformStats, theme]);
 
-  const options = useMemo(() => {
-    const { total } = chartCalculations;
-
-    return {
-      chart: {
-        type: "donut",
-        animations: { speed: 400 },
-        toolbar: { show: false },
-      },
-      labels: chartCalculations.chartData.map((item) => item.label),
-      colors: chartCalculations.chartData.map((item) => item.color),
-      legend: { show: false },
-      stroke: { width: 0 },
-      plotOptions: {
-        pie: {
-          donut: {
-            size: "70%",
-            labels: {
-              show: true,
-              name: { show: false },
-              value: { show: false },
-              total: {
-                show: true,
-                showAlways: true,
-                label: "Total Items",
-                fontSize: "14px",
-                fontWeight: 400,
-                formatter: () => total.toLocaleString(),
-              },
+  const chartOptions = {
+    chart: {
+      type: "donut",
+      animations: { speed: 400 },
+      toolbar: { show: false },
+    },
+    labels: chartData.labels,
+    colors: chartData.colors,
+    legend: { show: false },
+    plotOptions: {
+      pie: {
+        donut: {
+          size: "70%",
+          labels: {
+            show: true,
+            total: {
+              showAlways: true,
+              label: "Total",
+              formatter: () => chartData.total.toLocaleString(),
             },
           },
-          expandOnClick: true,
         },
       },
-      dataLabels: { enabled: false },
-      tooltip: {
-        y: {
-          formatter: (val) => {
-            const percent = total > 0 ? Math.round((val / total) * 100) : 0;
-            return `${val.toLocaleString()} (${percent}%)`;
-          },
-        },
+    },
+    stroke: { width: 0 },
+    dataLabels: { enabled: false },
+    tooltip: {
+      y: {
+        formatter: (val) =>
+          `${val.toLocaleString()} (${chartData.total > 0 ? Math.round((val / chartData.total) * 100) : 0}%)`,
       },
-      responsive: [
-        {
-          breakpoint: 600,
-          options: { chart: { width: "100%" } },
-        },
-      ],
-    };
-  }, [chartCalculations]);
+    },
+  };
 
   return (
-    <Box
-      sx={{
-        p: 2,
-        mt: 8,
-        height: "calc(100vh - 88px)",
-        display: "flex",
-        flexDirection: "column",
-      }}
-    >
-      {/* Header */}
-      <Fade in={isVisible} timeout={600}>
-        <Box sx={{ mb: 2 }}>
-          <Typography variant="h4" sx={{ mb: 0.5 }}>
-            Dashboard Overview
-          </Typography>
-          <Typography variant="body1" color="text.secondary">
-            Here's what's happening with your platform today.
-          </Typography>
-        </Box>
-      </Fade>
+    <Box sx={{ p: 3 }}>
+      {/* Title */}
+      <Typography variant="h4" sx={{ mb: 2 }}>
+        Dashboard Overview
+      </Typography>
 
-      <Grid
-        container
-        spacing={2}
-        sx={{ flexGrow: 1, height: "calc(100% - 80px)" }}
-      >
-        {/* Left Column */}
-        <Grid
-          item
-          xs={12}
-          md={8}
-          sx={{ height: "100%", display: "flex", flexDirection: "column" }}
-        >
-          {/* Stats Grid */}
-          <Grid container spacing={2} sx={{ mb: 2 }}>
+      {/* Stats + Chart */}
+      <Grid container spacing={2} sx={{ mb: 3 ,display:"grid" , gridTemplateColumns: "repeat(2,1fr)" }}>
+        {/* Stat Cards */}
+        <Grid item xs={12} md={8}  >
+          <Grid container spacing={2 } width={"40vw"} sx={{ display:"grid" , gridTemplateColumns: "repeat(2,1fr)" }}>
             <Grid item xs={12} sm={6} md={3}>
               <StatCard
-                icon={
-                  <PeopleIcon
-                    sx={{ fontSize: 20, color: theme.palette.primary.main }}
-                  />
-                }
+                icon={<PeopleIcon sx={{ fontSize: 20, color: theme.palette.primary.main }} />}
                 title="Total Users"
                 value={platformStats.users}
                 trend={12}
@@ -350,11 +220,7 @@ const Dashboard = () => {
             </Grid>
             <Grid item xs={12} sm={6} md={3}>
               <StatCard
-                icon={
-                  <PostAddIcon
-                    sx={{ fontSize: 20, color: theme.palette.secondary.main }}
-                  />
-                }
+                icon={<PostAddIcon sx={{ fontSize: 20, color: theme.palette.secondary.main }} />}
                 title="Total Posts"
                 value={platformStats.posts}
                 trend={8}
@@ -363,11 +229,7 @@ const Dashboard = () => {
             </Grid>
             <Grid item xs={12} sm={6} md={3}>
               <StatCard
-                icon={
-                  <InventoryIcon
-                    sx={{ fontSize: 20, color: theme.palette.warning.main }}
-                  />
-                }
+                icon={<InventoryIcon sx={{ fontSize: 20, color: theme.palette.warning.main }} />}
                 title="Total Products"
                 value={platformStats.products}
                 trend={15}
@@ -376,11 +238,7 @@ const Dashboard = () => {
             </Grid>
             <Grid item xs={12} sm={6} md={3}>
               <StatCard
-                icon={
-                  <ShoppingCartIcon
-                    sx={{ fontSize: 20, color: theme.palette.info.main }}
-                  />
-                }
+                icon={<ShoppingCartIcon sx={{ fontSize: 20, color: theme.palette.info.main }} />}
                 title="Total Orders"
                 value={platformStats.orders}
                 trend={-5}
@@ -388,73 +246,14 @@ const Dashboard = () => {
               />
             </Grid>
           </Grid>
-
-          {/* Quick Actions */}
-          <Paper sx={{ p: 2, flexGrow: 1 }}>
-            <Typography variant="h6" sx={{ mb: 2 }}>
-              Quick Actions
-            </Typography>
-            <Grid container spacing={2}>
-              <Grid item xs={12} sm={6} md={3}>
-                <QuickActionCard
-                  icon={
-                    <PostAddIcon
-                      sx={{ fontSize: 24, color: theme.palette.primary.main }}
-                    />
-                  }
-                  title="View All Posts"
-                  description="Browse and moderate all platform posts"
-                  delay={200}
-                />
-              </Grid>
-              <Grid item xs={12} sm={6} md={3}>
-                <QuickActionCard
-                  icon={
-                    <InventoryIcon
-                      sx={{ fontSize: 24, color: theme.palette.secondary.main }}
-                    />
-                  }
-                  title="Manage Products"
-                  description="View and edit all platform products"
-                  delay={400}
-                />
-              </Grid>
-              <Grid item xs={12} sm={6} md={3}>
-                <QuickActionCard
-                  icon={
-                    <PeopleIcon
-                      sx={{ fontSize: 24, color: theme.palette.warning.main }}
-                    />
-                  }
-                  title="User Management"
-                  description="Browse and manage platform users"
-                  delay={600}
-                />
-              </Grid>
-              <Grid item xs={12} sm={6} md={3}>
-                <QuickActionCard
-                  icon={
-                    <ShoppingCartIcon
-                      sx={{ fontSize: 24, color: theme.palette.info.main }}
-                    />
-                  }
-                  title="Order Management"
-                  description="View and manage all orders"
-                  delay={800}
-                />
-              </Grid>
-            </Grid>
-          </Paper>
         </Grid>
 
-        {/* Right Column - Chart and Details */}
-        <Grid item xs={12} md={4}>
-          <Paper sx={{ p: 2, height: "100%" }}>
+        {/* Chart */}
+        <Grid item xs={12} md={4} sx={{ width: "35vw", height: "50vh" }}>
+          <Paper sx={{ p: 1,width: "100%", height: "100%" }}>
             <Typography variant="h6" align="center" mb={2}>
               Platform Distribution
             </Typography>
-
-            {/* Chart or Loading Skeleton */}
             <Box sx={{ display: "flex", justifyContent: "center", mb: 2 }}>
               {stats === null ? (
                 <Skeleton variant="circular" width={220} height={220} />
@@ -462,22 +261,22 @@ const Dashboard = () => {
                 <Typography color="error">Failed to load chart</Typography>
               ) : (
                 <Chart
-                  options={options}
-                  series={chartCalculations.series}
+                  options={chartOptions}
+                  series={chartData.series}
                   type="donut"
                   width={260}
                 />
               )}
             </Box>
 
-            {/* Legend blocks */}
-            {stats && stats !== "error" && chartCalculations.total > 0 && (
+            {/* Chart Legend */}
+            {stats && stats !== "error" && chartData.total > 0 && (
               <Grid container spacing={1}>
-                {chartCalculations.chartData.map((item, index) => (
+                {chartData.chartData.map((item, index) => (
                   <Grid item xs={12} sm={6} key={index}>
                     <Box
                       sx={{
-                        p: 1,
+                        p: 0.5,
                         borderRadius: 1,
                         bgcolor: `${item.color}15`,
                         display: "flex",
@@ -485,9 +284,7 @@ const Dashboard = () => {
                         alignItems: "center",
                       }}
                     >
-                      <Box
-                        sx={{ display: "flex", alignItems: "center", gap: 1 }}
-                      >
+                      <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                         <Box
                           sx={{
                             width: 8,
@@ -497,8 +294,7 @@ const Dashboard = () => {
                           }}
                         />
                         <Typography variant="body2">
-                          {item.label} {item.value.toLocaleString()} (
-                          {item.percentage}%)
+                          {item.label} {item.value.toLocaleString()} ({item.percentage}%)
                         </Typography>
                       </Box>
                     </Box>
@@ -509,6 +305,47 @@ const Dashboard = () => {
           </Paper>
         </Grid>
       </Grid>
+
+      {/* Quick Actions */}
+      <Paper sx={{ p: 3 }}>
+        <Typography variant="h6" sx={{ mb: 2 }}>
+          Quick Actions
+        </Typography>
+        <Grid container spacing={2}>
+          <Grid item xs={12} sm={6} md={3}>
+            <QuickActionCard
+              icon={<PostAddIcon sx={{ fontSize: 24, color: theme.palette.primary.main }} />}
+              title="View All Posts"
+              description="Browse and moderate all posts"
+              delay={100}
+            />
+          </Grid>
+          <Grid item xs={12} sm={6} md={3}>
+            <QuickActionCard
+              icon={<InventoryIcon sx={{ fontSize: 24, color: theme.palette.secondary.main }} />}
+              title="Manage Products"
+              description="Edit and track platform products"
+              delay={200}
+            />
+          </Grid>
+          <Grid item xs={12} sm={6} md={3}>
+            <QuickActionCard
+              icon={<PeopleIcon sx={{ fontSize: 24, color: theme.palette.warning.main }} />}
+              title="User Management"
+              description="Manage all registered users"
+              delay={300}
+            />
+          </Grid>
+          <Grid item xs={12} sm={6} md={3}>
+            <QuickActionCard
+              icon={<ShoppingCartIcon sx={{ fontSize: 24, color: theme.palette.info.main }} />}
+              title="Order Management"
+              description="View and process orders"
+              delay={400}
+            />
+          </Grid>
+        </Grid>
+      </Paper>
     </Box>
   );
 };

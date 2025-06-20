@@ -144,8 +144,8 @@ const Blacklist = () => {
           variant="contained"
           onClick={handleAddToBlacklist}
           sx={{
-            bgcolor: "#2E8B57",
-            "&:hover": { bgcolor: "#236b43" },
+            bgcolor: '#85B6FF',
+            "&:hover": { bgcolor: '#A8D4FF'},
           }}
         >
           Add to Blacklist
@@ -182,7 +182,10 @@ const Blacklist = () => {
                       <Button
                         variant="contained"
                         size="small"
-                        color="error"
+                        sx={{
+                        bgcolor: '#FFD485',
+                          "&:hover": { bgcolor: '#FFE4A8'},
+                   }}
                         onClick={() => handleRemoveFromBlacklist(user.id)}
                       >
                         Remove

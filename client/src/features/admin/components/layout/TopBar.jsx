@@ -35,7 +35,7 @@ export const TopBar = () => {
           color: theme.palette.text.primary,
           fontWeight: 600 
         }}>
-          Good morning, Dr.Admin
+
         </Typography>
 
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
