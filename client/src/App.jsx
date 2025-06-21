@@ -20,6 +20,7 @@ const AuthPage = lazy(() => import("./features/auth/pages/Register"));
 const Homepage = lazy(() => import("./features/home/pages/HP"));
 const ProfilePage = lazy(() => import("./features/profile/pages/pf"));
 const MessagePage = lazy(() => import("./features/messaging/pages/MessagePage"));
+const ProductPage = lazy(() => import("./features/productPage/productPage"));
 
 // E-commerce components (lazy loaded)
 const CheckoutPage = lazy(() => import('./features/orders/pages/CheckoutPage'));
@@ -93,6 +94,13 @@ const AppRoutes = () => {
             <ProfilePage />
           </ProtectedRoute>
         } />
+        <Route path="/product/:id" element={
+          <ProtectedRoute>
+            <ProductPage />
+          </ProtectedRoute>
+        } />
+        
+        
         <Route path="/message" element={
           <ProtectedRoute>
             <MessagePage />

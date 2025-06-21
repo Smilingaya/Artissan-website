@@ -82,14 +82,15 @@ const Get_product = async (req, res) => {
 };
 const Get_One_Product = async (req, res) => {
   const id = req.params.productId;
-  Product.findById(id)
-    .then((resault) => {
-      if (!resault) {
-        return res.status(404).json({ message: "product not found !" });
-      }
-      res.status(200).json({ resault });
-    })
-    .catch((err) => res.status(500).json({ message: err.message }));
+  try {
+    const product = await Product.findById(id).populate("user").populate('user').populate('category', 'name') ;
+    if (!product) {
+      return res.status(404).json({ message: "Product not found!" });
+    }
+    res.status(200).json(product); 
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
 };
 const delete_product = async (req, res) => {
   const id = req.params.productId;

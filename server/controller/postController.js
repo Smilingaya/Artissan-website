@@ -4,21 +4,53 @@ const cloudinary = require("cloudinary").v2;
 const User = require("../model/user");
 const Post = require("../model/post");
 const { extractPublicId } = require("../helper/helper");
+const mongoose = require('mongoose'); // make sure it's imported
+
+
 const craete_post = async (req, res) => {
   try {
-    const mediaUrls = req.files.map((file) => file.path);
+    const mediaUrls = req.files.map(file => file.path);
     const { userId, caption, name } = req.body;
-    const user = await User.findById(userId);
+
+    // ✅ Safely parse productLinks from JSON string (because it's sent as FormData)
+    let productLinks = [];
+    try {
+      productLinks = JSON.parse(req.body.productLinks || '[]');
+    } catch (e) {
+      return res.status(400).json({ success: false, message: 'Invalid productLinks format' });
+    }
+
+    if (!Array.isArray(productLinks)) {
+      return res.status(400).json({ success: false, message: 'productLinks must be an array' });
+    }
+
+    // ✅ Validate and convert product IDs to ObjectId
+    productLinks = productLinks
+      .filter(id => typeof id === 'string' && id.match(/^[0-9a-fA-F]{24}$/))
+      .map(id => new mongoose.Types.ObjectId(id));
+
+    // ✅ Create the post
     const newPost = new Post({
       user: userId,
       caption,
       media: mediaUrls,
       name,
+      productLinks,
     });
+
     await newPost.save();
+
+    // ✅ Link the post to the user
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
     user.posts.push(newPost._id);
     await user.save();
+
     res.status(201).json({ success: true, post: newPost });
+
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }
@@ -28,14 +60,16 @@ const GET_post = async (req, res) => {
 
   try {
     const user = await User.findById(userId);
+
+
     if (!user) {
       return res
         .status(404)
         .json({ success: false, message: "User not found" });
     }
 
-    const userPosts = await Post.find({ user: userId }).populate('user', 'name avatar profilePicture').populate('Comments');
-
+    const userPosts = await Post.find({ user: userId }).populate('user', 'name avatar profilePicture').populate('Comments').populate('productLinks');
+    console.log('Fetched post with products:', userPosts.map(p => p.productLinks));
     res.status(200).json({ success: true, posts: userPosts });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
@@ -237,7 +271,7 @@ const recommendPosts = async (req, res) => {
 
     const recommendedPosts = await Post.find({ $and: queryConditions }).sort({
       createdAt: -1,
-    });
+    }).populate('user', 'name avatar profilePicture').populate('Comments');
 
     res.status(200).json({ success: true, recommendedPosts });
   } catch (error) {

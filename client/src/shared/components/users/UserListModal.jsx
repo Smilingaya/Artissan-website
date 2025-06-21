@@ -72,7 +72,7 @@ const UserListModal = ({
               >
                 <ListItemAvatar>
                   <Avatar 
-                    src={user.avatar}
+                    src={user.profilePicture }
                     alt={user.name}
                     sx={{ width: 40, height: 40 }}
                   />

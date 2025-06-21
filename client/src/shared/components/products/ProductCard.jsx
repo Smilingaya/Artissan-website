@@ -92,7 +92,7 @@ const ProductCard = ({
           <CardContent>
             <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
               <Avatar
-                src={product.user?.avatar}
+                src={product.user?.profilePicture }
                 alt={product.user?.name}
                 sx={{ width: 24, height: 24, mr: 1 }}
                 onClick={handleUserClick}
@@ -117,7 +117,7 @@ const ProductCard = ({
             </Typography>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <Typography variant="h6" color="primary">
-                ${product.price.toFixed(2)}
+                DA {product.price.toFixed(2)}
               </Typography>
               <Chip
                 label={`Stock: ${product.stoke}`}
@@ -170,10 +170,14 @@ const ProductCard = ({
     >
       <CardMedia
         component="img"
-        height="200"
+        height="400"
         image={product.mainImage}
         alt={product.name}
-        sx={{ objectFit: 'cover' }}
+        sx={{
+              maxHeight: '100%',
+              width: '100%',
+              objectFit: 'cover',
+            }}
       />
       <CardContent sx={{ flexGrow: 1 }}>
         <Typography variant="h6" gutterBottom>
@@ -183,7 +187,7 @@ const ProductCard = ({
           {product.discreption}
         </Typography>
         <Typography variant="h6" color="primary">
-          ${product.price.toFixed(2)}
+          DA {product.price.toFixed(2)}
         </Typography>
       </CardContent>
       <CardActions sx={{ justifyContent: 'space-between', px: 2, pb: 2 }}>

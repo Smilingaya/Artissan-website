@@ -1,13 +1,8 @@
-// src/features/home/pages/HP.jsx
+// Updated Home Page with Full Post/Product Dialog Handlers
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  Box,
-  Chip,
-  ToggleButton,
-  ToggleButtonGroup,
-  Typography,
-  CircularProgress
+  Box, Chip, ToggleButton, ToggleButtonGroup, Typography, CircularProgress
 } from "@mui/material";
 import { GridView, ViewList } from "@mui/icons-material";
 import SideDrawer from "../../../shared/components/layout/SideDrawer";
@@ -25,7 +20,11 @@ import {
   fetchAllPosts,
   likePost,
   unlikePost,
-  fetchCategoriesHomePage
+  deletePost,
+  addComment,
+  deleteComment,
+  fetchCategoriesHomePage,
+  createOrder
 } from "../../../features/profile/utils/api";
 import { useAuth } from "../../../shared/contexts/UserContext";
 
@@ -43,6 +42,8 @@ const Homepage = () => {
   const [showProducts, setShowProducts] = useState(false);
   const [viewMode, setViewMode] = useState("grid");
   const [loading, setLoading] = useState(true);
+
+ 
 
   useEffect(() => {
     const loadCategories = async () => {
@@ -79,7 +80,6 @@ const Homepage = () => {
         setLoading(false);
       }
     };
-
     if (currentUser) fetchData();
   }, [currentUser]);
 
@@ -117,30 +117,6 @@ const Homepage = () => {
     fetchSearchAndCategory();
   }, [searchTerm, selectedCategory, currentUser]);
 
-  const handleLike = async (postId) => {
-    try {
-      const updatedPost = posts.find(p => p._id === postId);
-      const isLiked = updatedPost.likes.includes(currentUser._id);
-
-      const data = isLiked
-        ? await unlikePost(postId, currentUser._id)
-        : await likePost(postId, currentUser._id);
-
-      const newPost = {
-        ...updatedPost,
-        likes: data.post.likes,
-        isLiked: !isLiked
-      };
-
-      setPosts(prev => prev.map(p => p._id === postId ? newPost : p));
-      if (selectedPost && selectedPost._id === postId) {
-        setSelectedPost(newPost);
-      }
-    } catch (err) {
-      console.error("Error toggling like:", err);
-    }
-  };
-
   const handleSearch = (value) => {
     setSearchTerm(value);
     setShowProducts(value.length > 0);
@@ -152,31 +128,107 @@ const Homepage = () => {
     setShowProducts(true);
   };
 
+  const handleLike = async (postId) => {
+    try {
+      const post = posts.find(p => p._id === postId);
+      const liked = post.likes.includes(currentUser._id);
+
+      const data = liked
+        ? await unlikePost(postId, currentUser._id)
+        : await likePost(postId, currentUser._id);
+
+      const updated = { ...post, likes: data.post.likes, isLiked: !liked };
+      setPosts(prev => prev.map(p => p._id === postId ? updated : p));
+      if (selectedPost && selectedPost._id === postId) {
+        setSelectedPost(updated);
+      }
+    } catch (err) {
+      console.error("Error toggling like:", err);
+    }
+  };
+
+  const handleAddComment = async (postId, commentText) => {
+    try {
+      const newComment = await addComment(postId, {
+        comment: commentText,
+        user: currentUser._id
+      });
+      setPosts(prev => prev.map(post =>
+        post._id === postId
+          ? { ...post, Comments: [...(post.Comments || []), newComment] }
+          : post
+      ));
+    } catch (err) {
+      console.error("Error adding comment:", err);
+    }
+  };
+
+  const handleDeleteComment = async (commentId, postId) => {
+    try {
+      await deleteComment(commentId, postId);
+      setPosts(prev => prev.map(post =>
+        post._id === postId
+          ? { ...post, Comments: (post.Comments || []).filter(c => c._id !== commentId) }
+          : post
+      ));
+    } catch (err) {
+      console.error("Error deleting comment:", err);
+    }
+  };
+
+  const handleDeletePost = async (postId) => {
+    try {
+      await deletePost(postId);
+      setPosts(prev => prev.filter(p => p._id !== postId));
+      if (selectedPost && selectedPost._id === postId) {
+        setSelectedPost(null);
+      }
+    } catch (err) {
+      console.error("Error deleting post:", err);
+    }
+  };
+
+  const handleCreateOrder = async (artisanId, productId) => {
+    if (!currentUser?._id) {
+      alert("Missing user information");
+      return;
+    }
+
+    try {
+      const orderData = {
+        userId: currentUser._id,
+        items: [{ product: productId, quantity: 1 }],
+        shippingAddress: "Temporary Address Placeholder",
+        phoneNumber: "0123456789"
+      };
+      const response = await createOrder(artisanId, orderData);
+      alert("✅ Order created successfully!");
+    } catch (err) {
+      console.error("Order failed:", err);
+      alert("Failed to create order: " + (err.message || "Unknown error"));
+    }
+  };
+
   const filteredPosts = posts.filter(post => {
     const matchSearch = searchTerm
       ? post.caption?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         post.name?.toLowerCase().includes(searchTerm.toLowerCase())
       : true;
-
     const matchCat = selectedCategory
       ? post.category?.toLowerCase() === selectedCategory.toLowerCase()
       : true;
-
     return matchSearch && matchCat;
   });
 
   const filteredProducts = products.filter(product => {
     const category = typeof product.category === "string" ? product.category : product.category?.name || "";
-
     const matchSearch = searchTerm
       ? product.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         category.toLowerCase().includes(searchTerm.toLowerCase())
       : true;
-
     const matchCat = selectedCategory
       ? category.toLowerCase() === selectedCategory.toLowerCase()
       : true;
-
     return matchSearch && matchCat;
   });
 
@@ -196,18 +248,9 @@ const Homepage = () => {
           </Box>
 
           <Box sx={{ px: 2, display: "flex", gap: 1, flexWrap: "wrap" }}>
-            <Chip
-              label="All"
-              onClick={() => { setSelectedCategory(""); setShowProducts(false); }}
-              color={selectedCategory === "" ? "primary" : "default"}
-            />
+            <Chip label="All" onClick={() => { setSelectedCategory(""); setShowProducts(false); }} color={selectedCategory === "" ? "primary" : "default"} />
             {categories.map((cat, i) => (
-              <Chip
-                key={i}
-                label={cat}
-                onClick={() => handleCategorySelect(cat)}
-                color={selectedCategory === cat ? "primary" : "default"}
-              />
+              <Chip key={i} label={cat} onClick={() => handleCategorySelect(cat)} color={selectedCategory === cat ? "primary" : "default"} />
             ))}
           </Box>
 
@@ -224,6 +267,7 @@ const Homepage = () => {
                         key={product._id}
                         product={product}
                         variant="grid"
+                        onProductClick={() => setSelectedProduct(product)}
                       />
                     ))}
                   </Box>
@@ -259,6 +303,11 @@ const Homepage = () => {
               open={!!selectedPost}
               onClose={() => setSelectedPost(null)}
               onLike={() => handleLike(selectedPost._id)}
+              onAddComment={handleAddComment}
+              onDeleteComment={handleDeleteComment}
+              onDelete={handleDeletePost}
+              currentUser={currentUser}
+              isOwnPost={selectedPost.user._id === currentUser?._id}
             />
           )}
 
@@ -267,6 +316,8 @@ const Homepage = () => {
               product={selectedProduct}
               open={!!selectedProduct}
               onClose={() => setSelectedProduct(null)}
+              currentUser={currentUser}
+              isOwnProduct={selectedProduct.user._id === currentUser?._id}
             />
           )}
         </Box>

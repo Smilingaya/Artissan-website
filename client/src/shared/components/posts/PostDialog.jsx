@@ -5,12 +5,13 @@ import React, { useState, useEffect, useRef } from 'react';
 import {
   Dialog, Box, IconButton, Avatar, Typography, Divider,
   TextField, List, ListItem, ListItemAvatar, ListItemText,
-  Menu, MenuItem
+  Menu, MenuItem, Button
 } from '@mui/material';
 import {
   Close, Send, Favorite, FavoriteBorder, MoreVert,
-  Delete, Edit, ArrowBackIosNew, ArrowForwardIos
+  Delete, Edit, Link as LinkIcon
 } from '@mui/icons-material';
+import { useNavigate } from 'react-router-dom';
 import { fetchPostComments } from '../../../features/profile/utils/api';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation } from 'swiper/modules';
@@ -29,12 +30,11 @@ const PostDialog = ({
   isOwnPost,
   currentUser
 }) => {
+  const navigate = useNavigate();
   const [newComment, setNewComment] = useState('');
   const [comments, setComments] = useState([]);
   const [anchorEl, setAnchorEl] = useState(null);
-
-  const prevRef = useRef(null);
-  const nextRef = useRef(null);
+  const [productMenuAnchor, setProductMenuAnchor] = useState(null);
   const swiperRef = useRef(null);
 
   useEffect(() => {
@@ -54,27 +54,23 @@ const PostDialog = ({
         }
       }
     };
-
     if (open && post?._id) {
       loadComments();
     }
-  }, [open, post?._id, currentUser]);
+  }, [open, post?._id, currentUser , comments]);
 
   useEffect(() => {
-    if (
-      swiperRef.current &&
-      swiperRef.current.params &&
-      prevRef.current &&
-      nextRef.current
-    ) {
-      swiperRef.current.params.navigation.prevEl = prevRef.current;
-      swiperRef.current.params.navigation.nextEl = nextRef.current;
+    if (swiperRef.current?.params && swiperRef.current.navigation) {
       swiperRef.current.navigation.init();
       swiperRef.current.navigation.update();
     }
   }, [open]);
 
-  if (!post) return null;
+  const handleUserClick = () => {
+    if (post.user?._id) {
+      navigate(`/profile/${post.user._id}`);
+    }
+  };
 
   const handleLikeClick = () => onLike?.(post._id);
   const handleEdit = () => { onEdit?.(post); setAnchorEl(null); };
@@ -99,13 +95,21 @@ const PostDialog = ({
     }
   };
 
+  const handleProductMenuOpen = (e) => setProductMenuAnchor(e.currentTarget);
+  const handleProductMenuClose = () => setProductMenuAnchor(null);
+
+  const handleNavigateToProduct = (id) => {
+    handleProductMenuClose();
+    navigate(`/product/${id}`);
+  };
+console.log("Post productLinks:", post.productLinks);
   const mediaItems = Array.isArray(post.media) ? post.media : [post.media];
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
       <Box sx={{ display: 'flex', height: '80vh' }}>
         {/* Left: Media Swiper */}
-        <Box sx={{width: '50%', flex: 1, bgcolor: 'black', position: 'relative' }}>
+        <Box sx={{ width: '50%', flex: 1, bgcolor: 'black', position: 'relative' }}>
           <Swiper
             ref={swiperRef}
             modules={[Navigation]}
@@ -130,25 +134,35 @@ const PostDialog = ({
               </SwiperSlide>
             ))}
           </Swiper>
-
-          <IconButton ref={prevRef} sx={{ position: 'absolute', top: '50%', left: 8, zIndex: 10, color: 'white' }}>
-            <ArrowBackIosNew fontSize="small" />
-          </IconButton>
-          <IconButton ref={nextRef} sx={{ position: 'absolute', top: '50%', right: 8, zIndex: 10, color: 'white' }}>
-            <ArrowForwardIos fontSize="small" />
-          </IconButton>
         </Box>
 
         {/* Right: Post info */}
         <Box sx={{ width: 400, display: 'flex', flexDirection: 'column', position: 'relative' }}>
           <Box sx={{ display: 'flex', alignItems: 'center', p: 2 }}>
-            <Avatar src={post.user?.profilePicture || ''} sx={{ mr: 1 }} />
-            <Typography variant="subtitle2" sx={{ flexGrow: 1 }}>{post.user?.name || 'User'}</Typography>
+            <Avatar onClick={handleUserClick} src={post.user?.profilePicture || ''} sx={{ mr: 1, cursor: 'pointer' }} />
+            <Typography onClick={handleUserClick} variant="subtitle2" sx={{ flexGrow: 1, cursor: 'pointer' }}>{post.user?.name || 'User'}</Typography>
+            {Array.isArray(post.productLinks) && post.productLinks.length > 0 && (
+              <Button
+  onClick={handleProductMenuOpen}
+  variant="outlined"
+  startIcon={<LinkIcon />}
+>
+  See Products
+</Button>
+            )}
             {isOwnPost && (
               <IconButton onClick={(e) => setAnchorEl(e.currentTarget)}><MoreVert /></IconButton>
             )}
             <IconButton onClick={onClose}><Close /></IconButton>
           </Box>
+
+          <Menu anchorEl={productMenuAnchor} open={Boolean(productMenuAnchor)} onClose={handleProductMenuClose}>
+            {post.productLinks.map((prod, i) => (
+              <MenuItem key={i} onClick={() => handleNavigateToProduct(prod._id)}>
+                {prod.name} - DA {prod.price}
+              </MenuItem>
+            ))}
+          </Menu>
 
           <Divider />
 

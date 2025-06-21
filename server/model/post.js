@@ -11,6 +11,7 @@ const postSchema = new mongoose.Schema({
     required: true,
   },
   media: [{ type: String, required: true }],
+  productLinks: [{ type: mongoose.Schema.Types.ObjectId, ref: "Product" }],
   likes: [{ type: mongoose.Schema.ObjectId, ref: "User" }],
   Comments: [
     {

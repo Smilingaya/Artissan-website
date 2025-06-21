@@ -254,6 +254,9 @@ export const createPost = async (postData) => {
     formData.append('name', postData.name || postData.title || 'Untitled Post');
     formData.append('caption', postData.caption || postData.content);
     formData.append('userId', postData.userId);
+    // Include product IDs when creating a post
+formData.append('productLinks', JSON.stringify(postData.productLinks || []));
+
 
     // Support single or multiple images
     if (postData.image) {

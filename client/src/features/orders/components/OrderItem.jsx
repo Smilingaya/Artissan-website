@@ -25,8 +25,8 @@ const OrderItem = ({ order, onUpdateStatus, onDeleteOrder, isSellerView = false 
   const name = product?.name || 'Unknown Product';
   const quantity = item?.quantity || 1;
   const total = product?.price && item?.quantity
-  ? `$${(product.price * item.quantity).toFixed(2)}`
-  : '$N/A';
+  ? `DA ${(product.price * item.quantity).toFixed(2)}`
+  : 'DA N/A';
 
 
   const artisan = product?.user;
