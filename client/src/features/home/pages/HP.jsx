@@ -238,7 +238,7 @@ const Homepage = () => {
       <Box sx={{ display: "flex", minHeight: "100vh" }}>
         <SideDrawer onCategorySelect={handleCategorySelect} selectedCategory={selectedCategory} />
 
-        <Box sx={{ flexGrow: 1, pl: { xs: 0, sm: '96px' }, pt: '64px' }}>
+        <Box sx={{ flexGrow: 1, pl: { xs: 0, sm: '40px' },pb: { xs: 0, sm: '40px' },pr: { xs: 0, sm: '40px' }, pt: '64px' }}>
           <Box sx={{ p: 2 }}>
             <SearchBar
               value={searchTerm}
@@ -257,7 +257,7 @@ const Homepage = () => {
           {loading ? (
             <Box sx={{ p: 5, textAlign: "center" }}><CircularProgress /></Box>
           ) : (
-            <Box sx={{ p: 2 }}>
+            <Box sx={{ P: 2 }}>
               {showProducts && (
                 <Box mb={3}>
                   <Typography variant="h6">Products ({filteredProducts.length})</Typography>

@@ -96,7 +96,7 @@ const ForgotPassword = () => {
   return (
     <Box sx={{ 
       height: '100vh', 
-      backgroundColor: 'rgba(94, 53, 177, 0.4)', // light glass purple
+      background:  "linear-gradient(135deg,rgb(246, 255, 194) 0%,rgb(169, 171, 255) 100%)",
       backdropFilter: 'blur(10px)',
       position: 'relative',
       overflow: 'hidden'
@@ -138,7 +138,7 @@ const ForgotPassword = () => {
       <Box sx={{
         position: 'absolute',
         top: '50%',
-        left: '25%',
+        left: '22%',
         transform: 'translate(-50% , -50%)',
         width: '100%',
         height: '100%',

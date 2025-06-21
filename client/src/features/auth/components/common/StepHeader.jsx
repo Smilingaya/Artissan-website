@@ -6,7 +6,7 @@ const StepHeader = ({ title, onBack }) => {
   return (
     <Box 
       sx={{ 
-        backgroundColor: 'rgba(94, 53, 177, 0.3)', // light glass purple
+        background:  "linear-gradient(135deg,rgb(246, 255, 194) 0%,rgb(169, 171, 255) 100%)",
         backdropFilter: 'blur(10px)',
         color: 'white',
         p: 2,

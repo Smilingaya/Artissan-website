@@ -11,10 +11,10 @@ const FormButton = ({ children, ...props }) => {
       sx={{
         mt: 2,
         py: 1.5,
-        bgcolor: 'primary.main',
+        background:  "linear-gradient(135deg,rgb(246, 255, 194) 0%,rgb(169, 171, 255) 100%)",
         color: 'white',
         '&:hover': {
-          bgcolor: 'primary.dark',
+          background:  "linear-gradient(135deg,rgb(246, 255, 194) 0%,rgb(169, 171, 255) 100%)",
         },
         borderRadius: 2,
         textTransform: 'none',
