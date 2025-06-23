@@ -287,7 +287,7 @@ container :{
 function AuthPage() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { login, register, isAuthenticated } = useAuth();
+  const { login, register,loginAdmin, isAuthenticated,currentUser } = useAuth();
   const [isLogin, setIsLogin] = useState(true);
   const [registerStep, setRegisterStep] = useState(1);
   const [image, setImage] = useState(null);
@@ -306,12 +306,18 @@ function AuthPage() {
   const [isLoading, setIsLoading] = useState(false);
 
   // Redirect if already authenticated
-  useEffect(() => {
-    if (isAuthenticated) {
-      const from = location.state?.from?.pathname || "/home";
-      navigate(from, { replace: true });
+useEffect(() => {
+  if (isAuthenticated && currentUser) {
+    const from = location.state?.from?.pathname;
+
+    if (currentUser.role === "admin") {
+      navigate("/admin", { replace: true });
+    } else {
+      navigate(from || "/home", { replace: true });
     }
-  }, [isAuthenticated, navigate, location]);
+  }
+}, [isAuthenticated, currentUser, navigate, location]);
+
 
   // Clear messages when switching forms
   useEffect(() => {
@@ -356,30 +362,48 @@ function AuthPage() {
     setError("");
   };
 
-  const handleLoginSubmit = async (e) => {
-    e.preventDefault();
-    setIsLoading(true);
-    setError("");
-    setSuccess("");
+ const handleLoginSubmit = async (e) => {
+  e.preventDefault();
+  setIsLoading(true);
+  setError("");
+  setSuccess("");
 
-    try {
-      const result = await login({
-        email: formData.email,
-        password: formData.password
-      });
-      
-      if (result.success) {
-        setSuccess("Login successful!");
-        setTimeout(() => navigate("/home"), 1500);
-      } else {
-        setError(result.error.email || result.error.password || "Authentication failed");
-      }
-    } catch (err) {
-      setError("Network error. Please try again later.");
-    } finally {
-      setIsLoading(false);
+  try {
+    // First try admin login
+    const result = await loginAdmin({
+      email: formData.email,
+      password: formData.password
+    });
+
+    if (result.success) {
+  setSuccess("Login Admin successful!");
+  await checkAuthStatus(); // `useEffect` will redirect based on role
+  return;
+}
+
+    // Try normal user login
+    const userResult = await login({
+      email: formData.email,
+      password: formData.password
+    });
+
+    if (userResult.success) {
+      setSuccess("Login successful!");
+      await checkAuthStatus();
+setTimeout(() => {
+  navigate("/admin");
+}, 100); 
+    } else {
+      setError(userResult.error?.email || userResult.error?.password || "Authentication failed");
     }
-  };
+
+  } catch (err) {
+    setError("Network error. Please try again later.");
+  } finally {
+    setIsLoading(false);
+  }
+};
+
 
   const handleRegisterSubmit = async (e) => {
     e.preventDefault();

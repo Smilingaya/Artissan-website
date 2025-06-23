@@ -15,6 +15,7 @@ router.get(
   requireMidllware,
   postController.length_post
 );
+router.get("/postBlog/all", postController.fetchAllPlatformPosts);
 router.get("/postBlog/:userId", requireMidllware, postController.GET_post);
 router.get(
   //correct

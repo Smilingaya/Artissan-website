@@ -23,6 +23,7 @@ export const UserProvider = ({ children }) => {
         if (data.user) {
           setCurrentUser(data.user);
           setIsAuthenticated(true);
+          console.log("🔍 checkAuthStatus: ", data.user);
         } else {
           setCurrentUser(null);
           setIsAuthenticated(false);
@@ -98,6 +99,31 @@ export const UserProvider = ({ children }) => {
     }
   };
 
+  const loginAdmin = async (credentials) => {
+    try {
+      const response = await fetch("http://localhost:3000/api/auth/loginAdmin", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(credentials),
+        credentials: "include", // ✅ allow cookies (optional, still OK)
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+
+        await checkAuthStatus(); // refresh user info
+        return { success: true };
+      } else {
+        const errorData = await response.json();
+        return { success: false, error: errorData };
+      }
+    } catch (error) {
+      return { success: false, error: { message: "Network error" } };
+    }
+  };
+
   const logout = async () => {
     try {
       // Clear the JWT cookie by setting it to expire
@@ -124,6 +150,7 @@ export const UserProvider = ({ children }) => {
         isAuthenticated,
         isLoading,
         login,
+        loginAdmin,
         logout,
         register,
         updateUser,

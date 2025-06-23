@@ -133,8 +133,9 @@ const AppRoutes = () => {
         {/*<AdminRoute><AdminDashboard /></AdminRoute>*/}
         {/* Admin Routes - Require admin role */}
         <Route path="/admin" element={
-          
-          <AdminDashboard />
+          <AdminRoute>
+            <AdminDashboard />
+          </AdminRoute>
         } />
         
         {/* Catch all route - redirect to home if authenticated, otherwise to landing */}

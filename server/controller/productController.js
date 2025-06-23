@@ -177,13 +177,17 @@ const search_product = async (req, res) => {
   const { query } = req.query;
   try {
     const regex = new RegExp(query, "i");
-    const products = await Product.find({
-      $or: [
-        { name: { $regex: regex } },
-        { category: { $regex: regex } }, // ensure category is string or string ID
-      ],
-    });
-    res.status(200).json({ success: true, products });
+    // Fetch all products, then filter by name or category name
+    const products = await Product.find({})
+      .populate('user')
+      .populate('category', 'name');
+
+    const filteredProducts = products.filter(product =>
+      regex.test(product.name) ||
+      (product.category && typeof product.category.name === 'string' && regex.test(product.category.name))
+    );
+
+    res.status(200).json({ success: true, products: filteredProducts });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }

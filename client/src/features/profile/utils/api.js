@@ -411,8 +411,9 @@ export const getPostLikes = async (postId) => {
 
 // Search posts
 export const searchPosts = async (query) => {
+  if (!query || !query.trim()) return { posts: [] };
   try {
-    const response = await fetch(`${API_BASE}/blog/searchPost?q=${query}`, getAuthHeaders());
+    const response = await fetch(`${API_BASE}/blog/searchPost?query=${encodeURIComponent(query)}`, getAuthHeaders());
     return await handleResponse(response);
   } catch (error) {
     console.error('Error searching posts:', error);
@@ -574,8 +575,9 @@ export const deleteProduct = async (productId) => {
 
 // Search products
 export const searchProducts = async (query) => {
+  if (!query || !query.trim()) return { products: [] };
   try {
-    const response = await fetch(`${API_BASE}/product/searchproduct?q=${query}`, getAuthHeaders());
+    const response = await fetch(`${API_BASE}/product/searchproduct?query=${encodeURIComponent(query)}`, getAuthHeaders());
     return await handleResponse(response);
   } catch (error) {
     console.error('Error searching products:', error);
@@ -803,8 +805,7 @@ export const fetchProductsByCategory = async (categoryName) => {
 
 export const fetchAllPosts = async () => {
   try {
-    // Use the search endpoint with an empty query to fetch all posts
-    const response = await fetch(`${API_BASE}/blog/searchPost?q=`, getAuthHeaders());
+    const response = await fetch(`${API_BASE}/blog/postBlog/all`, getAuthHeaders());
     const data = await response.json();
     console.log('fetchAllPosts response:', data); // Debug log
     if (!response.ok) throw new Error(data.message || 'Failed to fetch posts');

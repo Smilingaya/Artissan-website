@@ -20,6 +20,8 @@ import {
   Logout as LogoutIcon
 } from '@mui/icons-material';
 import { AppContext } from "../../contexts/AppContext";
+import { useAuth } from '../../../../shared/contexts/UserContext';
+import { useNavigate } from 'react-router-dom';
 
 const drawerWidthExpanded = 280;
 const drawerWidthCollapsed = 80;
@@ -41,7 +43,9 @@ const StyledDrawer = styled(Drawer)(({ ishovered, theme }) => ({
   },
 }));
 
-const StyledListItem = styled(ListItem)(({ active }) => ({
+const StyledListItem = styled(ListItem, {
+  shouldForwardProp: (prop) => prop !== 'active',
+})(({ active }) => ({
   borderRadius: '12px',
   color: active ? '#fff' : 'rgba(255,255,255,0.7)',
   backgroundColor: active ? 'rgba(255,255,255,0.1)' : 'transparent',
@@ -70,6 +74,8 @@ const StyledListItemText = styled(ListItemText)(({ ishovered }) => ({
 export const Sidebar = ({ open, toggleDrawer }) => {
   const { currentView, setCurrentView } = useContext(AppContext);
   const [isHovered, setIsHovered] = useState(false);
+  const { logout } = useAuth();
+  const navigate = useNavigate();
 
   const menuItems = [
     { text: 'Dashboard', icon: <DashboardIcon />, view: 'dashboard' },
@@ -82,8 +88,9 @@ export const Sidebar = ({ open, toggleDrawer }) => {
     setCurrentView(view);
   };
 
-  const handleLogout = () => {
-    console.log('Logging out...');
+  const handleLogout = async () => {
+    await logout();
+    navigate('/login');
   };
 
   return (
@@ -138,7 +145,7 @@ export const Sidebar = ({ open, toggleDrawer }) => {
       <Divider sx={{ borderColor: 'rgba(255, 255, 255, 0.1)', mx: 1 }} />
 
       <Box sx={{ mt: 'auto', mb: 2, px: 1 }}>
-        <StyledListItem button onClick={handleLogout}>
+        <StyledListItem button onClick={handleLogout} sx={{cursor:'pointer'}}>
           <StyledListItemIcon>
             <LogoutIcon />
           </StyledListItemIcon>

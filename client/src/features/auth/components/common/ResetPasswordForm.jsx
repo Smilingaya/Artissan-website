@@ -21,43 +21,27 @@ const ResetPasswordForm = ({ onComplete }) => {
   });
 
   const validatePassword = (password) => {
-    // Password validation requirements
-    const minLength = 8;
-    const hasUpperCase = /[A-Z]/.test(password);
-    const hasLowerCase = /[a-z]/.test(password);
-    const hasNumbers = /\d/.test(password);
-    const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
-    
-    if (password.length < minLength) {
-      return "Password must be at least 8 characters long";
+    if (password.length < 6) {
+      return "Password must be at least 6 characters long";
     }
-    
-    if (!(hasUpperCase && hasLowerCase && hasNumbers && hasSpecialChar)) {
-      return "Password must include uppercase, lowercase, numbers and special characters";
-    }
-    
     return "";
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    
-    // Validate new password
+
     const newPasswordError = validatePassword(newPassword);
-    
-    // Check if passwords match
-    const passwordMatchError = newPassword !== confirmPassword 
-      ? "Passwords don't match" 
+    const confirmPasswordError = newPassword !== confirmPassword
+      ? "Passwords don't match"
       : "";
-    
+
     setErrors({
       newPassword: newPasswordError,
-      confirmPassword: passwordMatchError
+      confirmPassword: confirmPasswordError
     });
-    
-    // If validation passes, complete the password reset
-    if (!newPasswordError && !passwordMatchError) {
-      onComplete();
+
+    if (!newPasswordError && !confirmPasswordError) {
+      onComplete(newPassword);
     }
   };
 
@@ -67,22 +51,23 @@ const ResetPasswordForm = ({ onComplete }) => {
         Enter New Password
       </Typography>
       <Typography variant="body2" color="text.secondary" align="center" sx={{ mb: 3 }}>
-        Your new password must be different from previously used passwords.
+        Your password must be at least 6 characters. You can choose any characters you want.
       </Typography>
-      
+
       <Typography variant="caption" fontWeight="500" sx={{ mb: 0.5, display: 'block' }}>
         Password
       </Typography>
       <TextField
         fullWidth
         type={showPassword ? 'text' : 'password'}
-        placeholder="********"
+        placeholder="Enter password"
         variant="outlined"
         value={newPassword}
         onChange={(e) => {
           setNewPassword(e.target.value);
-          setErrors({...errors, newPassword: ''});
+          setErrors({ ...errors, newPassword: '' });
         }}
+        inputProps={{ minLength: 6 }}
         error={!!errors.newPassword}
         helperText={errors.newPassword}
         sx={{ mb: 2 }}
@@ -100,20 +85,21 @@ const ResetPasswordForm = ({ onComplete }) => {
           sx: { bgcolor: 'white' }
         }}
       />
-      
+
       <Typography variant="caption" fontWeight="500" sx={{ mb: 0.5, display: 'block' }}>
         Confirm Password
       </Typography>
       <TextField
         fullWidth
         type={showConfirmPassword ? 'text' : 'password'}
-        placeholder="********"
+        placeholder="Re-enter password"
         variant="outlined"
         value={confirmPassword}
         onChange={(e) => {
           setConfirmPassword(e.target.value);
-          setErrors({...errors, confirmPassword: ''});
+          setErrors({ ...errors, confirmPassword: '' });
         }}
+        inputProps={{ minLength: 6 }}
         error={!!errors.confirmPassword}
         helperText={errors.confirmPassword}
         sx={{ mb: 2 }}
@@ -131,7 +117,7 @@ const ResetPasswordForm = ({ onComplete }) => {
           sx: { bgcolor: 'white' }
         }}
       />
-      
+
       <FormButton type="submit">
         Continue
       </FormButton>

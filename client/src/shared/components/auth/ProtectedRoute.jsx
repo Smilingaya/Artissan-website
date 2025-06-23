@@ -31,7 +31,7 @@ export const ProtectedRoute = ({ children }) => {
 
 // Component for routes that should redirect to home if already authenticated
 export const PublicRoute = ({ children }) => {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading, currentUser } = useAuth();
 
   if (isLoading) {
     return (
@@ -47,7 +47,10 @@ export const PublicRoute = ({ children }) => {
   }
 
   if (isAuthenticated) {
-    // Redirect to home if already authenticated
+    // Redirect to /admin if admin, else to /home
+    if (currentUser?.role === 'admin') {
+      return <Navigate to="/admin" replace />;
+    }
     return <Navigate to="/home" replace />;
   }
 

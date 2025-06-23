@@ -82,27 +82,27 @@ export default function LandingPage() {
       fadeInUp: {
         opacity: isVisible ? 1 : 0,
         transform: isVisible ? 'translateY(0px)' : 'translateY(50px)',
-        transition: `all 1.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) ${delay}s`
+        transition: `all 2.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) ${delay}s`
       },
       fadeInLeft: {
         opacity: isVisible ? 1 : 0,
         transform: isVisible ? 'translateX(0px)' : 'translateX(-50px)',
-        transition: `all 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) ${delay}s`
+        transition: `all 1.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) ${delay}s`
       },
       fadeInRight: {
         opacity: isVisible ? 1 : 0,
         transform: isVisible ? 'translateX(0px)' : 'translateX(50px)',
-        transition: `all 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) ${delay}s`
+        transition: `all 1.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) ${delay}s`
       },
       scaleIn: {
         opacity: isVisible ? 1 : 0,
         transform: isVisible ? 'scale(1)' : 'scale(0.8)',
-        transition: `all 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) ${delay}s`
+        transition: `all 1.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) ${delay}s`
       },
       slideInUp: {
         opacity: isVisible ? 1 : 0,
         transform: isVisible ? 'translateY(0px)' : 'translateY(100px)',
-        transition: `all 1s cubic-bezier(0.25, 0.46, 0.45, 0.94) ${delay}s`
+        transition: `all 1.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) ${delay}s`
       }
     };
     
@@ -394,7 +394,7 @@ export default function LandingPage() {
           display: "grid",
           gridTemplateColumns: "1fr 1fr",
           background: "#dbd9d9",
-          height: "100vh",
+          minHeight: "100vh",
           textAlign: "center",
           ...getAnimationStyle('introduction', 'fadeInUp')
         }}

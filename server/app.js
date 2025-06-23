@@ -48,9 +48,15 @@ app.use(checkUser);
 app.get("/protected", requireMidllware, (req, res) =>
   res.status(200).json({ message: "You are authorized", userId: req.userId })
 );
-app.get("/check", checkUser, (req, res) =>
-  res.status(200).json({ user: res.locals.user })
-);
+app.get("/check", checkUser, (req, res) => {
+  const user = res.locals.user;
+  if (user) {
+    const { _id, name, email, role, profilePicture } = user;
+    return res.status(200).json({ user: { _id, name, email, role, profilePicture  } });
+  } else {
+    return res.status(200).json({ user: null });
+  }
+});
 
 app.use("/api/auth", authRoutes);
 app.use("/api/blog", postRoutes);

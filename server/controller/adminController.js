@@ -47,7 +47,7 @@ const get_product_by_category = async (req, res) => {
 
     const productsByCategory = await Product.find({
       category: category._id,
-    }).populate("category");
+    }).populate('user').populate('category', 'name');
 
     res.status(200).json(productsByCategory);
   } catch (err) {

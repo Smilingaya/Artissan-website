@@ -12,6 +12,7 @@ import ProductCard from "../../../shared/components/products/ProductCard";
 import PostDialog from "../../../shared/components/posts/PostDialog";
 import ProductDialog from "../../../shared/components/products/ProductDialog";
 import SearchBar from "../../../shared/components/common/SearchBar";
+import "../../../app.css";
 import {
   fetchRecommendedPosts,
   searchPosts,
@@ -27,6 +28,7 @@ import {
   createOrder
 } from "../../../features/profile/utils/api";
 import { useAuth } from "../../../shared/contexts/UserContext";
+import Masonry from 'react-masonry-css';
 
 const Homepage = () => {
   const navigate = useNavigate();
@@ -42,8 +44,6 @@ const Homepage = () => {
   const [showProducts, setShowProducts] = useState(false);
   const [viewMode, setViewMode] = useState("grid");
   const [loading, setLoading] = useState(true);
-
- 
 
   useEffect(() => {
     const loadCategories = async () => {
@@ -86,7 +86,7 @@ const Homepage = () => {
   useEffect(() => {
     const fetchSearchAndCategory = async () => {
       try {
-        if (searchTerm.trim()) {
+        if (searchTerm && searchTerm.trim()) {
           const [foundPosts, foundProducts] = await Promise.all([
             searchPosts(searchTerm),
             searchProducts(searchTerm)
@@ -209,6 +209,23 @@ const Homepage = () => {
     }
   };
 
+  // --- Product Handlers ---
+  const handleEditProduct = (product) => {
+    alert(`Edit product: ${product.name}`);
+    // TODO: Open product edit dialog/modal
+  };
+
+  const handleDeleteProduct = async (productId) => {
+    alert(`Delete product: ${productId}`);
+    // TODO: Implement product deletion logic
+  };
+
+  // --- Post Handlers ---
+  const handleEditPost = (post) => {
+    alert(`Edit post: ${post.name}`);
+    // TODO: Open post edit dialog/modal
+  };
+
   const filteredPosts = posts.filter(post => {
     const matchSearch = searchTerm
       ? post.caption?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -268,13 +285,18 @@ const Homepage = () => {
                         product={product}
                         variant="grid"
                         onProductClick={() => setSelectedProduct(product)}
+                        onEdit={handleEditProduct}
+                        onDelete={handleDeleteProduct}
+                        isOwnProduct={product.user && currentUser ? product.user._id === currentUser._id : false}
+                        onOrder={() => handleCreateOrder(product.user?._id, product._id)}
                       />
                     ))}
                   </Box>
                 </Box>
               )}
 
-              <Box>
+              {/* Posts Section */}
+              <Box sx={{ px: 2, mt: 4 }}>
                 <Box sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}>
                   <Typography variant="h6">Posts ({filteredPosts.length})</Typography>
                   <ToggleButtonGroup value={viewMode} exclusive onChange={(e, v) => v && setViewMode(v)}>
@@ -282,17 +304,41 @@ const Homepage = () => {
                     <ToggleButton value="list"><ViewList /></ToggleButton>
                   </ToggleButtonGroup>
                 </Box>
-                <Box sx={{ display: viewMode === "grid" ? "grid" : "flex", gridTemplateColumns: viewMode === "grid" ? "repeat(auto-fill, minmax(280px, 1fr))" : "none", flexDirection: viewMode === "grid" ? "unset" : "column", gap: 2 }}>
-                  {filteredPosts.map(post => (
-                    <PostCard
-                      key={post._id}
-                      post={post}
-                      onPostClick={() => setSelectedPost(post)}
-                      onLike={handleLike}
-                      variant={viewMode === "grid" ? "grid" : "feed"}
-                    />
-                  ))}
-                </Box>
+                {viewMode === 'grid' ? (
+                  <Masonry
+                    breakpointCols={{ default: 4, 1100: 3, 700: 2, 500: 1 }}
+                    className="my-masonry-grid"
+                    columnClassName="my-masonry-grid_column"
+                  >
+                    {filteredPosts.map(post => (
+                      <PostCard
+                        key={post._id}
+                        post={post}
+                        onPostClick={() => setSelectedPost(post)}
+                        onLike={handleLike}
+                        onEdit={handleEditPost}
+                        onDelete={handleDeletePost}
+                        isOwnPost={post.user && currentUser ? post.user._id === currentUser._id : false}
+                        variant="grid"
+                      />
+                    ))}
+                  </Masonry>
+                ) : (
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                    {filteredPosts.map(post => (
+                      <PostCard
+                        key={post._id}
+                        post={post}
+                        onPostClick={() => setSelectedPost(post)}
+                        onLike={handleLike}
+                        onEdit={handleEditPost}
+                        onDelete={handleDeletePost}
+                        isOwnPost={post.user && currentUser ? post.user._id === currentUser._id : false}
+                        variant="feed"
+                      />
+                    ))}
+                  </Box>
+                )}
               </Box>
             </Box>
           )}

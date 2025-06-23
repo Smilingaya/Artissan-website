@@ -29,7 +29,8 @@ const ProductCard = ({
   onEdit,
   onDelete,
   isOwnProduct,
-  variant = 'grid'
+  variant = 'grid',
+  onOrder
 }) => {
   const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = React.useState(null);

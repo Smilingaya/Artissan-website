@@ -104,12 +104,24 @@ const login_admine = async (req, res) => {
 
     const token = createToken(admin._id);
     res.cookie("jwt", token, { httpOnly: true, maxAge });
-    res.status(200).json({ admin: admin._id });
+
+    // ✅ Return token + admin info (like normal login)
+    res.status(200).json({
+      token,
+      user: {
+        _id: admin._id,
+        name: admin.name,
+        email: admin.email,
+        role: admin.role,
+      }
+    });
+    console.log(admin);
   } catch (err) {
     const errore = hundleErrore(err);
     res.status(400).json(errore);
   }
 };
+
 
 const logout_Post = async (req, res) => {
   try {
@@ -193,7 +205,7 @@ const Reset_Password = async (req, res) => {
     if (user.passwordResetVerified !== true) {
       return res.status(400).json({ message: "Reset code not verified" });
     }
-    user.password = newPassword;
+    user.password = newPassword; // Let pre-save hook hash the password
     user.passwordResetcode = undefined; // clear the reset code
     user.passwordResetExpires = undefined; // clear the expiration time
     user.passwordResetVerified = false; // reset the verification status

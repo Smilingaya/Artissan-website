@@ -141,8 +141,8 @@ const ProductDialog = ({ product, open, onClose, isOwnProduct, currentUser }) =>
   <DialogTitle sx={{ m: 0, p: 2, display: 'flex', alignItems: 'center', gap: 2 }}>
     <IconButton onClick={handleUserClick} sx={{ p: 0 }}>
       <Avatar
-        src={product.user?.profilePicture || ''}
-        alt={product.user?.name || 'User'}
+        src={product.user?.profilePicture || '/default-avatar.png'}
+        alt={product.user?.name || 'Unknown User'}
         sx={{ width: 40, height: 40 }}
       />
     </IconButton>
@@ -153,10 +153,10 @@ const ProductDialog = ({ product, open, onClose, isOwnProduct, currentUser }) =>
         sx={{ fontWeight: 600, cursor: 'pointer' }}
         onClick={handleUserClick}
       >
-        {product.user?.name || 'User'}
+        {product.user?.name || 'Unknown User'}
       </Typography>
       <Typography variant="body2" color="text.secondary">
-        {product.category?.name || 'No category'}
+        {typeof product.category === 'string' ? product.category : product.category?.name || 'No category'}
       </Typography>
     </Box>
     <IconButton

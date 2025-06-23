@@ -62,6 +62,7 @@ const PostCard = ({
   const isVideo = mainMedia?.match(/\.(mp4|webm|ogg)$/i);
 
   return (
+    <div>
     <Card
       sx={{
         mb: 2,
@@ -143,6 +144,7 @@ const PostCard = ({
         </MenuItem>
       </Menu>
     </Card>
+    </div>
   );
 };
 

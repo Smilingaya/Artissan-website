@@ -207,12 +207,16 @@ const likes_get_controller = async (req, res) => {
   }
 };
 const search_post = async (req, res) => {
-  const { query } = req.query;
+  let { query } = req.query;
   try {
+    if (typeof query !== 'string' || !query.trim()) {
+      return res.status(400).json({ success: false, message: 'Query must be a non-empty string' });
+    }
+    const regex = new RegExp(query, "i");
     const posts = await Post.find({
       $or: [
-        { caption: { $regex: query, $options: "i" } },
-        { name: { $regex: query, $options: "i" } },
+        { caption: { $regex: regex } },
+        { name: { $regex: regex } },
       ],
     });
     if (!posts) {
@@ -286,6 +290,17 @@ const length_post = async (req, res) => {
     res.status(500).json({ success: false, message: err.message });
   }
 };
+const fetchAllPlatformPosts = async (req, res) => {
+  try {
+    const posts = await Post.find({})
+      .sort({ createdAt: -1 })
+      .populate('user', 'name avatar profilePicture')
+      .populate('Comments');
+    res.status(200).json({ success: true, posts });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
 module.exports = {
   craete_post,
   GET_post,
@@ -298,4 +313,5 @@ module.exports = {
   search_post,
   recommendPosts,
   length_post,
+  fetchAllPlatformPosts,
 };

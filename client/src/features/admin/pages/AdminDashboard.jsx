@@ -5,7 +5,6 @@ import { TopBar } from '../components/layout/TopBar';
 import Dashboard from '../components/dashboard/Dashboard';
 import Categories from '../components/categories/Categories';
 import Blacklist from '../components/blacklist/Blacklist';
-import PlatformView from '../components/dashboard/PlatformView';
 import { AppContext } from '../contexts/AppContext';
 import HomePage from "../../home/pages/HP";
 import adminTheme from '../theme/theme';

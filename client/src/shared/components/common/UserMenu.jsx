@@ -30,6 +30,7 @@ const UserMenu = () => {
     navigate('/login');
     handleClose();
   };
+  console.log(currentUser);
 
   return (
     <div>
@@ -41,7 +42,13 @@ const UserMenu = () => {
         onClick={handleMenu}
         color="inherit"
       >
-        <Avatar sx={{ width: 32, height: 32 }} />
+        <Avatar 
+          src={currentUser?.profilePicture || undefined}
+          alt={currentUser?.name || 'User'}
+          sx={{ width: 32, height: 32 }}
+        >
+          {(!currentUser?.profilePicture && currentUser?.name) ? currentUser.name[0].toUpperCase() : null}
+        </Avatar>
       </IconButton>
       <Menu
         id="menu-appbar"
