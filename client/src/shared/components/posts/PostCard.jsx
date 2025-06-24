@@ -8,6 +8,8 @@ import {
   Typography,
   Menu,
   MenuItem,
+  Box,
+  Avatar,
 } from '@mui/material';
 import {
   Favorite,
@@ -17,7 +19,10 @@ import {
   Delete,
   Comment,
   Share,
+  Block as BlockIcon,
+  Person as PersonIcon,
 } from '@mui/icons-material';
+import { useAuth } from '../../contexts/UserContext';
 
 const PostCard = ({
   post,
@@ -25,9 +30,14 @@ const PostCard = ({
   onEdit,
   onDelete,
   isOwnPost,
-  onPostClick
+  onPostClick,
+  onBlockUser,
+  onViewProfile,
+  variant = 'grid'
 }) => {
   const [anchorEl, setAnchorEl] = useState(null);
+  const { currentUser } = useAuth();
+  const isAdmin = currentUser?.role === 'admin';
 
   const handleMenuClick = (e) => {
     e.stopPropagation();
@@ -56,6 +66,17 @@ const PostCard = ({
 
   const handleCardClick = () => {
     onPostClick?.(post);
+  };
+
+  const handleBlockUser = (e) => {
+    e.stopPropagation();
+    onBlockUser?.(post.user);
+    handleMenuClose();
+  };
+
+  const handleViewProfile = (e) => {
+    e.stopPropagation();
+    onViewProfile?.(post.user?._id);
   };
 
   const mainMedia = Array.isArray(post.media) ? post.media[0] : post.media;
@@ -99,6 +120,22 @@ const PostCard = ({
         )
       )}
       <CardContent>
+        {/* User info section */}
+        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+          <Avatar
+            src={post.user?.profilePicture}
+            sx={{ mr: 1, cursor: 'pointer' }}
+            onClick={handleViewProfile}
+          />
+          <Typography
+            variant="subtitle2"
+            sx={{ cursor: 'pointer', '&:hover': { textDecoration: 'underline' } }}
+            onClick={handleViewProfile}
+          >
+            {post.user?.name || 'Unknown User'}
+          </Typography>
+        </Box>
+        
         {post.name && (
           <Typography variant="h6" gutterBottom>
             {post.name}
@@ -124,6 +161,38 @@ const PostCard = ({
         <IconButton>
           <Share />
         </IconButton>
+        
+        {/* Admin controls */}
+        {isAdmin && !isOwnPost && (
+          <Box sx={{ ml: 'auto', display: 'flex', gap: 1 }}>
+            <IconButton
+              size="small"
+              color="primary"
+              onClick={handleViewProfile}
+              title="View Profile"
+            >
+              <PersonIcon />
+            </IconButton>
+            <IconButton
+              size="small"
+              color="warning"
+              onClick={handleBlockUser}
+              title="Block User"
+            >
+              <BlockIcon />
+            </IconButton>
+            <IconButton
+              size="small"
+              color="error"
+              onClick={handleDelete}
+              title="Delete Post (Admin)"
+            >
+              <Delete />
+            </IconButton>
+          </Box>
+        )}
+        
+        {/* Owner controls */}
         {isOwnPost && (
           <IconButton onClick={handleMenuClick} sx={{ ml: 'auto' }}>
             <MoreVert />

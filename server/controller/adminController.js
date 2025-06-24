@@ -5,6 +5,8 @@ const User = require("../model/user");
 const Post = require("../model/post");
 const Order = require("../model/order");
 const blacklistedUser = require("../model/blackList");
+const Comment = require("../model/comments");
+
 const add_category = async (req, res) => {
   const { id } = req.params;
   const { name } = req.body;
@@ -28,6 +30,7 @@ const add_category = async (req, res) => {
     res.status(400).json({ message: err.message });
   }
 };
+
 const get_category = async (req, res) => {
   try {
     const categories = await Category.find();
@@ -54,6 +57,88 @@ const get_product_by_category = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+
+// Comprehensive block user function
+const blockUser = async (req, res) => {
+  const { userId } = req.params;
+  const { reason = "Violated terms" } = req.body;
+  
+  try {
+    // Find the user to be blocked
+    const userToBlock = await User.findById(userId);
+    if (!userToBlock) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Check if user is already blacklisted
+    const alreadyBlacklisted = await blacklistedUser.findOne({ email: userToBlock.email });
+    if (alreadyBlacklisted) {
+      return res.status(409).json({ message: "User is already blacklisted" });
+    }
+
+    // Add user to blacklist
+    await blacklistedUser.create({
+      email: userToBlock.email,
+      name: userToBlock.name,
+      reason: reason
+    });
+
+    // Remove all user's posts
+    const deletedPosts = await Post.deleteMany({ user: userId });
+    console.log(`Deleted ${deletedPosts.deletedCount} posts`);
+
+    // Remove all user's products
+    const deletedProducts = await Product.deleteMany({ user: userId });
+    console.log(`Deleted ${deletedProducts.deletedCount} products`);
+
+    // Remove all user's comments
+    const deletedComments = await Comment.deleteMany({ user: userId });
+    console.log(`Deleted ${deletedComments.deletedCount} comments`);
+
+    // Remove user from other users' followers/following lists
+    await User.updateMany(
+      { followers: userId },
+      { $pull: { followers: userId } }
+    );
+    await User.updateMany(
+      { followings: userId },
+      { $pull: { followings: userId } }
+    );
+
+    // Remove user's likes from posts
+    await Post.updateMany(
+      { likes: userId },
+      { $pull: { likes: userId } }
+    );
+
+    // Remove user's orders
+    const deletedOrders = await Order.deleteMany({ 
+      $or: [
+        { userId: userId },
+        { artisanId: userId }
+      ]
+    });
+    console.log(`Deleted ${deletedOrders.deletedCount} orders`);
+
+    // Finally, delete the user account
+    await User.findByIdAndDelete(userId);
+
+    res.status(200).json({
+      message: "User blocked successfully",
+      deletedContent: {
+        posts: deletedPosts.deletedCount,
+        products: deletedProducts.deletedCount,
+        comments: deletedComments.deletedCount,
+        orders: deletedOrders.deletedCount
+      }
+    });
+
+  } catch (err) {
+    console.error("Error blocking user:", err);
+    res.status(500).json({ message: "Failed to block user", error: err.message });
+  }
+};
+
 const listBlacklistedUsers = async (req, res) => {
   const { id } = req.params;
   try {
@@ -69,6 +154,7 @@ const listBlacklistedUsers = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+
 const addBlacklistedUser = async (req, res) => {
   const { email, reason, name } = req.body;
   const user = await User.findOne({ email });
@@ -92,6 +178,7 @@ const addBlacklistedUser = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+
 const blackList = async (req, res) => {
   try {
     const blacklistedUsers = await blacklistedUser.find();
@@ -100,6 +187,7 @@ const blackList = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+
 const countByCategory = async (req, res) => {
   try {
     const stats = await Product.aggregate([
@@ -117,6 +205,7 @@ const countByCategory = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+
 const deleteBlacklistedUser = async (req, res) => {
   try {
     const { id } = req.body;
@@ -147,6 +236,7 @@ const getPlatformStats = async (req, res) => {
       .json({ message: "Failed to load stats", error: err.message });
   }
 };
+
 module.exports = {
   add_category,
   get_category,
@@ -157,4 +247,5 @@ module.exports = {
   blackList,
   deleteBlacklistedUser,
   getPlatformStats,
+  blockUser,
 };

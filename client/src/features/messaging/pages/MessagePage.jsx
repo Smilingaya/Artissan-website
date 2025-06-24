@@ -614,7 +614,7 @@ const MessagePage = () => {
 
     socket.current.on("messages_history", (history) => {
       console.log("📜 Received history:", history.length, "messages");
-      setMessages(history); // ✅ sets the message state
+      setMessages(history); 
     });
 
     return () => socket.current.off("messages_history");
@@ -691,6 +691,18 @@ const MessagePage = () => {
     }
 
     console.log("📤 Sending to", currentChat._id, ":", text);
+
+    // Optimistically add the message to the UI
+    setMessages(prev => [
+      ...prev,
+      {
+        sender: currentUser._id,
+        receiver: currentChat._id,
+        text,
+        type: msgType,
+        
+      }
+    ]);
 
     socket.current.emit("private_message", {
       receiverId: currentChat._id,
@@ -1127,7 +1139,7 @@ const MessagePage = () => {
               key={user._id}
               onClick={() => {
                 setCurrentChat(user);
-                setCurrentChatPartner(user); // ✅ now your messages will send
+                setCurrentChatPartner(user); 
                 setIsMobileViewVisible(true);
               }}
               style={{

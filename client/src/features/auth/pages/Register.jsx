@@ -13,11 +13,11 @@ container :{
   width: "70%",
   height: "90%",
   fontFamily: "'Poppins', sans-serif",
-  background: "rgba(255, 255, 255, 0.1)", // ✅ Wrap rgba in quotes
+  background: "rgba(255, 255, 255, 0.1)",
   borderRadius: "16px",
   boxShadow: "0 4px 30px rgba(0, 0, 0, 0.1)",
   backdropFilter: "blur(10px)",
-  WebkitBackdropFilter: "blur(10px)", // ✅ CamelCase and vendor prefix
+  WebkitBackdropFilter: "blur(10px)",
   border: "1px solid rgba(255, 255, 255, 0.3)"
 },
 

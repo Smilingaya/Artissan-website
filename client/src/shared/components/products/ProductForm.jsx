@@ -27,7 +27,7 @@ const ProductForm = ({
   const [previewUrls, setPreviewUrls] = useState([]);
   const [categories, setCategories] = useState([]);
 
-  // ✅ Load categories from backend
+  // Load categories from backend
   useEffect(() => {
     const loadCategories = async () => {
       try {
@@ -222,7 +222,7 @@ const ProductForm = ({
             />
           </Box>
 
-          {/* ✅ Category Select Dropdown */}
+          {/* Category Select Dropdown */}
           {categories.length === 0 ? (
   <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
     Loading categories...

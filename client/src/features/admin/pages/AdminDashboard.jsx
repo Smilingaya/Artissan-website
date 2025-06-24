@@ -6,17 +6,12 @@ import Dashboard from '../components/dashboard/Dashboard';
 import Categories from '../components/categories/Categories';
 import Blacklist from '../components/blacklist/Blacklist';
 import { AppContext } from '../contexts/AppContext';
-import HomePage from "../../home/pages/HP";
+import AdminPlatform from '../components/platform/AdminPlatform';
 import adminTheme from '../theme/theme';
 
 // Inner component that uses the context
 const AdminDashboardContent = () => {
-  const [drawerOpen, setDrawerOpen] = useState(true);
   const { currentView } = useContext(AppContext);
-
-  const toggleDrawer = () => {
-    setDrawerOpen(!drawerOpen);
-  };
 
   // Render the current view based on the state
   const renderView = () => {
@@ -28,7 +23,7 @@ const AdminDashboardContent = () => {
       case 'blacklist':
         return <Blacklist />;
       case 'platform':
-        return <HomePage />;
+        return <AdminPlatform />;
       default:
         return <Dashboard />;
     }
@@ -36,7 +31,7 @@ const AdminDashboardContent = () => {
 
   return (
     <Box sx={{ display: 'flex', width: '100%', mt: '8' }}>
-      <Sidebar open={drawerOpen} toggleDrawer={toggleDrawer} />
+      <Sidebar />
       <Box component="main" sx={{ flexGrow: 1, height: '100vh', overflow: 'auto' }}>
         <TopBar />
         {renderView()}

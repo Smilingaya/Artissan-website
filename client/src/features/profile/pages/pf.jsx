@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Container, Box, CircularProgress, Typography, Paper, Button } from '@mui/material';
+import { Container, Box, CircularProgress, Typography, Paper, Button, Dialog, DialogTitle, DialogContent, DialogActions, Alert } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
+import { Block as BlockIcon, Delete as DeleteIcon, Warning as WarningIcon } from '@mui/icons-material';
 import ProfileHeader from '../components/ProfileHeader';
 import ProfileTabs from '../components/ProfileTabs';
 import PostCard from '../../../shared/components/posts/PostCard';
@@ -31,7 +32,8 @@ import {
   createPost,
   updatePost,
   createProduct,
-  updateProduct
+  updateProduct,
+  blockUser
 } from '../utils/api';
 import { useAuth } from '../../../shared/contexts/UserContext';
 import SideDrawer from '../../../shared/components/layout/SideDrawer';
@@ -50,6 +52,11 @@ const ProfilePage = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isOwnProfile, setIsOwnProfile] = useState(false);
   const [error, setError] = useState(null);
+  
+  // Admin states
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [blockDialog, setBlockDialog] = useState({ open: false, user: null });
+  const [deleteDialog, setDeleteDialog] = useState({ open: false, item: null, type: '' });
   
   // Modal states
   const [selectedPost, setSelectedPost] = useState(null);
@@ -70,6 +77,9 @@ const ProfilePage = () => {
       setIsLoading(true);
       setError(null);
       try {
+        // Check if current user is admin
+        setIsAdmin(currentUser?.role === 'admin');
+        
         // If no userId is provided in URL, redirect to current user's profile
         if (!userId && currentUser) {
           navigate(`/profile/${currentUser._id}`, { replace: true });
@@ -161,6 +171,44 @@ const ProfilePage = () => {
     }
   }, [userId, currentUser, navigate]);
 
+  // Admin handlers
+  const handleBlockUser = async (userId) => {
+    try {
+      const result = await blockUser(userId);
+      setBlockDialog({ open: false, user: null });
+      
+      // Show success message with details
+      alert(`User blocked successfully!\n\nDeleted content:\n- Posts: ${result.deletedContent.posts}\n- Products: ${result.deletedContent.products}\n- Comments: ${result.deletedContent.comments}\n- Orders: ${result.deletedContent.orders}`);
+      
+      // Navigate to admin blacklist
+      navigate('/admin/blacklist');
+    } catch (err) {
+      console.error('Error blocking user:', err);
+      setError(`Failed to block user: ${err.message}`);
+    }
+  };
+
+  const handleDeleteAsAdmin = async (itemId, type) => {
+    try {
+      switch (type) {
+        case 'post':
+          await deletePost(itemId);
+          setPosts(prev => prev.filter(post => post._id !== itemId));
+          break;
+        case 'product':
+          await deleteProduct(itemId);
+          setProducts(prev => prev.filter(product => product._id !== itemId));
+          break;
+        default:
+          break;
+      }
+      setDeleteDialog({ open: false, item: null, type: '' });
+    } catch (err) {
+      console.error('Error deleting item:', err);
+      setError('Failed to delete item');
+    }
+  };
+
   // Add a function to refresh posts
   const refreshPosts = async () => {
     if (!userId) return;
@@ -200,44 +248,38 @@ const ProfilePage = () => {
       }
     } catch (error) {
       console.error('Error creating post:', error);
-      alert(error.message || 'Failed to create post. Please try again.');
+      alert(`Error creating post: ${error.message}`);
     }
   };
 
-  // Update the post update handler
   const handleUpdatePost = async (postId, formData) => {
-  try {
-    const updatedPost = await updatePost(postId, {
-      name: formData.name,
-      caption: formData.caption
-    });
-
-    const oldPost = posts.find(p => p._id === postId);
-
-    if (oldPost) {
-      updatedPost.user = oldPost.user;
-    }
-
-    setPosts(posts.map(p => p._id === updatedPost._id ? updatedPost : p));
-    setEditPostOpen(false);
-    setSelectedPost(null);
-  } catch (error) {
-    console.error('Error updating post:', error);
-    alert(error.message || 'Failed to update post. Please try again.');
-  }
-};
-
-
-  // Update the post deletion handler
-  const handleDeletePost = async (postId) => {
     try {
-      await deletePost(postId);
-      // Refresh the posts list after deletion
-      await refreshPosts();
-      setSelectedPost(null);
+      const response = await updatePost(postId, formData);
+      
+      if (response && response._id) {
+        // Refresh the posts list after updating
+        await refreshPosts();
+        setEditPostOpen(false);
+        setSelectedPost(null);
+      } else {
+        throw new Error('Invalid response from server');
+      }
     } catch (error) {
-      console.error('Error deleting post:', error);
-      alert(error.message || 'Failed to delete post. Please try again.');
+      console.error('Error updating post:', error);
+      alert(`Error updating post: ${error.message}`);
+    }
+  };
+
+  const handleDeletePost = async (postId) => {
+    if (window.confirm('Are you sure you want to delete this post?')) {
+      try {
+        await deletePost(postId);
+        setPosts(prev => prev.filter(post => post._id !== postId));
+        setSelectedPost(null);
+      } catch (error) {
+        console.error('Error deleting post:', error);
+        alert(`Error deleting post: ${error.message}`);
+      }
     }
   };
 
@@ -245,9 +287,7 @@ const ProfilePage = () => {
     const file = event.target.files[0];
     if (file) {
       const reader = new FileReader();
-      reader.onloadend = () => {
-        callback(reader.result);
-      };
+      reader.onload = (e) => callback(e.target.result);
       reader.readAsDataURL(file);
     }
   };
@@ -271,138 +311,138 @@ const ProfilePage = () => {
   };
 
   const handleDeleteProduct = async (productId) => {
-    try {
-      await deleteProduct(productId);
-      setProducts(products.filter(product => product._id !== productId));
-      setSelectedProduct(null);
-    } catch (error) {
-      console.error('Error deleting product:', error);
+    if (window.confirm('Are you sure you want to delete this product?')) {
+      try {
+        await deleteProduct(productId);
+        setProducts(prev => prev.filter(product => product._id !== productId));
+        setSelectedProduct(null);
+      } catch (error) {
+        console.error('Error deleting product:', error);
+        alert(`Error deleting product: ${error.message}`);
+      }
     }
   };
 
   const handleFollowToggle = async () => {
-    console.log('Toggling follow for user:', userId);
-  if (!user || !currentUser) return;
-
-  try {
-    if (user.isFollowing) {
-      await unfollowUser(userId);
-      const updatedFollowers = followers.filter(f => f._id !== currentUser._id);
-      setFollowers(updatedFollowers);
-      setUser({
-        ...user,
-        isFollowing: false,
-        followers: updatedFollowers
-      });
-    } else {
-      await followUser(userId);
-      const newFollowers = [...followers, currentUser]; // assuming currentUser contains _id and name
-      setFollowers(newFollowers);
-      setUser({
-        ...user,
-        isFollowing: true,
-        followers: newFollowers
-      });
+    if (!currentUser) {
+      alert('Please log in to follow users');
+      return;
     }
-  } catch (error) {
-    console.error('Error toggling follow:', error);
-    alert(error.message || 'Something went wrong while toggling follow.');
-  }
-};
+
+    if (!userId) {
+      alert('No user ID available');
+      return;
+    }
+
+    try {
+      if (user.isFollowing) {
+        await unfollowUser(userId);
+        setUser(prev => ({ ...prev, isFollowing: false }));
+        // Refresh followers count
+        const updatedFollowers = await fetchUserFollowers(userId);
+        const followersArray = Array.isArray(updatedFollowers) ? updatedFollowers : [];
+        setFollowers(followersArray);
+        // Update user state with new follower count
+        setUser(prev => ({ ...prev, followers: followersArray }));
+      } else {
+        await followUser(userId);
+        setUser(prev => ({ ...prev, isFollowing: true }));
+        // Refresh followers count
+        const updatedFollowers = await fetchUserFollowers(userId);
+        const followersArray = Array.isArray(updatedFollowers) ? updatedFollowers : [];
+        setFollowers(followersArray);
+        // Update user state with new follower count
+        setUser(prev => ({ ...prev, followers: followersArray }));
+      }
+    } catch (error) {
+      console.error('Error toggling follow:', error);
+      alert(`Error: ${error.message}`);
+    }
+  };
 
   const handleLike = async (postId) => {
-  try {
-    const updatedPost = posts.find(p => p._id === postId);
-    const alreadyLiked = updatedPost.likes.includes(currentUser._id);
-
-    const data = alreadyLiked
-      ? await unlikePost(postId, currentUser._id)
-      : await likePost(postId, currentUser._id);
-
-    const newPost = {
-      ...updatedPost,
-      likes: data.post.likes,
-      isLiked: !alreadyLiked
-    };
-
-    setPosts(prev => prev.map(p => p._id === postId ? newPost : p));
-
-    if (selectedPost && selectedPost._id === postId) {
-      setSelectedPost(newPost);
+    if (!currentUser) {
+      alert('Please log in to like posts');
+      return;
     }
-  } catch (error) {
-    console.error('Error toggling like:', error);
-  }
-};
 
-const handleAddComment = async (postId, commentText) => {
-  try {
-    const newComment = await addComment(postId, {
-      comment: commentText,
-      user: currentUser._id  
-    });
+    try {
+      const post = posts.find(p => p._id === postId);
+      if (!post) return;
 
-    setPosts(prevPosts => prevPosts.map(post => 
-      post._id === postId 
-        ? { ...post, Comments: [...(post.Comments || []), newComment] }
-        : post
-    ));
-  } catch (error) {
-    console.error('Error adding comment:', error);
-  }
-};
-
-const handleDeleteComment = async (commentId, postId) => {
-  try {
-    await deleteComment(commentId, postId);
-
-    setPosts(prevPosts =>
-      prevPosts.map(post =>
-        post._id === postId
-          ? {
-              ...post,
-              Comments: (post.Comments || []).filter(
-                c => c.toString() !== commentId.toString()
-              )
-            }
-          : post
-      )
-    );
-    if (selectedPost && selectedPost._id === postId) {
-      setSelectedPost(prev => ({
-        ...prev,
-        Comments: (prev.Comments || []).filter(
-          c => c.toString() !== commentId.toString()
-        )
-      }));
+      if (post.isLiked) {
+        await unlikePost(postId, currentUser._id);
+        const updatedPost = { ...post, isLiked: false, likes: post.likes.filter(id => id !== currentUser._id) };
+        setPosts(prev => prev.map(p => p._id === postId ? updatedPost : p));
+        // Update selectedPost if it's the same post
+        if (selectedPost && selectedPost._id === postId) {
+          setSelectedPost(updatedPost);
+        }
+      } else {
+        await likePost(postId, currentUser._id);
+        const updatedPost = { ...post, isLiked: true, likes: [...(post.likes || []), currentUser._id] };
+        setPosts(prev => prev.map(p => p._id === postId ? updatedPost : p));
+        // Update selectedPost if it's the same post
+        if (selectedPost && selectedPost._id === postId) {
+          setSelectedPost(updatedPost);
+        }
+      }
+    } catch (error) {
+      console.error('Error toggling like:', error);
+      alert(`Error: ${error.message}`);
     }
-  } catch (error) {
-    console.error('Error deleting comment:', error);
-  }
-};
+  };
 
+  const handleAddComment = async (postId, commentText) => {
+    if (!currentUser) {
+      alert('Please log in to comment');
+      return;
+    }
 
+    try {
+      await addComment(postId, { comment: commentText, user: currentUser._id });
+      // Refresh the specific post to show the new comment
+      const updatedPosts = await fetchUserPosts(userId);
+      if (Array.isArray(updatedPosts)) {
+        const standardizedPosts = standardizePostsArray(updatedPosts);
+        const withLikeStatus = standardizedPosts.map(post => ({
+          ...post,
+          isLiked: Array.isArray(post.likes) && post.likes.includes(currentUser._id)
+        }));
+        setPosts(withLikeStatus);
+      }
+    } catch (error) {
+      console.error('Error adding comment:', error);
+      alert(`Error: ${error.message}`);
+    }
+  };
 
+  const handleDeleteComment = async (commentId, postId) => {
+    try {
+      await deleteComment(commentId, postId);
+      // Refresh the specific post to show the updated comments
+      const updatedPosts = await fetchUserPosts(userId);
+      if (Array.isArray(updatedPosts)) {
+        const standardizedPosts = standardizePostsArray(updatedPosts);
+        const withLikeStatus = standardizedPosts.map(post => ({
+          ...post,
+          isLiked: Array.isArray(post.likes) && post.likes.includes(currentUser._id)
+        }));
+        setPosts(withLikeStatus);
+      }
+    } catch (error) {
+      console.error('Error deleting comment:', error);
+      alert(`Error: ${error.message}`);
+    }
+  };
 
-  // PATCH: Robust product creation handler
   const handleCreateProduct = async (formData) => {
     try {
-      // Ensure we have a valid user ID
-      if (!currentUser?._id) {
-        throw new Error('User not authenticated');
-      }
-
-      // Log the form data for debugging
-      console.log('Submitting product form data:', {
-        ...formData,
-        userId: currentUser._id
-      });
-
       const response = await createProduct({
         ...formData,
         userId: currentUser._id
       });
-
+      
       if (response && response._id) {
         // Refresh the products list after creating a new product
         await refreshProducts();
@@ -411,44 +451,35 @@ const handleDeleteComment = async (commentId, postId) => {
         throw new Error('Invalid response from server');
       }
     } catch (error) {
-      console.error('Error saving product:', error);
-      // Show user-friendly error message
-      alert(error.message || 'Failed to save product. Please try again.');
+      console.error('Error creating product:', error);
+      alert(`Error creating product: ${error.message}`);
     }
   };
 
   const handleUpdateProduct = async (productId, formData) => {
-  try {
-    console.log('Updating product:', productId, formData);
-
-    const result = await updateProduct(productId, {
-      ...formData,
-      userId: currentUser._id
-    });
-
-    const updated = result?.updatedProduct || result; // support both cases
-
-    if (updated && updated._id) {
-      await refreshProducts();
-      setEditProductOpen(false);
-      setSelectedProduct(null);
-    } else {
-      throw new Error('Invalid update response from server');
+    try {
+      const response = await updateProduct(productId, formData);
+      
+      if (response && response._id) {
+        // Refresh the products list after updating
+        await refreshProducts();
+        setEditProductOpen(false);
+        setSelectedProduct(null);
+      } else {
+        throw new Error('Invalid response from server');
+      }
+    } catch (error) {
+      console.error('Error updating product:', error);
+      alert(`Error updating product: ${error.message}`);
     }
-  } catch (error) {
-    console.error('Error updating product:', error);
-    alert(error.message || 'Failed to update product. Please try again.');
-  }
-};
+  };
 
-
-
-  // PATCH: Add refreshProducts function
   const refreshProducts = async () => {
     if (!userId) return;
     try {
       const userProducts = await fetchUserProducts(userId);
-      setProducts(Array.isArray(userProducts) ? userProducts : []);
+      const productsArray = Array.isArray(userProducts) ? userProducts : [];
+      setProducts(productsArray);
     } catch (error) {
       console.error('Error refreshing products:', error);
       alert('Failed to refresh products. Please try again.');
@@ -457,79 +488,74 @@ const handleDeleteComment = async (commentId, postId) => {
 
   if (isLoading) {
     return (
-      <Box sx={{ 
-        display: 'flex', 
-        justifyContent: 'center', 
-        alignItems: 'center', 
-        height: '100vh' 
-      }}>
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
         <CircularProgress />
       </Box>
     );
   }
 
-  if (error || !user) {
+  if (error) {
     return (
-      <Container maxWidth="sm" sx={{ mt: 5 }}>
-        <Paper sx={{ p: 3, textAlign: 'center' }}>
-          <Typography variant="h5" gutterBottom>
-            {error || 'User not found'}
-          </Typography>
-          <Typography variant="body1" color="text.secondary" sx={{ mb: 2 }}>
-            {error?.includes('401') || error?.includes('Unauthorized') 
-              ? 'Please log in to view this profile.'
-              : error?.includes('404') || error?.includes('not found')
-              ? 'The user you\'re looking for doesn\'t exist or has been removed.'
-              : 'Failed to load profile data. Please try again later.'
-            }
-          </Typography>
-          {!currentUser && (
-            <Button 
-              variant="contained" 
-              color="primary" 
-              onClick={() => window.location.href = '/login'}
-              sx={{ mr: 1 }}
-            >
-              Log In
-            </Button>
-          )}
-          <Button 
-            variant="outlined" 
-            onClick={() => window.location.href = '/'}
-          >
-            Go Home
-          </Button>
-        </Paper>
-      </Container>
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+        <Typography color="error">{error}</Typography>
+      </Box>
+    );
+  }
+
+  if (!user) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+        <Typography>User not found</Typography>
+      </Box>
     );
   }
 
   return (
-    <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: theme.palette.background.default }}>
+    <Box sx={{ display: 'flex', minHeight: '100vh', backgroundColor: 'background.default' }}>
       <SideDrawer open={true} />
-      
-      <Box sx={{ 
-        flexGrow: 1,
-        paddingLeft: { xs: 0, sm: '96px' },
-        paddingTop: '64px',
-        transition: 'padding-left 0.3s ease'
-      }}>
-        <Container maxWidth="md">
-          <ProfileHeader 
-           key={user._id + user.name + user.bio}
+      <Box sx={{ flexGrow: 1 }}>
+        <Container maxWidth="lg" sx={{ py: 4 }}>
+          {error && (
+            <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError(null)}>
+              {error}
+            </Alert>
+          )}
+
+          <ProfileHeader
             user={user}
             isOwnProfile={isOwnProfile}
             onEditProfile={() => setEditProfileOpen(true)}
             onFollowToggle={handleFollowToggle}
             postsCount={posts.length}
             productsCount={products.length}
+            followersCount={followers.length}
+            followingCount={following.length}
             onShowFollowers={() => setShowFollowers(true)}
             onShowFollowing={() => setShowFollowing(true)}
           />
-          
-          <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2, mb: 3 }}>
-            {isOwnProfile && (
-              <>
+
+          {/* Admin Controls */}
+          {isAdmin && !isOwnProfile && (
+            <Paper sx={{ p: 2, mb: 3, bgcolor: 'warning.light' }}>
+              <Typography variant="h6" sx={{ mb: 2, color: 'warning.dark' }}>
+                Admin Controls
+              </Typography>
+              <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+                <Button
+                  variant="contained"
+                  color="warning"
+                  startIcon={<BlockIcon />}
+                  onClick={() => setBlockDialog({ open: true, user: user })}
+                >
+                  Block User
+                </Button>
+              </Box>
+            </Paper>
+          )}
+
+          <Box sx={{ mb: 3, display: 'flex', justifyContent: 'flex-end' }}>
+            {isOwnProfile ? (
+              <Box sx={{ display: 'flex', gap: 2 }}>
                 <Button
                   variant="outlined"
                   color="primary"
@@ -551,8 +577,8 @@ const handleDeleteComment = async (commentId, postId) => {
                 >
                   Add Product
                 </Button>
-              </>
-            )}
+              </Box>
+            ) : null}
           </Box>
 
           <ProfileTabs 
@@ -577,7 +603,7 @@ const handleDeleteComment = async (commentId, postId) => {
                   onLike={handleLike}
                   onPostClick={setSelectedPost}
                   onEdit={handleEditPost}
-                  onDelete={handleDeletePost}
+                  onDelete={isAdmin ? () => setDeleteDialog({ open: true, item: post, type: 'post' }) : handleDeletePost}
                   isOwnPost={isOwnProfile}
                   variant={viewMode === 'grid' ? 'grid' : 'feed'}
                 />
@@ -599,7 +625,7 @@ const handleDeleteComment = async (commentId, postId) => {
                   product={product}
                   onProductClick={setSelectedProduct} // opens ProductDialog
                   onEdit={handleEditProduct}
-                  onDelete={handleDeleteProduct}
+                  onDelete={isAdmin ? () => setDeleteDialog({ open: true, item: product, type: 'product' }) : handleDeleteProduct}
                   isOwnProduct={isOwnProfile}
                   variant={viewMode === 'grid' ? 'grid' : 'list'}
                 />
@@ -616,7 +642,7 @@ const handleDeleteComment = async (commentId, postId) => {
               onClose={() => setSelectedPost(null)}
               onLike={handleLike}
               onEdit={handleEditPost}
-              onDelete={handleDeletePost}
+              onDelete={isAdmin ? () => setDeleteDialog({ open: true, item: selectedPost, type: 'post' }) : handleDeletePost}
               onAddComment={handleAddComment}
               onDeleteComment={handleDeleteComment}
               isOwnPost={isOwnProfile}
@@ -722,6 +748,53 @@ const handleDeleteComment = async (commentId, postId) => {
               userId={userId}
             />
           )}
+
+          {/* Admin Dialogs */}
+          <Dialog open={blockDialog.open} onClose={() => setBlockDialog({ open: false, user: null })}>
+            <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <BlockIcon color="warning" />
+              Block User
+            </DialogTitle>
+            <DialogContent>
+              <Typography>
+                Are you sure you want to block {blockDialog.user?.name}? They will be added to the blacklist.
+              </Typography>
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={() => setBlockDialog({ open: false, user: null })}>
+                Cancel
+              </Button>
+              <Button
+                color="warning"
+                onClick={() => handleBlockUser(userId)}
+              >
+                Block User
+              </Button>
+            </DialogActions>
+          </Dialog>
+
+          <Dialog open={deleteDialog.open} onClose={() => setDeleteDialog({ open: false, item: null, type: '' })}>
+            <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <WarningIcon color="error" />
+              Confirm Delete (Admin)
+            </DialogTitle>
+            <DialogContent>
+              <Typography>
+                Are you sure you want to delete this {deleteDialog.type} as an admin? This action cannot be undone.
+              </Typography>
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={() => setDeleteDialog({ open: false, item: null, type: '' })}>
+                Cancel
+              </Button>
+              <Button
+                color="error"
+                onClick={() => handleDeleteAsAdmin(deleteDialog.item?._id, deleteDialog.type)}
+              >
+                Delete
+              </Button>
+            </DialogActions>
+          </Dialog>
         </Container>
       </Box>
     </Box>

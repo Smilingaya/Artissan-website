@@ -23,6 +23,27 @@ const handleResponse = async (response) => {
 // PATCH: Helper to always extract the correct userId
 const getUserId = (user) => user?._id || user?.id || user || '';
 
+// ==================== ADMIN API FUNCTIONS ====================
+
+// Block user (admin only)
+export const blockUser = async (userId, reason = "Violated terms") => {
+  try {
+    const response = await fetch(`${API_BASE}/admin/blockUser/${userId}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ reason }),
+      credentials: 'include'
+    });
+    
+    return await handleResponse(response);
+  } catch (error) {
+    console.error('Error blocking user:', error);
+    throw error;
+  }
+};
+
 // ==================== USER API FUNCTIONS ====================
 
 // Get user profile
@@ -255,7 +276,7 @@ export const createPost = async (postData) => {
     formData.append('caption', postData.caption || postData.content);
     formData.append('userId', postData.userId);
     // Include product IDs when creating a post
-formData.append('productLinks', JSON.stringify(postData.productLinks || []));
+    formData.append('productLinks', JSON.stringify(postData.productLinks || []));
 
 
     // Support single or multiple images
@@ -266,18 +287,18 @@ formData.append('productLinks', JSON.stringify(postData.productLinks || []));
         });
       } else {
         console.log(postData.image);
-console.log(postData.image instanceof File); // يجب أن يعطي true
+        console.log(postData.image instanceof File); 
 
         formData.append('media', postData.image);
       }
     }
 
     const response = await fetch(`${API_BASE}/blog/postBlog`, {
-    method: 'POST',
-    body: formData,
-    credentials: 'include', // مباشرة بدون استدعاء
-    // ⚠️ لا تضيفي أي headers هنا إطلاقًا!
-});
+      method: 'POST',
+      body: formData,
+      credentials: 'include',
+    
+    });
     // Check if response is JSON
     const contentType = response.headers.get('content-type');
     if (!contentType || !contentType.includes('application/json')) {
@@ -523,7 +544,7 @@ export const updateProduct = async (productId, productData) => {
     if (productData.stock !== undefined) formData.append('stoke', productData.stock);
     if (productData.categoryId) formData.append('categoryId', productData.categoryId);
 
-    // ✅ Convert base64 image string to File if necessary
+
     if (productData.mainImage) {
       if (typeof productData.mainImage === 'string' && productData.mainImage.startsWith('data:')) {
         const response = await fetch(productData.mainImage);
@@ -535,7 +556,7 @@ export const updateProduct = async (productId, productData) => {
       }
     }
 
-    // ✅ Multiple files
+    //Multiple files
     if (productData.multipleFiles) {
       const files = Array.isArray(productData.multipleFiles)
         ? productData.multipleFiles
@@ -837,11 +858,9 @@ export const fetchCategories = async () => {
 //Add category by admin
 const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
-export const addCategory = async (name) => {
+export const addCategory = async (name, adminId) => {
   if (!name.trim()) throw new Error("Category name is empty");
-
-  // Automatically get adminId from localStorage
-  const adminId = localStorage.getItem("userId") || "6811034eefbf78a8cc4b236b";
+  if (!adminId) throw new Error("Admin ID is required");
 
   const res = await fetch(
     `http://localhost:3000/api/admin/addCategory/${adminId}`,

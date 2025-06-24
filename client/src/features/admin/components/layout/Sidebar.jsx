@@ -50,6 +50,7 @@ const StyledListItem = styled(ListItem, {
   color: active ? '#fff' : 'rgba(255,255,255,0.7)',
   backgroundColor: active ? 'rgba(255,255,255,0.1)' : 'transparent',
   padding: '12px 8px',
+  cursor: 'pointer',
   '&:hover': {
     backgroundColor: 'rgba(255,255,255,0.15)',
     color: '#fff',
@@ -71,7 +72,7 @@ const StyledListItemText = styled(ListItemText)(({ ishovered }) => ({
   whiteSpace: 'nowrap',
 }));
 
-export const Sidebar = ({ open, toggleDrawer }) => {
+export const Sidebar = () => {
   const { currentView, setCurrentView } = useContext(AppContext);
   const [isHovered, setIsHovered] = useState(false);
   const { logout } = useAuth();
@@ -96,7 +97,7 @@ export const Sidebar = ({ open, toggleDrawer }) => {
   return (
     <StyledDrawer
       variant="permanent"
-      ishovered={open || isHovered ? 'true' : 'false'}
+      ishovered={isHovered.toString()}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
@@ -104,16 +105,16 @@ export const Sidebar = ({ open, toggleDrawer }) => {
         p: 2,
         display: 'flex',
         alignItems: 'center',
-        justifyContent: open || isHovered ? 'space-between' : 'center',
+        justifyContent: isHovered ? 'space-between' : 'center',
         minHeight: '64px'
       }}>
-        {(open || isHovered) ? (
+        {isHovered ? (
           <Typography variant="h6" sx={{ fontWeight: 600 }}>Admin Panel</Typography>
         ) : (
           <Typography variant="h4" sx={{ fontWeight: 600 }}>A</Typography>
         )}
-        {(open || isHovered) && (
-          <IconButton onClick={toggleDrawer} sx={{ color: '#fff' }}>
+        {isHovered && (
+          <IconButton sx={{ color: '#fff' }}>
             <ChevronLeftIcon />
           </IconButton>
         )}
@@ -132,7 +133,7 @@ export const Sidebar = ({ open, toggleDrawer }) => {
             </StyledListItemIcon>
             <StyledListItemText
               primary={item.text}
-              ishovered={(open || isHovered).toString()}
+              ishovered={isHovered.toString()}
               primaryTypographyProps={{
                 fontSize: '0.9rem',
                 fontWeight: currentView === item.view ? 600 : 400
@@ -151,7 +152,7 @@ export const Sidebar = ({ open, toggleDrawer }) => {
           </StyledListItemIcon>
           <StyledListItemText
             primary="Logout"
-            ishovered={(open || isHovered).toString()}
+            ishovered={isHovered.toString()}
             primaryTypographyProps={{
               fontSize: '0.9rem'
             }}

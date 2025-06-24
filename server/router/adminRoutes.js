@@ -9,6 +9,12 @@ router.post(
   requireMidllware,
   adminController.addBlacklistedUser
 );
+router.post(
+  "/blockUser/:userId",
+  requireMidllware,
+  isAdmin,
+  adminController.blockUser
+);
 router.get("/get", requireMidllware, adminController.get_category);
 router.get("/stat", requireMidllware, adminController.getPlatformStats);
 router.get(

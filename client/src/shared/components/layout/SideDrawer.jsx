@@ -55,6 +55,7 @@ const StyledListItem = styled(ListItem)(({ theme, active }) => ({
   color: active ? '#fff' : 'rgba(255,255,255,0.7)',
   backgroundColor: active ? 'rgba(255,255,255,0.1)' : 'transparent',
   padding: '12px 5px',
+  cursor: 'pointer',
   '&:hover': {
     backgroundColor: 'rgba(255,255,255,0.15)',
     color: '#fff',
@@ -81,6 +82,11 @@ const SideDrawer = ({ open }) => {
   const location = useLocation();
   const { currentUser, logout } = useAuth();
   const [isHovered, setIsHovered] = useState(false);
+
+  // Hide the user sidebar if the current user is an admin
+  if (currentUser?.role === 'admin') {
+    return null;
+  }
 
   const menuItems = [
     { text: 'Home', icon: <HomeIcon />, path: '/home' },

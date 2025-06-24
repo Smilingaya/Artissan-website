@@ -17,6 +17,7 @@ import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation } from 'swiper/modules';
 import 'swiper/css';
 import 'swiper/css/navigation';
+import { useAuth } from '../../contexts/UserContext';
 
 const PostDialog = ({
   post,
@@ -31,6 +32,8 @@ const PostDialog = ({
   currentUser
 }) => {
   const navigate = useNavigate();
+  const { currentUser: authUser } = useAuth();
+  const isAdmin = authUser?.role === 'admin';
   const [newComment, setNewComment] = useState('');
   const [comments, setComments] = useState([]);
   const [anchorEl, setAnchorEl] = useState(null);
@@ -150,7 +153,7 @@ console.log("Post productLinks:", post.productLinks);
   See Products
 </Button>
             )}
-            {isOwnPost && (
+            {(isOwnPost || isAdmin) && (
               <IconButton onClick={(e) => setAnchorEl(e.currentTarget)}><MoreVert /></IconButton>
             )}
             <IconButton onClick={onClose}><Close /></IconButton>
@@ -178,7 +181,7 @@ console.log("Post productLinks:", post.productLinks);
                     primary={
                       <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                         <Typography variant="subtitle2">{comment.user?.name || 'User'}</Typography>
-                        {(comment.isOwnComment || isOwnPost) && (
+                        {(comment.isOwnComment || isOwnPost || isAdmin) && (
                           <IconButton size="small" onClick={() => handleDeleteComment(comment._id)}><Delete fontSize="small" /></IconButton>
                         )}
                       </Box>
@@ -217,7 +220,9 @@ console.log("Post productLinks:", post.productLinks);
           </Box>
 
           <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={() => setAnchorEl(null)}>
-            <MenuItem onClick={handleEdit}><Edit fontSize="small" sx={{ mr: 1 }} /> Edit</MenuItem>
+            {isOwnPost && (
+              <MenuItem onClick={handleEdit}><Edit fontSize="small" sx={{ mr: 1 }} /> Edit</MenuItem>
+            )}
             <MenuItem onClick={handleDelete}><Delete fontSize="small" sx={{ mr: 1 }} /> Delete</MenuItem>
           </Menu>
         </Box>

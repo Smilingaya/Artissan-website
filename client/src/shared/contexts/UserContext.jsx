@@ -29,6 +29,16 @@ export const UserProvider = ({ children }) => {
           setIsAuthenticated(false);
         }
       } else {
+        const errorData = await response.json();
+        
+        // Check if user is blocked
+        if (errorData.blocked) {
+          alert("Your account has been blocked. You can no longer access this site.");
+          // Clear any stored data
+          localStorage.removeItem("jwt");
+          localStorage.removeItem("userId");
+        }
+        
         setCurrentUser(null);
         setIsAuthenticated(false);
       }
@@ -49,22 +59,31 @@ export const UserProvider = ({ children }) => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(credentials),
-        credentials: "include", // ✅ allow cookies (optional, still OK)
+        credentials: "include",
       });
 
       if (response.ok) {
         const data = await response.json();
 
-        // ✅ SAVE TOKEN TO LOCAL STORAGE
+        // SAVE TOKEN TO LOCAL STORAGE
         if (data.token) {
           localStorage.setItem("jwt", data.token);
-          localStorage.setItem("userId", data.user._id); // optional
+          localStorage.setItem("userId", data.user._id);
         }
 
         await checkAuthStatus(); // refresh user info
         return { success: true };
       } else {
         const errorData = await response.json();
+        
+        // Check if user is blocked
+        if (errorData.blocked) {
+          return { 
+            success: false, 
+            error: { message: "Your account has been blocked. You can no longer access this site." } 
+          };
+        }
+        
         return { success: false, error: errorData };
       }
     } catch (error) {
@@ -107,7 +126,7 @@ export const UserProvider = ({ children }) => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(credentials),
-        credentials: "include", // ✅ allow cookies (optional, still OK)
+        credentials: "include",
       });
 
       if (response.ok) {

@@ -16,7 +16,9 @@ import {
   TableBody,
   TableRow,
   TableCell,
+  Alert,
 } from "@mui/material";
+import { useAuth } from "../../../../shared/contexts/UserContext";
 
 const Categories = () => {
   /* --------------------------- State ---------------------------- */
@@ -25,6 +27,7 @@ const Categories = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [saving, setSaving] = useState(false);
+  const { currentUser, isAuthenticated } = useAuth();
 
   /* --------------------- Fetch on Mount ------------------------- */
   useEffect(() => {
@@ -64,11 +67,16 @@ const Categories = () => {
   /* ------------------- Add Category Handler --------------------- */
   const handleAddCategory = async () => {
     if (!newCategory.trim()) return;
+    if (!isAuthenticated || !currentUser) {
+      setError("You must be logged in to add categories");
+      return;
+    }
 
     setSaving(true);
+    setError(null);
     try {
       // backend returns: { id OR _id, name, status }
-      const created = await addCategory(newCategory);
+      const created = await addCategory(newCategory, currentUser._id);
       const newCat = {
         ...created,
         id: created.id || created._id,
@@ -78,7 +86,7 @@ const Categories = () => {
       setNewCategory("");
     } catch (err) {
       console.error(err);
-      alert(err.message);
+      setError(err.message || "Failed to add category");
     } finally {
       setSaving(false);
     }
@@ -102,6 +110,20 @@ const Categories = () => {
         Categories Management
       </Typography>
 
+      {/* Authentication Error */}
+      {!isAuthenticated && (
+        <Alert severity="error" sx={{ mb: 2 }}>
+          You must be logged in to manage categories
+        </Alert>
+      )}
+
+      {/* Error Display */}
+      {error && (
+        <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError(null)}>
+          {error}
+        </Alert>
+      )}
+
       {/* Add Category */}
       <Box sx={{ mb: 4, display: "flex", gap: 2 }}>
         <TextField
@@ -111,15 +133,16 @@ const Categories = () => {
           placeholder="New category name"
           value={newCategory}
           onChange={(e) => setNewCategory(e.target.value)}
+          disabled={!isAuthenticated}
         />
         <Button
           variant="contained"
           onClick={handleAddCategory}
-          disabled={saving}
+          disabled={saving || !isAuthenticated}
           sx={{
             bgcolor:'#E5B3D3',
             "&:hover": { bgcolor: '#F0CBE4'},
-            opacity: saving ? 0.6 : 1,
+            opacity: (saving || !isAuthenticated) ? 0.6 : 1,
             width: "150px",
             hight:"70px",
           }}

@@ -2,9 +2,9 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  Box, Chip, ToggleButton, ToggleButtonGroup, Typography, CircularProgress
+  Box, Chip, ToggleButton, ToggleButtonGroup, Typography, CircularProgress, Dialog, DialogTitle, DialogContent, DialogActions, Button
 } from "@mui/material";
-import { GridView, ViewList } from "@mui/icons-material";
+import { GridView, ViewList, Block as BlockIcon, Warning as WarningIcon } from "@mui/icons-material";
 import SideDrawer from "../../../shared/components/layout/SideDrawer";
 import AppHeader from "../../../shared/components/layout/AppHeader";
 import PostCard from "../../../shared/components/posts/PostCard";
@@ -25,7 +25,8 @@ import {
   addComment,
   deleteComment,
   fetchCategoriesHomePage,
-  createOrder
+  createOrder,
+  blockUser
 } from "../../../features/profile/utils/api";
 import { useAuth } from "../../../shared/contexts/UserContext";
 import Masonry from 'react-masonry-css';
@@ -44,6 +45,16 @@ const Homepage = () => {
   const [showProducts, setShowProducts] = useState(false);
   const [viewMode, setViewMode] = useState("grid");
   const [loading, setLoading] = useState(true);
+  
+  // Admin states
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [blockDialog, setBlockDialog] = useState({ open: false, user: null });
+  const [deleteDialog, setDeleteDialog] = useState({ open: false, item: null, type: '' });
+
+  useEffect(() => {
+    // Check if current user is admin
+    setIsAdmin(currentUser?.role === 'admin');
+  }, [currentUser]);
 
   useEffect(() => {
     const loadCategories = async () => {
@@ -126,6 +137,43 @@ const Homepage = () => {
     setSearchTerm("");
     setSelectedCategory(category);
     setShowProducts(true);
+  };
+
+  // Admin handlers
+  const handleBlockUser = async (user) => {
+    try {
+      await blockUser(user._id);
+      setBlockDialog({ open: false, user: null });
+      // Refresh data after blocking
+      navigate('/admin/blacklist');
+    } catch (err) {
+      console.error('Error blocking user:', err);
+    }
+  };
+
+  const handleDeleteAsAdmin = async (itemId, type) => {
+    try {
+      switch (type) {
+        case 'post':
+          await deletePost(itemId);
+          setPosts(prev => prev.filter(post => post._id !== itemId));
+          break;
+        case 'product':
+          // You'll need to implement deleteProduct in your API
+          // await deleteProduct(itemId);
+          setProducts(prev => prev.filter(product => product._id !== itemId));
+          break;
+        default:
+          break;
+      }
+      setDeleteDialog({ open: false, item: null, type: '' });
+    } catch (err) {
+      console.error('Error deleting item:', err);
+    }
+  };
+
+  const handleViewProfile = (userId) => {
+    navigate(`/profile/${userId}`);
   };
 
   const handleLike = async (postId) => {
@@ -286,9 +334,11 @@ const Homepage = () => {
                         variant="grid"
                         onProductClick={() => setSelectedProduct(product)}
                         onEdit={handleEditProduct}
-                        onDelete={handleDeleteProduct}
+                        onDelete={isAdmin ? () => setDeleteDialog({ open: true, item: product, type: 'product' }) : handleDeleteProduct}
                         isOwnProduct={product.user && currentUser ? product.user._id === currentUser._id : false}
                         onOrder={() => handleCreateOrder(product.user?._id, product._id)}
+                        onBlockUser={isAdmin ? () => setBlockDialog({ open: true, user: product.user }) : undefined}
+                        onViewProfile={isAdmin ? handleViewProfile : undefined}
                       />
                     ))}
                   </Box>
@@ -317,9 +367,11 @@ const Homepage = () => {
                         onPostClick={() => setSelectedPost(post)}
                         onLike={handleLike}
                         onEdit={handleEditPost}
-                        onDelete={handleDeletePost}
+                        onDelete={isAdmin ? () => setDeleteDialog({ open: true, item: post, type: 'post' }) : handleDeletePost}
                         isOwnPost={post.user && currentUser ? post.user._id === currentUser._id : false}
                         variant="grid"
+                        onBlockUser={isAdmin ? () => setBlockDialog({ open: true, user: post.user }) : undefined}
+                        onViewProfile={isAdmin ? handleViewProfile : undefined}
                       />
                     ))}
                   </Masonry>
@@ -332,9 +384,11 @@ const Homepage = () => {
                         onPostClick={() => setSelectedPost(post)}
                         onLike={handleLike}
                         onEdit={handleEditPost}
-                        onDelete={handleDeletePost}
+                        onDelete={isAdmin ? () => setDeleteDialog({ open: true, item: post, type: 'post' }) : handleDeletePost}
                         isOwnPost={post.user && currentUser ? post.user._id === currentUser._id : false}
                         variant="feed"
+                        onBlockUser={isAdmin ? () => setBlockDialog({ open: true, user: post.user }) : undefined}
+                        onViewProfile={isAdmin ? handleViewProfile : undefined}
                       />
                     ))}
                   </Box>
@@ -351,7 +405,7 @@ const Homepage = () => {
               onLike={() => handleLike(selectedPost._id)}
               onAddComment={handleAddComment}
               onDeleteComment={handleDeleteComment}
-              onDelete={handleDeletePost}
+              onDelete={isAdmin ? () => setDeleteDialog({ open: true, item: selectedPost, type: 'post' }) : handleDeletePost}
               currentUser={currentUser}
               isOwnPost={selectedPost.user._id === currentUser?._id}
             />
@@ -366,6 +420,53 @@ const Homepage = () => {
               isOwnProduct={selectedProduct.user._id === currentUser?._id}
             />
           )}
+
+          {/* Admin Dialogs */}
+          <Dialog open={blockDialog.open} onClose={() => setBlockDialog({ open: false, user: null })}>
+            <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <BlockIcon color="warning" />
+              Block User
+            </DialogTitle>
+            <DialogContent>
+              <Typography>
+                Are you sure you want to block {blockDialog.user?.name}? They will be added to the blacklist.
+              </Typography>
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={() => setBlockDialog({ open: false, user: null })}>
+                Cancel
+              </Button>
+              <Button
+                color="warning"
+                onClick={() => handleBlockUser(blockDialog.user)}
+              >
+                Block User
+              </Button>
+            </DialogActions>
+          </Dialog>
+
+          <Dialog open={deleteDialog.open} onClose={() => setDeleteDialog({ open: false, item: null, type: '' })}>
+            <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <WarningIcon color="error" />
+              Confirm Delete (Admin)
+            </DialogTitle>
+            <DialogContent>
+              <Typography>
+                Are you sure you want to delete this {deleteDialog.type} as an admin? This action cannot be undone.
+              </Typography>
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={() => setDeleteDialog({ open: false, item: null, type: '' })}>
+                Cancel
+              </Button>
+              <Button
+                color="error"
+                onClick={() => handleDeleteAsAdmin(deleteDialog.item?._id, deleteDialog.type)}
+              >
+                Delete
+              </Button>
+            </DialogActions>
+          </Dialog>
         </Box>
       </Box>
     </>

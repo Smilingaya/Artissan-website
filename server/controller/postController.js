@@ -12,7 +12,6 @@ const craete_post = async (req, res) => {
     const mediaUrls = req.files.map(file => file.path);
     const { userId, caption, name } = req.body;
 
-    // ✅ Safely parse productLinks from JSON string (because it's sent as FormData)
     let productLinks = [];
     try {
       productLinks = JSON.parse(req.body.productLinks || '[]');
@@ -24,12 +23,11 @@ const craete_post = async (req, res) => {
       return res.status(400).json({ success: false, message: 'productLinks must be an array' });
     }
 
-    // ✅ Validate and convert product IDs to ObjectId
     productLinks = productLinks
       .filter(id => typeof id === 'string' && id.match(/^[0-9a-fA-F]{24}$/))
       .map(id => new mongoose.Types.ObjectId(id));
 
-    // ✅ Create the post
+    // Create the post
     const newPost = new Post({
       user: userId,
       caption,
@@ -40,7 +38,7 @@ const craete_post = async (req, res) => {
 
     await newPost.save();
 
-    // ✅ Link the post to the user
+    // Link the post to the user
     const user = await User.findById(userId);
     if (!user) {
       return res.status(404).json({ success: false, message: 'User not found' });

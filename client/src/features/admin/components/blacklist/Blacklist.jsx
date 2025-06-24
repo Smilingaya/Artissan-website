@@ -17,7 +17,7 @@ import {
   fetchBlacklistedUsers,
   addBlacklistedUser,
   deleteBlacklistedUser,
-} from "./list"; // ✅ Adjust the path if needed
+} from "./list"; // Adjust the path if needed
 
 const Blacklist = () => {
   const [blacklistedUsers, setBlacklistedUsers] = useState([]);

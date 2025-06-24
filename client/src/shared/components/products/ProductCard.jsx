@@ -19,8 +19,11 @@ import {
   Edit,
   Delete,
   MoreVert,
-  ShoppingCart
+  ShoppingCart,
+  Block as BlockIcon,
+  Person as PersonIcon,
 } from '@mui/icons-material';
+import { useAuth } from '../../contexts/UserContext';
 
 const ProductCard = ({
   product,
@@ -30,14 +33,20 @@ const ProductCard = ({
   onDelete,
   isOwnProduct,
   variant = 'grid',
-  onOrder
+  onOrder,
+  onBlockUser,
+  onViewProfile
 }) => {
   const navigate = useNavigate();
+  const { currentUser } = useAuth();
+  const isAdmin = currentUser?.role === 'admin';
   const [anchorEl, setAnchorEl] = React.useState(null);
 
   const handleUserClick = (e) => {
     e.stopPropagation();
-    if (onUserClick) {
+    if (onViewProfile) {
+      onViewProfile(product.user._id);
+    } else if (onUserClick) {
       onUserClick(product.user._id);
     } else {
       navigate(`/profile/${product.user._id}`);
@@ -62,6 +71,12 @@ const ProductCard = ({
   const handleDelete = (e) => {
     e.stopPropagation();
     onDelete?.(product._id);
+    handleMenuClose();
+  };
+
+  const handleBlockUser = (e) => {
+    e.stopPropagation();
+    onBlockUser?.(product.user);
     handleMenuClose();
   };
 
@@ -95,7 +110,7 @@ const ProductCard = ({
               <Avatar
                 src={product.user?.profilePicture }
                 alt={product.user?.name}
-                sx={{ width: 24, height: 24, mr: 1 }}
+                sx={{ width: 24, height: 24, mr: 1, cursor: 'pointer' }}
                 onClick={handleUserClick}
               />
               <Typography
@@ -138,6 +153,33 @@ const ProductCard = ({
                   <Delete />
                 </IconButton>
               </>
+            ) : isAdmin ? (
+              <Box sx={{ display: 'flex', gap: 1 }}>
+                <IconButton
+                  size="small"
+                  color="primary"
+                  onClick={handleUserClick}
+                  title="View Profile"
+                >
+                  <PersonIcon />
+                </IconButton>
+                <IconButton
+                  size="small"
+                  color="warning"
+                  onClick={handleBlockUser}
+                  title="Block User"
+                >
+                  <BlockIcon />
+                </IconButton>
+                <IconButton
+                  size="small"
+                  color="error"
+                  onClick={handleDelete}
+                  title="Delete Product (Admin)"
+                >
+                  <Delete />
+                </IconButton>
+              </Box>
             ) : (
               <Button
                 variant="contained"
@@ -181,6 +223,20 @@ const ProductCard = ({
             }}
       />
       <CardContent sx={{ flexGrow: 1 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+          <Avatar
+            src={product.user?.profilePicture}
+            sx={{ mr: 1, cursor: 'pointer' }}
+            onClick={handleUserClick}
+          />
+          <Typography
+            variant="subtitle2"
+            sx={{ cursor: 'pointer', '&:hover': { textDecoration: 'underline' } }}
+            onClick={handleUserClick}
+          >
+            {product.user?.name || 'Unknown User'}
+          </Typography>
+        </Box>
         <Typography variant="h6" gutterBottom>
           {product.name}
         </Typography>
@@ -198,11 +254,38 @@ const ProductCard = ({
           color="info"
         />
         {isOwnProduct ? (
-          <Box>
+          <Box sx={{ display: 'flex', gap: 1 }}>
             <IconButton onClick={handleEdit}>
               <Edit />
             </IconButton>
             <IconButton onClick={handleDelete}>
+              <Delete />
+            </IconButton>
+          </Box>
+        ) : isAdmin ? (
+          <Box sx={{ display: 'flex', gap: 1 }}>
+            <IconButton
+              size="small"
+              color="primary"
+              onClick={handleUserClick}
+              title="View Profile"
+            >
+              <PersonIcon />
+            </IconButton>
+            <IconButton
+              size="small"
+              color="warning"
+              onClick={handleBlockUser}
+              title="Block User"
+            >
+              <BlockIcon />
+            </IconButton>
+            <IconButton
+              size="small"
+              color="error"
+              onClick={handleDelete}
+              title="Delete Product (Admin)"
+            >
               <Delete />
             </IconButton>
           </Box>

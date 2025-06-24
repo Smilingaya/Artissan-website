@@ -10,6 +10,7 @@ import {
   Divider
 } from '@mui/material';
 import { Edit } from '@mui/icons-material';
+import { useAuth } from '../../../shared/contexts/UserContext';
 
 const ProfileHeader = ({
   user,
@@ -18,18 +19,23 @@ const ProfileHeader = ({
   onFollowToggle,
   postsCount,
   productsCount,
+  followersCount,
+  followingCount,
   onShowFollowers,
   onShowFollowing
 }) => {
+  const { currentUser } = useAuth();
+  const isAdmin = currentUser?.role === 'admin';
+  
   // Debug logging
   console.log('ProfileHeader received user:', user);
-  console.log('ProfileHeader received props:', { isOwnProfile, postsCount, productsCount });
+  console.log('ProfileHeader received props:', { isOwnProfile, postsCount, productsCount, followersCount, followingCount });
   
-  // Calculate follower/following counts from arrays
-  const followersCount = Array.isArray(user?.followers) ? user.followers.length : 0;
-  const followingCount = Array.isArray(user?.followings) ? user.followings.length : 0;
+  // Use the passed counts instead of calculating from arrays
+  const displayFollowersCount = followersCount || 0;
+  const displayFollowingCount = followingCount || 0;
 
-  console.log('Calculated counts:', { followersCount, followingCount });
+  console.log('Display counts:', { displayFollowersCount, displayFollowingCount });
 
   return (
     <Paper 
@@ -63,7 +69,7 @@ const ProfileHeader = ({
               <IconButton onClick={onEditProfile} size="small">
                 <Edit />
               </IconButton>
-            ) : (
+            ) : !isAdmin && (
               <Button
                 variant={user?.isFollowing ? "outlined" : "contained"}
                 onClick={onFollowToggle}
@@ -88,7 +94,7 @@ const ProfileHeader = ({
           >
             <Box sx={{ textAlign: 'center', cursor: 'pointer' }} onClick={onShowFollowers}>
               <Typography variant="h6" component="div">
-                {followersCount}
+                {displayFollowersCount}
               </Typography>
               <Typography variant="body2" color="text.secondary">
                 Followers
@@ -96,7 +102,7 @@ const ProfileHeader = ({
             </Box>
             <Box sx={{ textAlign: 'center', cursor: 'pointer' }} onClick={onShowFollowing}>
               <Typography variant="h6" component="div">
-                {followingCount}
+                {displayFollowingCount}
               </Typography>
               <Typography variant="body2" color="text.secondary">
                 Following

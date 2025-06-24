@@ -105,7 +105,6 @@ const login_admine = async (req, res) => {
     const token = createToken(admin._id);
     res.cookie("jwt", token, { httpOnly: true, maxAge });
 
-    // ✅ Return token + admin info (like normal login)
     res.status(200).json({
       token,
       user: {
